@@ -17,7 +17,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 
-const CategoryPage = ({ params }: { params: { categoryName: string } }) => {
+import { FC } from "react";
+
+interface CategoryPageProps {
+  params: {
+    categoryName: string;
+  };
+}
+
+const CategoryPage: FC<CategoryPageProps> = ({ params }) => {
   const router = useRouter();
   const { categoryName } = params;
   const [searchTerm, setSearchTerm] = useState("");
@@ -398,3 +406,15 @@ const CategoryPage = ({ params }: { params: { categoryName: string } }) => {
 };
 
 export default CategoryPage;
+export async function generateStaticParams() {
+  return [
+    { categoryName: "engine-parts" },
+    { categoryName: "exhaust-systems" },
+    { categoryName: "suspension" },
+    { categoryName: "electronics" },
+    { categoryName: "body-parts" },
+    { categoryName: "tools-equipment" },
+    { categoryName: "electrical" },
+    { categoryName: "brakes" },
+  ];
+}
