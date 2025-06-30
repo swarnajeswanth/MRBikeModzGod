@@ -231,12 +231,12 @@ const ProductPage = () => {
     if (!params) {
       return;
     }
-    const products = () => {
+    const product = useMemo(() => {
       return products.find(
         (p: any) =>
           p.title.toLowerCase() === decodeURIComponent(params).toLowerCase()
       );
-    };
+    }, [products, params]);
   }, [params]);
 
   if (!product) {
@@ -244,13 +244,6 @@ const ProductPage = () => {
       <div className="min-h-screen bg-black text-white p-12">
         <Header />
         <h1 className="text-3xl font-bold">Product not found</h1>
-        <button
-          onClick={() => router.push("/")}
-          className="mt-4 text-red-500 underline"
-        >
-          Go back to home
-        </button>
-        <Footer />
       </div>
     );
   }
