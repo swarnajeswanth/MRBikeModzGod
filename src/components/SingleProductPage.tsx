@@ -99,6 +99,8 @@ const ProductPage = () => {
       rating: 4.9,
       reviews: 267,
       price: 449.99,
+      originalPrice: 499.99,
+      discount: "10%",
       description:
         "High-brightness LED headlight kit for enhanced visibility and energy efficiency. Designed for easy installation and long-lasting performance.",
       features: [
@@ -169,6 +171,8 @@ const ProductPage = () => {
       rating: 4.5,
       reviews: 89,
       price: 579.99,
+      originalPrice: 649.99,
+      discount: "11%",
       description:
         "Advanced ECU tuning device that allows customization of vehicle performance parameters. Unlock the true potential of your engine.",
       features: [
@@ -220,7 +224,7 @@ const ProductPage = () => {
     },
   ];
   const handleQuantityChange = (delta: number) => {
-    setQuantity(Math.max(1, Math.min(product.stockCount, quantity + delta)));
+    setQuantity(Math.max(1, Math.min(products.stockCount, quantity + delta)));
   };
 
   const product = useMemo(
