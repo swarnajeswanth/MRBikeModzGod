@@ -1,0 +1,112 @@
+.product-card {
+  background-color: #0e1117;
+  border-radius: 14px;
+  overflow: hidden;
+  color: white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+}
+
+.product-image {
+  position: relative;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: #fff;
+  color: black;
+}
+
+.label.sale {
+  background-color: #c084fc;
+  color: white;
+}
+
+.label.premium {
+  background-color: #facc15;
+  color: black;
+}
+
+.product-letter {
+  font-size: 64px;
+  opacity: 0.3;
+}
+
+.product-info {
+  padding: 16px;
+}
+
+.category-tag {
+  font-size: 12px;
+  background-color: #1f2937;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.reviews {
+  color: #9ca3af;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.discount-badge {
+  background-color: #10b981;
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.add-to-cart {
+  margin-top: 12px;
+  background-color: #ef4444;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
