@@ -10,7 +10,7 @@ interface CategoryPageProps {
   };
 }
 
-// ✅ Make the function async, even if not awaiting anything directly
+// Make the function `async` to satisfy Next.js's PageProps signature
 export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <>
