@@ -10,7 +10,7 @@ interface PageProps {
   };
 }
 
-export default function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({ params }: PageProps) {
   return (
     <>
       <Header />

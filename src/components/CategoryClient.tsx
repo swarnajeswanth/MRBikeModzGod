@@ -19,11 +19,6 @@ import { useRouter } from "next/navigation";
 
 import { FC } from "react";
 
-interface CategoryPageProps {
-  params: {
-    categoryName: string;
-  };
-}
 const categoryData = {
   "engine-parts": {
     name: "Engine Parts",
@@ -270,7 +265,11 @@ const sampleProducts = {
   ],
 };
 
-const CategoryClient = ({ categoryName }: Props) => {
+interface Props {
+  categoryName: string;
+}
+
+export default function CategoryClient({ categoryName }: Props) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -391,6 +390,4 @@ const CategoryClient = ({ categoryName }: Props) => {
       </section>
     </div>
   );
-};
-
-export default CategoryClient;
+}
