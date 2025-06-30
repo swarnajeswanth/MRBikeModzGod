@@ -24,9 +24,16 @@ const Headline = () => {
     }
   }, []);
 
-  const wrapChars = (text: string, keyPrefix = "") =>
+  const wrapChars = (text: string, keyPrefix = "", gradient = false) =>
     text.split("").map((char, i) => (
-      <span key={`${keyPrefix}-${i}`} className="char">
+      <span
+        key={`${keyPrefix}-${i}`}
+        className={`char ${
+          gradient
+            ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-300"
+            : ""
+        }`}
+      >
         {char === " " ? "\u00A0" : char}
       </span>
     ));
@@ -35,9 +42,8 @@ const Headline = () => {
     <div ref={headingRef}>
       <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
         {wrapChars("Upgrade Your", "upgrade")}
-        <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-300">
-          {wrapChars("Ride Today", "ride")}
-        </span>
+        <br />
+        {wrapChars("Ride Today", "ride", true)}
       </h1>
     </div>
   );

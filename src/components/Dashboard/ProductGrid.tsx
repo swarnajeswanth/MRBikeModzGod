@@ -4,6 +4,7 @@ import ProductCard from "../IndividualProduct";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./productgrid.css";
 
+import { useRouter } from "next/navigation";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 gsap.registerPlugin(Draggable);
@@ -213,11 +214,7 @@ const ProductCarousel: React.FC = () => {
   const x = centerOffset - activeIndex * totalSlideWidth;
 
   return (
-    <div
-      className="scroll-container"
-      ref={containerRef}
-      style={{ color: "#fff" }}
-    >
+    <div className="scroll-container" ref={containerRef}>
       <button
         className={`scroll-button left ${activeIndex === 0 ? "disabled" : ""}`}
         onClick={prev}
@@ -233,7 +230,9 @@ const ProductCarousel: React.FC = () => {
           <div
             key={idx}
             className={
-              idx === activeIndex ? "card-wrapper active" : "card-wrapper"
+              idx === activeIndex
+                ? "card card-wrapper active"
+                : "card card-wrapper"
             }
           >
             <ProductCard

@@ -19,6 +19,14 @@
   font-weight: bold;
   color: rgba(255, 255, 255, 0.4);
 }
+.product-card {
+  transition: 0.5s ease;
+  cursor: pointer;
+}
+.product-card:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
 
 .label {
   position: absolute;

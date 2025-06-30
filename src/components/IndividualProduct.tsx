@@ -1,7 +1,7 @@
 import React from "react";
 import "./individualproduct.css";
 import { FaShoppingCart, FaStar } from "react-icons/fa";
-
+import { useRouter } from "next/navigation";
 interface ProductCardProps {
   label?: string;
   labelType?: string;
@@ -28,8 +28,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
   originalPrice,
   discount,
 }) => {
+  const router = useRouter();
+
   return (
-    <div className="product-card">
+    <div
+      className="product-card"
+      onClick={() => router.push(`/product/${title}`)}
+    >
       <div className="product-image" style={{ backgroundColor }}>
         {label && <div className={`label ${labelType}`}>{label}</div>}
         <span className="product-letter">{title.charAt(0)}</span>

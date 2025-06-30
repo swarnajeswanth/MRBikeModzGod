@@ -1,6 +1,6 @@
-import DashboardStats from "@/components/DashboardStats";
-import QuickActions from "@/components/QuickActions";
-import RecentOrders from "@/components/RecentOrders";
+import DashboardStats from "@/components/Profile/DashboardStats";
+import QuickActions from "@/components/Profile/QuickActions";
+import RecentOrders from "@/components/Profile/RecentOrders";
 import Wishlist from "@/components/Wishlist";
 import {
   Package,

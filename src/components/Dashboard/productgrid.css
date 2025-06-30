@@ -4,6 +4,9 @@
   background: #0f172a;
   padding: 2rem 0;
 }
+.product-grid-scrollable:hover > :not(:hover) {
+  opacity: 0.3;
+}
 
 .product-grid-scrollable {
   display: flex;

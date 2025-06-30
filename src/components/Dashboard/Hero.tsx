@@ -1,8 +1,9 @@
 // import { button } from "@/components/ui/button";
 import { ArrowRight, Zap } from "lucide-react";
-import ShopNowButton from "../ShopNowButton";
+import ShopNowButton from "./ShopNowButton";
 import Headline from "./HeadLine";
-
+import AllProductsPage from "../AllProducts";
+import ProductPage from "@/components/SingleProductPage";
 const Hero = () => {
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
@@ -84,6 +85,7 @@ const Hero = () => {
           </div>
         </div>
       </div>
+      <AllProductsPage />
     </section>
   );
 };

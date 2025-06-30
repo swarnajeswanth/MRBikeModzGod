@@ -9,7 +9,9 @@ import {
   FaEdit,
   FaTrash,
 } from "react-icons/fa";
-import AddProductModal, { ProductForm } from "@/components/AddProductModal"; // adjust path if needed
+import AddProductModal, {
+  ProductForm,
+} from "@/components/Profile/AddProductModal"; // adjust path if needed
 
 const summaryCards = [
   {

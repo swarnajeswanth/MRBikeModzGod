@@ -1,8 +1,9 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Dashboard/Hero";
 import ProductCategories from "@/components/Dashboard/ProductCategories";
-import FeaturedProducts from "@/components/FeaturedProducts";
+import FeaturedProducts from "@/components/Dashboard/FeaturedProducts";
 import Footer from "@/components/Footer";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
 
 const Index = () => {
   return (

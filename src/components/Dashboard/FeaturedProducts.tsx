@@ -1,7 +1,9 @@
 // import { Card } from "@/components/ui/card";
 // import { button } from "@/components/ui/button";
 // import { Badge } from "@/components/ui/badge";
+"use client";
 import ProductGrid from "@/components/Dashboard/ProductGrid";
+import { useRouter } from "next/navigation";
 const FeaturedProducts = () => {
   // const products = [
   //   {
@@ -71,7 +73,7 @@ const FeaturedProducts = () => {
   //     badgeColor: "bg-yellow-600",
   //   },
   // ];
-
+  const Router = useRouter();
   return (
     <section id="products" className="py-20 bg-gray-900/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,7 +95,10 @@ const FeaturedProducts = () => {
 
         {/* View All button */}
         <div className="text-center mt-12">
-          <button className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white px-8 py-3">
+          <button
+            className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white px-8 py-3"
+            onClick={() => Router.push("/product/allproducts")}
+          >
             View All Products
           </button>
         </div>
