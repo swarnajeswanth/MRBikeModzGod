@@ -10,7 +10,7 @@ interface CategoryPageProps {
   };
 }
 
-// ✅ make the component async to satisfy the expected return type
+// ✅ Make the function async, even if not awaiting anything directly
 export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <>
