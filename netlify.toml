@@ -1,0 +1,15 @@
+# netlify.toml
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"               # Use Node.js 18 (recommended by Next.js)
+  NODE_ENV = "production"
+  NPM_FLAGS = "--force"
+  NEXT_PRIVATE_TARGET = "server"    # Avoids issues with "app" directory SSR
+  NETLIFY_USE_YARN = "false"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
