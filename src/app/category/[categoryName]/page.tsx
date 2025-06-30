@@ -4,12 +4,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryClient from "@/components/CategoryClient";
 
-// ✅ Use this exact signature — inline the type!
-export default async function CategoryPage({
-  params,
-}: {
-  params: { categoryName: string };
-}) {
+interface PageProps {
+  params: {
+    categoryName: string;
+  };
+}
+
+export default function CategoryPage({ params }: PageProps) {
   return (
     <>
       <Header />
