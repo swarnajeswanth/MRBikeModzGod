@@ -1,11 +1,11 @@
 import { FaCheckCircle, FaClock, FaBox } from "react-icons/fa";
-
+import { ReactNode } from "react";
 type Order = {
   id: string;
   date: string;
   amount: string;
   status: "Delivered" | "Processing" | "Shipped";
-  icon: JSX.Element;
+  icon: ReactNode;
   color: string;
 };
 
