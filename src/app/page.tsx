@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import ProductCategories from "@/components/ProductCategories";
+import Hero from "@/components/Dashboard/Hero";
+import ProductCategories from "@/components/Dashboard/ProductCategories";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import Footer from "@/components/Footer";
 

@@ -182,8 +182,8 @@ const RetailerDashboard: React.FC = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto h-[338px]">
-          <table className="w-full text-left text-sm ">
+        <div className="overflow-x-auto h-[338px] ">
+          <table className="w-full text-left text-sm relative">
             <thead className="text-gray-400 border-b border-gray-700">
               <tr>
                 <th className="py-2">Product Name</th>
@@ -217,40 +217,40 @@ const RetailerDashboard: React.FC = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
-          <div className="flex justify-center items-center gap-2 mt-4 absolute bottom-[-50px] right-[45%]  p-4">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
-              disabled={currentPage === 1}
-            >
-              Prev
-            </button>
-
-            {[...Array(totalPages)].map((_, index) => (
+            <div className="flex justify-center items-center gap-2 mt-4 absolute bottom-[-50px] right-[45%]  p-4">
               <button
-                key={index}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === index + 1
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-700 text-gray-300"
-                }`}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                disabled={currentPage === 1}
               >
-                {index + 1}
+                Prev
               </button>
-            ))}
 
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
-          </div>
+              {[...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === index + 1
+                      ? "bg-red-600 text-white"
+                      : "bg-gray-700 text-gray-300"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </table>
         </div>
       </div>
       <AddProductModal
