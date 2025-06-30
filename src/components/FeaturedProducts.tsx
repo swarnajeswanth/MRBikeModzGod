@@ -2,7 +2,7 @@
 // import { button } from "@/components/ui/button";
 // import { Badge } from "@/components/ui/badge";
 import { Star, ShoppingCart } from "lucide-react";
-import ProductGrid from "./ProductGrid";
+import ProductGrid from "./Dashboard/ProductGrid";
 
 const FeaturedProducts = () => {
   const products = [

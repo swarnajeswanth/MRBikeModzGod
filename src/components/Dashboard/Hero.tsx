@@ -1,5 +1,7 @@
 // import { button } from "@/components/ui/button";
 import { ArrowRight, Zap } from "lucide-react";
+import ShopNowButton from "../ShopNowButton";
+import Headline from "./HeadLine";
 
 const Hero = () => {
   return (
@@ -18,12 +20,7 @@ const Hero = () => {
                 Premium Auto Performance Parts
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
-                Upgrade Your
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-300">
-                  Ride Today
-                </span>
-              </h1>
+              <Headline />
 
               <p className="text-xl text-gray-300 max-w-lg">
                 Discover premium auto spare parts and accessories that deliver
@@ -32,12 +29,9 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg font-semibold">
-                Shop Now
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
+              <ShopNowButton />
 
-              <button className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 text-lg">
+              <button className=" bg-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 text-lg">
                 View Catalog
               </button>
             </div>

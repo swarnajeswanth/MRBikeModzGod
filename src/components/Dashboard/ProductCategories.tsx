@@ -1,4 +1,5 @@
 // import { Card } from "@/components/ui/card";
+"use client";
 import {
   Cog,
   Zap,
@@ -9,8 +10,9 @@ import {
   Battery,
   Disc,
 } from "lucide-react";
-
+import { useRouter } from "next/navigation";
 const ProductCategories = () => {
+  const router = useRouter();
   const categories = [
     {
       name: "Engine Parts",
@@ -19,6 +21,7 @@ const ProductCategories = () => {
       color: "from-red-500 to-red-600",
       borderColor: "border-red-500/30",
       textColor: "text-red-400",
+      slug: "engine-parts",
     },
     {
       name: "Exhaust Systems",
@@ -27,6 +30,7 @@ const ProductCategories = () => {
       color: "from-orange-500 to-orange-600",
       borderColor: "border-orange-500/30",
       textColor: "text-orange-400",
+      slug: "exhaust-systems",
     },
     {
       name: "Suspension",
@@ -35,6 +39,7 @@ const ProductCategories = () => {
       color: "from-blue-500 to-blue-600",
       borderColor: "border-blue-500/30",
       textColor: "text-blue-400",
+      slug: "suspension",
     },
     {
       name: "Electronics",
@@ -43,6 +48,7 @@ const ProductCategories = () => {
       color: "from-purple-500 to-purple-600",
       borderColor: "border-purple-500/30",
       textColor: "text-purple-400",
+      slug: "electronics",
     },
     {
       name: "Body Parts",
@@ -51,6 +57,7 @@ const ProductCategories = () => {
       color: "from-green-500 to-green-600",
       borderColor: "border-green-500/30",
       textColor: "text-green-400",
+      slug: "body-parts",
     },
     {
       name: "Tools & Equipment",
@@ -59,6 +66,7 @@ const ProductCategories = () => {
       color: "from-yellow-500 to-yellow-600",
       borderColor: "border-yellow-500/30",
       textColor: "text-yellow-400",
+      slug: "tools-equipment",
     },
     {
       name: "Electrical",
@@ -67,6 +75,7 @@ const ProductCategories = () => {
       color: "from-indigo-500 to-indigo-600",
       borderColor: "border-indigo-500/30",
       textColor: "text-indigo-400",
+      slug: "electrical",
     },
     {
       name: "Brakes",
@@ -75,8 +84,13 @@ const ProductCategories = () => {
       color: "from-pink-500 to-pink-600",
       borderColor: "border-pink-500/30",
       textColor: "text-pink-400",
+      slug: "brakes",
     },
   ];
+
+  const handleCategoryClick = (slug: string) => {
+    router.push(`/category/${slug}`);
+  };
 
   return (
     <section id="categories" className="py-20 relative">
@@ -99,6 +113,7 @@ const ProductCategories = () => {
             return (
               <div
                 key={category.name}
+                onClick={() => handleCategoryClick(category.slug)}
                 className={`bg-gray-800/50 backdrop-blur-sm border ${category.borderColor} hover:bg-gray-700/50 transition-all duration-300 cursor-pointer group animate-fade-in`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
