@@ -1,28 +1,20 @@
 // app/category/[categoryName]/page.tsx
 
-import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryClient from "@/components/CategoryClient";
-import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
 
-interface PageProps {
-  params: {
-    categoryName: string;
-  };
-}
-
-// 🔧 FIXED: added `async`
-const CategoryPage = async ({ params }: PageProps) => {
+// ✅ Use this exact signature — inline the type!
+export default async function CategoryPage({
+  params,
+}: {
+  params: { categoryName: string };
+}) {
   return (
     <>
       <Header />
-      <Suspense fallback={<LoadingSpinner />}>
-        <CategoryClient categoryName={params.categoryName} />
-      </Suspense>
+      <CategoryClient categoryName={params.categoryName} />
       <Footer />
     </>
   );
-};
-
-export default CategoryPage;
+}
