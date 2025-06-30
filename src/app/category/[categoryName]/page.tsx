@@ -406,15 +406,3 @@ const CategoryPage: FC<CategoryPageProps> = ({ params }) => {
 };
 
 export default CategoryPage;
-export async function generateStaticParams() {
-  return [
-    { categoryName: "engine-parts" },
-    { categoryName: "exhaust-systems" },
-    { categoryName: "suspension" },
-    { categoryName: "electronics" },
-    { categoryName: "body-parts" },
-    { categoryName: "tools-equipment" },
-    { categoryName: "electrical" },
-    { categoryName: "brakes" },
-  ];
-}
