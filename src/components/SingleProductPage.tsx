@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -20,37 +20,37 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedImage, setSelectedImage] = useState<number>(0);
 
-  //   const product = {
-  //     id: productId,
-  //     name: "Racing Brake Pads",
-  //     price: 199.99,
-  //     originalPrice: 249.99,
-  //     rating: 4.8,
-  //     reviews: 178,
-  //     category: "Brakes",
-  //     description:
-  //       "High-performance racing brake pads designed for maximum stopping power and durability. Perfect for track days and aggressive street driving.",
-  //     features: [
-  //       "Superior heat dissipation",
-  //       "Extended pad life",
-  //       "Reduced brake fade",
-  //       "Compatible with most brake systems",
-  //       "Professional grade compound",
-  //     ],
-  //     specifications: {
-  //       Material: "Ceramic composite",
-  //       "Temperature Range": "-40°C to 650°C",
-  //       Compatibility: "Universal fit",
-  //       Warranty: "2 years",
-  //     },
-  //     images: [
-  //       "bg-gradient-to-br from-purple-500 to-purple-700",
-  //       "bg-gradient-to-br from-purple-400 to-purple-600",
-  //       "bg-gradient-to-br from-purple-600 to-purple-800",
-  //     ],
-  //     inStock: true,
-  //     stockCount: 15,
-  //   };
+  const product = {
+    id: 0,
+    name: "Racing Brake Pads",
+    price: 199.99,
+    originalPrice: 249.99,
+    rating: 4.8,
+    reviews: 178,
+    category: "Brakes",
+    description:
+      "High-performance racing brake pads designed for maximum stopping power and durability. Perfect for track days and aggressive street driving.",
+    features: [
+      "Superior heat dissipation",
+      "Extended pad life",
+      "Reduced brake fade",
+      "Compatible with most brake systems",
+      "Professional grade compound",
+    ],
+    specifications: {
+      Material: "Ceramic composite",
+      "Temperature Range": "-40°C to 650°C",
+      Compatibility: "Universal fit",
+      Warranty: "2 years",
+    },
+    images: [
+      "bg-gradient-to-br from-purple-500 to-purple-700",
+      "bg-gradient-to-br from-purple-400 to-purple-600",
+      "bg-gradient-to-br from-purple-600 to-purple-800",
+    ],
+    inStock: true,
+    stockCount: 15,
+  };
   const products = [
     {
       id: "racing-brake-pads",
@@ -224,17 +224,21 @@ const ProductPage = () => {
     },
   ];
   const handleQuantityChange = (delta: number) => {
-    setQuantity(Math.max(1, Math.min(products.stockCount, quantity + delta)));
+    setQuantity(Math.max(1, Math.min(product.stockCount, quantity + delta)));
   };
 
-  const product = useMemo(
-    () =>
-      products.find(
-        (p) =>
+  useEffect(() => {
+    if (!params) {
+      return;
+    }
+    const products = () => {
+      return products.find(
+        (p: any) =>
           p.title.toLowerCase() === decodeURIComponent(params).toLowerCase()
-      ),
-    []
-  );
+      );
+    };
+  }, [params]);
+
   if (!product) {
     return (
       <div className="min-h-screen bg-black text-white p-12">
