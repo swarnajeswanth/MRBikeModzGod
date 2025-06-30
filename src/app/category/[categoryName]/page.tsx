@@ -9,7 +9,7 @@ interface PageProps {
   };
 }
 
-export default function CategoryPage({ params }: PageProps) {
+export default function CategoryPage({ params }: any) {
   return (
     <>
       <Header />
