@@ -12,7 +12,8 @@ interface PageProps {
   };
 }
 
-const CategoryPage = ({ params }: PageProps) => {
+// 🔧 FIXED: added `async`
+const CategoryPage = async ({ params }: PageProps) => {
   return (
     <>
       <Header />
