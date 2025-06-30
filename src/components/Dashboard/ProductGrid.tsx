@@ -213,7 +213,11 @@ const ProductCarousel: React.FC = () => {
   const x = centerOffset - activeIndex * totalSlideWidth;
 
   return (
-    <div className="scroll-container" ref={containerRef}>
+    <div
+      className="scroll-container"
+      ref={containerRef}
+      style={{ color: "#fff" }}
+    >
       <button
         className={`scroll-button left ${activeIndex === 0 ? "disabled" : ""}`}
         onClick={prev}
