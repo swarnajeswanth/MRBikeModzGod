@@ -109,6 +109,13 @@ const RetailerDashboard: React.FC = () => {
     currentPage * itemsPerPage
   );
 
+  const handleEdit = (p) => {
+    console.log("Edit product:", e);
+  };
+  const handleDelete = (p) => {
+    console.log("Edit product:", e);
+  };
+
   const handleAddProduct = (newProduct: ProductForm) => {
     const formatted = {
       name: newProduct.name,
