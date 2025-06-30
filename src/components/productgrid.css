@@ -1,0 +1,23 @@
+.product-grid {
+  display: flex;
+  width: 80vw;
+
+  margin: 0 -30px;
+  padding: 20px 0px;
+  background: #0f172a;
+  /* overflow: hidden; */
+}
+.product-grid > * {
+  flex: 1;
+  margin: 0 10px;
+  min-width: 250px;
+  max-width: 350px;
+}
+
+@media (min-width: 924px) {
+  .product-grid {
+    gap: 2px;
+    padding: 40px 60px;
+    justify-content: flex-start;
+  }
+}
