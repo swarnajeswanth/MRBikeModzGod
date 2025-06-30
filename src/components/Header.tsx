@@ -1,12 +1,10 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Menu, X, Phone, Mail } from "lucide-react";
 // import { Button } from "@*/components/ui/button"4;
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const navigation = [
     { name: "Home", href: "#" },

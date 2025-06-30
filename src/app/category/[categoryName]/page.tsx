@@ -10,7 +10,7 @@ interface PageProps {
 }
 
 export default function CategoryPage({ params: any }: any) {
-  let categoryname: string = "center";
+  const categoryname: string = "center";
   return (
     <>
       <Header />

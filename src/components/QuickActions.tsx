@@ -1,8 +1,8 @@
 import { FaUser, FaMapMarkerAlt, FaCreditCard } from "react-icons/fa";
-
+import { ReactNode } from "react";
 type Action = {
   label: string;
-  icon: JSX.Element;
+  icon: ReactNode;
 };
 
 const actions: Action[] = [
