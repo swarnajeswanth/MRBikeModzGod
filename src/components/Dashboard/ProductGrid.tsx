@@ -232,7 +232,18 @@ const ProductCarousel: React.FC = () => {
               idx === activeIndex ? "card-wrapper active" : "card-wrapper"
             }
           >
-            <ProductCard {...p} />
+            <ProductCard
+              label={p.label}
+              labelType={p.labelType}
+              backgroundColor={p.backgroundColor}
+              category={p.category}
+              title={p.title}
+              rating={p.rating}
+              reviews={p.reviews}
+              price={p.price}
+              originalPrice={p.originalPrice}
+              discount={p.discount}
+            />
           </div>
         ))}
       </div>

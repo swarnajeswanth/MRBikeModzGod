@@ -1,5 +1,7 @@
+// components/CategoryClient.tsx
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Cog,
   Zap,
@@ -13,12 +15,10 @@ import {
   ShoppingCart,
   ArrowLeft,
 } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { useRouter } from "next/navigation";
 
-import { FC } from "react";
-
+interface Props {
+  categoryName: string;
+}
 const categoryData = {
   "engine-parts": {
     name: "Engine Parts",
@@ -265,14 +265,9 @@ const sampleProducts = {
   ],
 };
 
-interface Props {
-  categoryName: string;
-}
-
 export default function CategoryClient({ categoryName }: Props) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-
   const currentCategory =
     categoryData[categoryName as keyof typeof categoryData];
   const products =
@@ -280,15 +275,13 @@ export default function CategoryClient({ categoryName }: Props) {
 
   if (!currentCategory) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black">
+      <div className="min-h-screen bg-black">
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">
-              Category Not Found
-            </h1>
+          <div className="text-center text-white">
+            <h1 className="text-4xl mb-4">Category Not Found</h1>
             <button
               onClick={() => router.back()}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
+              className="bg-red-600 hover:bg-red-700 py-2 px-4 rounded"
             >
               Go Back
             </button>
@@ -299,10 +292,9 @@ export default function CategoryClient({ categoryName }: Props) {
   }
 
   const Icon = currentCategory.icon;
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black">
       <section className="py-16 relative">

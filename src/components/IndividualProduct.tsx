@@ -4,7 +4,8 @@ import { FaShoppingCart, FaStar } from "react-icons/fa";
 
 interface ProductCardProps {
   label?: string;
-  labelType?: "sale" | "premium";
+  labelType?: string;
+
   backgroundColor: string;
   category: string;
   title: string;

@@ -1,9 +1,10 @@
 import { FaShoppingBag, FaHeart, FaBox, FaCreditCard } from "react-icons/fa";
+import { ReactNode } from "react";
 
 type StatCard = {
   label: string;
   value: string | number;
-  icon: JSX.Element;
+  icon: ReactNode;
 };
 
 const stats: StatCard[] = [
@@ -47,4 +48,3 @@ const DashboardStats: React.FC = () => {
 };
 
 export default DashboardStats;
-//       </div>
