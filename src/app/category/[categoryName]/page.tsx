@@ -4,13 +4,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryClient from "@/components/CategoryClient";
 
-interface PageProps {
+interface CategoryPageProps {
   params: {
     categoryName: string;
   };
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+// ✅ make the component async to satisfy the expected return type
+export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <>
       <Header />
