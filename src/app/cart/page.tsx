@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import {
   Minus,
   Plus,
@@ -78,98 +76,99 @@ const Cart = () => {
         </div>
 
         {cartItems.length === 0 ? (
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-            <div className="p-8 sm:p-12 text-center">
-              <ShoppingCart className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                Your cart is empty
-              </h2>
-              <p className="text-gray-400 mb-6">
-                Add some products to get started
-              </p>
-              <Button className="bg-red-600 hover:bg-red-700">
-                Continue Shopping
-              </Button>
-            </div>
-          </Card>
+        //   <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+        //     <div className="p-8 sm:p-12 text-center">
+        //       <ShoppingCart className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+        //       <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+        //         Your cart is empty
+        //       </h2>
+        //       <p className="text-gray-400 mb-6">
+        //         Add some products to get started
+        //       </p>
+        //       <Button className="bg-red-600 hover:bg-red-700">
+        //         Continue Shopping
+        //       </Button>
+        //     </div>
+        //   </Card>
+        <></>
         ) : (
           <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item) => (
-                <Card
-                  key={item.id}
-                  className="bg-gray-800/50 backdrop-blur-sm border-gray-700"
-                >
-                  <div className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      {/* Product Image */}
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
-                      </div>
+                // <Card
+                //   key={item.id}
+                //   className="bg-gray-800/50 backdrop-blur-sm border-gray-700"
+                // >
+                //   <div className="p-4 sm:p-6">
+                //     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                //       {/* Product Image */}
+                //       <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                //         <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
+                //       </div>
 
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-lg truncate">
-                          {item.name}
-                        </h3>
-                        <p className="text-gray-400 text-sm">{item.category}</p>
-                        <p className="text-red-400 font-bold text-lg">
-                          ${item.price.toFixed(2)}
-                        </p>
-                      </div>
+                //       {/* Product Details */}
+                //       <div className="flex-1 min-w-0">
+                //         <h3 className="text-white font-semibold text-lg truncate">
+                //           {item.name}
+                //         </h3>
+                //         <p className="text-gray-400 text-sm">{item.category}</p>
+                //         <p className="text-red-400 font-bold text-lg">
+                //           ${item.price.toFixed(2)}
+                //         </p>
+                //       </div>
 
-                      {/* Controls - Mobile Layout */}
-                      <div className="flex items-center justify-between w-full sm:w-auto gap-4">
-                        {/* Quantity Controls */}
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-gray-600 text-gray-300 h-8 w-8 p-0 flex-shrink-0"
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
-                            }
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
+                //       {/* Controls - Mobile Layout */}
+                //       <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                //         {/* Quantity Controls */}
+                //         <div className="flex items-center space-x-2 sm:space-x-3">
+                //           <Button
+                //             size="sm"
+                //             variant="outline"
+                //             className="border-gray-600 text-gray-300 h-8 w-8 p-0 flex-shrink-0"
+                //             onClick={() =>
+                //               updateQuantity(item.id, item.quantity - 1)
+                //             }
+                //           >
+                //             <Minus className="h-4 w-4" />
+                //           </Button>
 
-                          <span className="text-white font-medium w-8 text-center">
-                            {item.quantity}
-                          </span>
+                //           <span className="text-white font-medium w-8 text-center">
+                //             {item.quantity}
+                //           </span>
 
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-gray-600 text-gray-300 h-8 w-8 p-0 flex-shrink-0"
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
-                            }
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                //           <Button
+                //             size="sm"
+                //             variant="outline"
+                //             className="border-gray-600 text-gray-300 h-8 w-8 p-0 flex-shrink-0"
+                //             onClick={() =>
+                //               updateQuantity(item.id, item.quantity + 1)
+                //             }
+                //           >
+                //             <Plus className="h-4 w-4" />
+                //           </Button>
+                //         </div>
 
-                        {/* Remove Button */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-red-600 text-red-400 hover:bg-red-600/20 h-8 px-3"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+                //         {/* Remove Button */}
+                //         <Button
+                //           size="sm"
+                //           variant="outline"
+                //           className="border-red-600 text-red-400 hover:bg-red-600/20 h-8 px-3"
+                //           onClick={() => removeItem(item.id)}
+                //         >
+                //           <Trash2 className="h-4 w-4" />
+                //         </Button>
+                //       </div>
+                //     </div>
+                //   </div>
+                // </Card>
               ))}
             </div>
 
             {/* Order Summary */}
             <div className="space-y-6">
               {/* Promo Code */}
-              <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              {/* <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
                 <div className="p-4 sm:p-6">
                   <h3 className="text-white font-semibold mb-4 flex items-center">
                     <Tag className="h-5 w-5 mr-2" />
@@ -190,10 +189,10 @@ const Cart = () => {
                     </Button>
                   </div>
                 </div>
-              </Card>
+              </Card> */}
 
               {/* Order Summary */}
-              <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              {/* <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
                 <div className="p-4 sm:p-6">
                   <h3 className="text-white font-semibold mb-4">
                     Order Summary
@@ -228,15 +227,15 @@ const Cart = () => {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </div>
-              </Card>
+              </Card> */}
 
               {/* Continue Shopping */}
-              <Button
+              {/* <Button
                 variant="outline"
                 className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
               >
                 Continue Shopping
-              </Button>
+              </Button> */}
             </div>
           </div>
         )}
