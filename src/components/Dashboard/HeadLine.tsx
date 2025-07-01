@@ -39,7 +39,7 @@ const Headline = () => {
     ));
 
   return (
-    <div ref={headingRef}>
+    <div ref={headingRef} className="block">
       <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
         {wrapChars("Upgrade Your", "upgrade")}
         <br />

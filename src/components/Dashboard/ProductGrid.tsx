@@ -220,7 +220,7 @@ const ProductCarousel: React.FC = () => {
         onClick={prev}
       >
         {" "}
-        <ChevronLeft size={28} />{" "}
+        <ChevronLeft size={28} className="text-white" />{" "}
       </button>
       <div
         className="product-grid-scrollable"
@@ -257,7 +257,7 @@ const ProductCarousel: React.FC = () => {
         onClick={next}
       >
         {" "}
-        <ChevronRight size={28} />{" "}
+        <ChevronRight size={28} className="text-white" />{" "}
       </button>
     </div>
   );

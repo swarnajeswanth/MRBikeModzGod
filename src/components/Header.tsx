@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Menu, X, Phone, Mail } from "lucide-react";
+import Link from "next/link";
 // import { Button } from "@*/components/ui/button"4;
 
 const Header = () => {
@@ -12,6 +13,9 @@ const Header = () => {
     { name: "Categories", href: "#categories" },
     { name: "About", href: "#about" },
     { name: "Contact", href: "#contact" },
+    { name: "Login", href: "/auth" },
+    { name: "Retailer_Dashboard ", href: "/retailer-dashboard" },
+    { name: "Customer_Dashboard", href: "/customer-dashboard" },
   ];
 
   return (
@@ -53,13 +57,13 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className="text-gray-300 hover:text-red-400 transition-colors duration-200 font-medium"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -99,14 +103,14 @@ const Header = () => {
         <div className="md:hidden bg-black/95 backdrop-blur-sm border-t border-red-600/20">
           <div className="px-4 pt-4 pb-6 space-y-3">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className="block text-gray-300 hover:text-red-400 transition-colors duration-200 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </div>
         </div>

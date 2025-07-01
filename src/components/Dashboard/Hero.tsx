@@ -4,6 +4,7 @@ import ShopNowButton from "./ShopNowButton";
 import Headline from "./HeadLine";
 import AllProductsPage from "../AllProducts";
 import ProductPage from "@/components/SingleProductPage";
+import AuthPage from "../AuthPage";
 const Hero = () => {
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
