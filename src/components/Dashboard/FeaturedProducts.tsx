@@ -75,10 +75,10 @@ const FeaturedProducts = () => {
   // ];
   const Router = useRouter();
   return (
-    <section id="products" className="py-20 bg-gray-900/50">
+    <section id="products" className="py-5 bg-gray-900/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8">
           <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
             Featured Products
           </h2>
@@ -96,7 +96,7 @@ const FeaturedProducts = () => {
         {/* View All button */}
         <div className="text-center mt-12">
           <button
-            className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white px-8 py-3"
+            className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white px-8 py-1"
             onClick={() => Router.push("/product/allproducts")}
           >
             View All Products

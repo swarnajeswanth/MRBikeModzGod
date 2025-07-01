@@ -5,6 +5,8 @@ import Headline from "./HeadLine";
 import AllProductsPage from "../AllProducts";
 import ProductPage from "@/components/SingleProductPage";
 import AuthPage from "../AuthPage";
+import OrderButton from "../Loaders/OrderConfirm";
+import TypingText from "../Loaders/LiveTyping";
 const Hero = () => {
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
@@ -17,7 +19,7 @@ const Hero = () => {
           {/* Content */}
           <div className="space-y-8">
             <div className="space-y-4">
-              <div className="inline-flex items-center bg-red-600/20 text-red-400 px-4 py-2 rounded-full text-sm font-medium">
+              <div className="inline-flex items-center bg-red-600/20 text-red-400 px-4 py-2 rounded-full text-sm font-medium animate-pulse">
                 <Zap className="h-4 w-4 mr-2" />
                 Premium Auto Performance Parts
               </div>
@@ -86,8 +88,12 @@ const Hero = () => {
           </div>
         </div>
       </div>
+      <OrderButton />
     </section>
   );
 };
+
+
+
 
 export default Hero;
