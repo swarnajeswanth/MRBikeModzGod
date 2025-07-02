@@ -33,12 +33,8 @@ const Hero = () => {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 ">
               <ShopNowButton />
-
-              <button className=" bg-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 text-lg">
-                View Catalog
-              </button>
             </div>
 
             {/* Stats */}

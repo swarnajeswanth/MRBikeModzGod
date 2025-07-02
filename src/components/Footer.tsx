@@ -53,7 +53,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-black border-t border-gray-800">
+    <footer id="footer" className="bg-black border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-16">

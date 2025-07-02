@@ -4,6 +4,7 @@ import ProductCategories from "@/components/Dashboard/ProductCategories";
 import FeaturedProducts from "@/components/Dashboard/FeaturedProducts";
 import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
+import ReviewPage from "@/components/Reviews/ReviewPage";
 
 const Index = () => {
   return (
@@ -12,6 +13,7 @@ const Index = () => {
       <Hero />
       <FeaturedProducts />
       <ProductCategories />
+      <ReviewPage />
       <Footer />
     </div>
   );
