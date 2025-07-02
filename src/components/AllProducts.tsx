@@ -5,6 +5,8 @@ import { Star, ShoppingCart, Filter, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
+import AddToCartButton from "./Cart/AddToCart";
+import { FaRegHeart, FaHeart } from "react-icons/fa";
 
 // Mock products data
 const allProducts = [
@@ -101,6 +103,16 @@ const AllProductsPage = () => {
   });
   const [promoCode, setPromoCode] = useState("");
   const router = useRouter();
+  const [wishlist, setWishlist] = useState<{ [productId: string]: boolean }>(
+    {}
+  );
+
+  const toggleWishlist = (productId: string) => {
+    setWishlist((prev) => ({
+      ...prev,
+      [productId]: !prev[productId],
+    }));
+  };
 
   const filterProducts = () => {
     let filtered = [...allProducts];
@@ -255,7 +267,6 @@ const AllProductsPage = () => {
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              onClick={() => router.push(`/product/${product.id}`)}
               className="bg-gray-800/50 border border-gray-700 hover:border-red-500/30 transition-all duration-300 rounded-lg overflow-hidden cursor-pointer"
             >
               <div
@@ -266,13 +277,28 @@ const AllProductsPage = () => {
                 >
                   {product.badge}
                 </span>
+
+                <button
+                  className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                  onClick={() => toggleWishlist(product.id)}
+                >
+                  {wishlist[product.id] ? (
+                    <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
+                  ) : (
+                    <FaRegHeart className="w-5 h-5 text-white" />
+                  )}
+                </button>
+
                 <div className="text-white text-6xl font-bold opacity-20">
                   {product.name.charAt(0)}
                 </div>
               </div>
 
               <div className="p-4">
-                <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+                <h3
+                  className="text-lg font-semibold text-white mb-2 line-clamp-2"
+                  onClick={() => router.push(`/product/${product.id}`)}
+                >
                   {product.name}
                 </h3>
                 <div className="flex items-center mb-3">
@@ -314,12 +340,7 @@ const AllProductsPage = () => {
                   )}
                 </div>
 
-                <button
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded flex items-center justify-center"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
-                </button>
+                <AddToCartButton />
               </div>
             </div>
           ))}

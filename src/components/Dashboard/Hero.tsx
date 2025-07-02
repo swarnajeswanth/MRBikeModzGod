@@ -6,6 +6,7 @@ import AllProductsPage from "../AllProducts";
 import ProductPage from "@/components/SingleProductPage";
 import AuthPage from "../AuthPage";
 import OrderButton from "../Loaders/OrderConfirm";
+import AddToCartButton from "../Cart/AddToCart";
 
 const Hero = () => {
   return (
