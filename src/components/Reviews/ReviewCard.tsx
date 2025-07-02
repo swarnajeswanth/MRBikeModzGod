@@ -1,5 +1,5 @@
 import React from "react";
-import { Review } from "@/components/Reviews/ReviewCard";
+import { Review } from "@/components/store/ReviewSlice";
 
 interface ReviewCardProps {
   review: Review;
