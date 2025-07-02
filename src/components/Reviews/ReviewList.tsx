@@ -1,6 +1,11 @@
-import React from "react";
+"use client";
+import React, { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Review } from "@/components/store/ReviewSlice";
 import ReviewCard from "./ReviewCard";
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface ReviewsListProps {
   reviews: Review[];
@@ -19,8 +24,39 @@ const ReviewsList: React.FC<ReviewsListProps> = ({
   onClearFilter,
   currentFilter,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const elements = containerRef.current?.querySelectorAll(".review-card");
+    if (!elements) return;
+
+    elements.forEach((el, index) => {
+      gsap.fromTo(
+        el,
+        {
+          opacity: 0,
+          y: 50,
+          scale: 0.95,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          delay: index * 0.05,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+    });
+  }, [reviews]);
+
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       {/* Header & Sorting */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-white">Customer Reviews</h2>
@@ -64,10 +100,12 @@ const ReviewsList: React.FC<ReviewsListProps> = ({
         )}
       </div>
 
-      {/* Review Cards */}
+      {/* Review Cards with GSAP animation */}
       <div className="space-y-4">
         {reviews.map((review) => (
-          <ReviewCard key={review.id} review={review} onDelete={onDelete} />
+          <div key={review.id} className="review-card">
+            <ReviewCard review={review} onDelete={onDelete} />
+          </div>
         ))}
       </div>
 

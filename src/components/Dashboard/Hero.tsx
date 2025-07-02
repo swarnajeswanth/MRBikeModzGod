@@ -1,14 +1,65 @@
-// import { button } from "@/components/ui/button";
-import { ArrowRight, Zap } from "lucide-react";
+"use client";
+
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { Zap } from "lucide-react";
 import ShopNowButton from "./ShopNowButton";
 import Headline from "./HeadLine";
-import AllProductsPage from "../AllProducts";
-import ProductPage from "@/components/SingleProductPage";
-import AuthPage from "../AuthPage";
-import OrderButton from "../Loaders/OrderConfirm";
-import AddToCartButton from "../Cart/AddToCart";
 
 const Hero = () => {
+  const leftRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement[]>([]);
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+
+    // Animate left content
+    gsap.fromTo(
+      leftRef.current,
+      { x: -100, opacity: 0 },
+      { x: 0, opacity: 1, duration: 1, ease: "power2.out" }
+    );
+
+    // Animate container on right
+    gsap.fromTo(
+      rightRef.current,
+      { x: 100, opacity: 0 },
+      { x: 0, opacity: 1, duration: 1, ease: "power2.out", delay: 0.3 }
+    );
+
+    if (isMobile) {
+      // Mobile: Cards come from left with scale and stagger
+      gsap.fromTo(
+        cardsRef.current,
+        { x: -50, scale: 0, opacity: 0 },
+        {
+          x: 0,
+          scale: 1,
+          opacity: 1,
+          stagger: 0.2,
+          duration: 0.6,
+          ease: "back.out(1.7)",
+          delay: 0.5,
+        }
+      );
+    } else {
+      // Desktop: Only scale + fade stagger
+      gsap.fromTo(
+        cardsRef.current,
+        { scale: 0.8, opacity: 0 },
+        {
+          scale: 1,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.5,
+          ease: "power2.out",
+          delay: 0.5,
+        }
+      );
+    }
+  }, []);
+
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
       {/* Background Effects */}
@@ -17,8 +68,8 @@ const Hero = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <div className="space-y-8">
+          {/* LEFT Side */}
+          <div className="space-y-8" ref={leftRef}>
             <div className="space-y-4">
               <div className="inline-flex items-center bg-red-600/20 text-red-400 px-4 py-2 rounded-full text-sm font-medium animate-pulse">
                 <Zap className="h-4 w-4 mr-2" />
@@ -33,7 +84,7 @@ const Hero = () => {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 ">
+            <div className="flex flex-col sm:flex-row gap-4">
               <ShopNowButton />
             </div>
 
@@ -54,32 +105,43 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Visual Element */}
-          <div className="relative">
+          {/* RIGHT Side Cards */}
+          <div className="relative" ref={rightRef}>
             <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 shadow-2xl border border-gray-700">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-red-600/20 rounded-lg p-4 border border-red-600/30">
-                  <div className="text-red-400 font-semibold">Engine Parts</div>
-                  <div className="text-gray-300 text-sm mt-1">
-                    High Performance
+                {[
+                  {
+                    color: "red",
+                    title: "Engine Parts",
+                    desc: "High Performance",
+                  },
+                  {
+                    color: "blue",
+                    title: "Suspension",
+                    desc: "Premium Quality",
+                  },
+                  { color: "green", title: "Exhaust", desc: "Custom Tuned" },
+                  {
+                    color: "purple",
+                    title: "Electronics",
+                    desc: "Latest Tech",
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={item.title}
+                    ref={(el) => {
+                      if (el) cardsRef.current[index] = el;
+                    }}
+                    className={`bg-${item.color}-600/20 rounded-lg p-4 border border-${item.color}-600/30 transform transition-transform duration-300 hover:scale-105`}
+                  >
+                    <div className={`text-${item.color}-400 font-semibold`}>
+                      {item.title}
+                    </div>
+                    <div className="text-gray-300 text-sm mt-1">
+                      {item.desc}
+                    </div>
                   </div>
-                </div>
-                <div className="bg-blue-600/20 rounded-lg p-4 border border-blue-600/30">
-                  <div className="text-blue-400 font-semibold">Suspension</div>
-                  <div className="text-gray-300 text-sm mt-1">
-                    Premium Quality
-                  </div>
-                </div>
-                <div className="bg-green-600/20 rounded-lg p-4 border border-green-600/30">
-                  <div className="text-green-400 font-semibold">Exhaust</div>
-                  <div className="text-gray-300 text-sm mt-1">Custom Tuned</div>
-                </div>
-                <div className="bg-purple-600/20 rounded-lg p-4 border border-purple-600/30">
-                  <div className="text-purple-400 font-semibold">
-                    Electronics
-                  </div>
-                  <div className="text-gray-300 text-sm mt-1">Latest Tech</div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
