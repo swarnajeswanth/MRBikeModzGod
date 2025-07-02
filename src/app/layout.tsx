@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "./provider";
+import LoadingOverlay from "@/components/Loaders/LoadingSpinner"; // ✅ Add this
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,8 +26,11 @@ export default function RootLayout({
 }) {
   return (
     <html>
-      <body>
-        <ReduxProvider>{children}</ReduxProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ReduxProvider>
+          <LoadingOverlay /> {/* ✅ Show full-app loading indicator */}
+          {children}
+        </ReduxProvider>
       </body>
     </html>
   );

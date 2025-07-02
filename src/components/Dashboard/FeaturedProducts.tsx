@@ -4,6 +4,11 @@
 "use client";
 import ProductGrid from "@/components/Dashboard/ProductGrid";
 import { useRouter } from "next/navigation";
+
+import { useDispatch } from "react-redux";
+import { startLoading, stopLoading } from "@/components/store/LoadingSlice"; // Adjust path if needed
+import { useTransition } from "react";
+
 const FeaturedProducts = () => {
   // const products = [
   //   {
@@ -73,7 +78,22 @@ const FeaturedProducts = () => {
   //     badgeColor: "bg-yellow-600",
   //   },
   // ];
-  const Router = useRouter();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const [isPending, startTransition] = useTransition();
+
+  const handleAllClick = () => {
+    dispatch(startLoading());
+    startTransition(() => {
+      router.push(`/product/allproducts`);
+      // stopLoading should ideally happen after route load
+      // but for now we simulate delay if needed
+      setTimeout(() => {
+        dispatch(stopLoading());
+      }, 800); // adjust if your route loads slowly
+    });
+  };
+
   return (
     <section id="products" className="py-5 bg-gray-900/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,7 +117,9 @@ const FeaturedProducts = () => {
         <div className="text-center mt-12">
           <button
             className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white px-8 py-1"
-            onClick={() => Router.push("/product/allproducts")}
+            onClick={() => {
+              handleAllClick();
+            }}
           >
             View All Products
           </button>

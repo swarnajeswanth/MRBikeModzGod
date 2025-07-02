@@ -11,7 +11,27 @@ import {
   Disc,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+import { useDispatch } from "react-redux";
+import { startLoading, stopLoading } from "@/components/store/LoadingSlice"; // Adjust path if needed
+import { useTransition } from "react";
+
 const ProductCategories = () => {
+  const [isPending, startTransition] = useTransition();
+
+  const handleCategoryClick = (slug: string) => {
+    dispatch(startLoading());
+    startTransition(() => {
+      router.push(`/category/${slug}`);
+      // stopLoading should ideally happen after route load
+      // but for now we simulate delay if needed
+      setTimeout(() => {
+        dispatch(stopLoading());
+      }, 800); // adjust if your route loads slowly
+    });
+  };
+
+  const dispatch = useDispatch();
   const router = useRouter();
   const categories = [
     {
@@ -87,10 +107,6 @@ const ProductCategories = () => {
       slug: "brakes",
     },
   ];
-
-  const handleCategoryClick = (slug: string) => {
-    router.push(`/category/${slug}`);
-  };
 
   return (
     <section id="categories" className="py-6 relative">
