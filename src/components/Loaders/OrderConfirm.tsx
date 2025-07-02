@@ -19,7 +19,9 @@ const OrderButton: React.FC = () => {
     setIsAnimating(true);
 
     const tl = gsap.timeline({
-      onComplete: () => setTimeout(() => setIsAnimating(false), 2000),
+      onComplete: () => {
+        setTimeout(() => setIsAnimating(false), 2000);
+      },
     });
 
     tl.set(checkmarkRef.current, { strokeDashoffset: 16 });

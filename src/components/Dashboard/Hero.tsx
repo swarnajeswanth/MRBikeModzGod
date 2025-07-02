@@ -6,7 +6,7 @@ import AllProductsPage from "../AllProducts";
 import ProductPage from "@/components/SingleProductPage";
 import AuthPage from "../AuthPage";
 import OrderButton from "../Loaders/OrderConfirm";
-import TypingText from "../Loaders/LiveTyping";
+
 const Hero = () => {
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
@@ -92,8 +92,5 @@ const Hero = () => {
     </section>
   );
 };
-
-
-
 
 export default Hero;
