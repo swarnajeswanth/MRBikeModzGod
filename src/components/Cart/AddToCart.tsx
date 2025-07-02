@@ -13,8 +13,8 @@ export default function AddToCartButton() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const shirtRef = useRef<HTMLDivElement>(null);
   const cartRef = useRef<HTMLDivElement>(null);
-  const tickRef = useRef<SVGPathElement>(null);
-  const crossRef = useRef<SVGPathElement>(null);
+  const tickRef = useRef<SVGSVGElement>(null);
+  const crossRef = useRef<SVGSVGElement>(null);
   const shirtPathRef = useRef<SVGPathElement>(null);
   const addTextRef = useRef<HTMLSpanElement>(null);
   const staticCartRef = useRef<SVGSVGElement>(null);
@@ -171,7 +171,7 @@ export default function AddToCartButton() {
     <button
       ref={buttonRef}
       onClick={handleClick}
-      className="mt-3 bg-red-500 text-white px-4 py-2 w-full border-none font-bold rounded-md cursor-pointer flex justify-center items-center gap-1.5 relative text-sm overflow-hidden "
+      className="add-to-cart relative w-44 py-3 rounded bg-white text-black font-semibold text-sm overflow-hidden flex items-center justify-center gap-2"
     >
       {/* Static Cart Icon */}
       <svg
@@ -230,7 +230,7 @@ export default function AddToCartButton() {
       {/* Tick */}
       <svg
         ref={tickRef}
-        className={`absolute right-2 top-2 w-5 h-5 text-green-600 opacity-0 pointer-events-none ${
+        className={`absolute right-2 top-2 w-5 h-5 text-white opacity-0 pointer-events-none ${
           showCross ? "hidden" : ""
         }`}
         viewBox="0 0 24 24"
@@ -250,7 +250,7 @@ export default function AddToCartButton() {
       >
         <svg
           ref={crossRef}
-          className="w-5 h-5 text-red-600 pointer-events-auto"
+          className="w-5 h-5 text-white pointer-events-auto"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
