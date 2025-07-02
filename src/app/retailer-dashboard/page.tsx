@@ -12,6 +12,10 @@ import {
 import AddProductModal, {
   ProductForm,
 } from "@/components/Profile/AddProductModal"; // adjust path if needed
+import { useSelector } from "react-redux";
+import { selectAllProducts } from "@/components/store/productSlice"; // adjust path if needed
+import { useDispatch } from "react-redux";
+import { updateProduct } from "@/components/store/productSlice";
 
 const summaryCards = [
   {
@@ -36,72 +40,39 @@ const summaryCards = [
   },
 ];
 
-const products = [
-  {
-    name: "Performance Air Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-  {
-    name: "Performance Air Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-  {
-    name: "Performance Air Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-  {
-    name: "Performance Air Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-  {
-    name: "Performance Air Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-  {
-    name: "Performance Air Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-  {
-    name: "Performance kumar Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-  {
-    name: "Performance harsh Filter",
-    category: "Engine Parts",
-    price: "$89.99",
-    stock: 25,
-  },
-];
-
 const RetailerDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 4;
+  const products = useSelector(selectAllProducts);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const dispatch = useDispatch();
+  const [editProductId, setEditProductId] = useState<string | null>(null);
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState<ProductForm>({
     name: "",
+    title: "",
     category: "",
     price: "",
-    stock: "",
+    originalPrice: "",
+    discount: "",
+    stockCount: "",
+    inStock: true,
+    rating: "",
+    reviews: "",
     description: "",
+    features: [], // ✅ initialize as array
+    specifications: {}, // ✅ initialize as object
+    label: "",
+    labelType: "",
+    backgroundColor: "",
+    images: [], // ✅ initialize as array
   });
+
   const [productList, setProductList] = useState(products); // start with default products
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -110,24 +81,76 @@ const RetailerDashboard: React.FC = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
   const handleEdit = (product: any) => {
-    console.log("Edit product:", product);
+    setForm({
+      name: product.name || "",
+      title: product.title || "",
+      category: product.category || "",
+      price: product.price?.toString() || "",
+      originalPrice: product.originalPrice?.toString() || "",
+      discount: product.discount?.toString() || "",
+      stockCount: product.stockCount?.toString() || "0",
+      inStock: product.inStock ?? true,
+      rating: product.rating?.toString() || "",
+      reviews: product.reviews?.toString() || "",
+      description: product.description || "",
+      features: product.features || [],
+      specifications: product.specifications || {},
+      label: product.label || "",
+      labelType: product.labelType || "",
+      backgroundColor: product.backgroundColor || "",
+      images: product.images || [],
+    });
+
+    setEditProductId(product.id); // Track editing product
+    setIsModalOpen(true);
   };
 
   const handleDelete = (productName: string) => {
     console.log("Delete product:", productName);
   };
 
-  const handleAddProduct = (newProduct: ProductForm) => {
-    const formatted = {
-      name: newProduct.name,
-      category: newProduct.category,
-      price: `$${parseFloat(newProduct.price).toFixed(2)}`,
-      stock: parseInt(newProduct.stock),
+  const handleAddProduct = (formData: ProductForm) => {
+    const parsedProduct = {
+      ...formData,
+      id: editProductId ?? formData.name.toLowerCase().replace(/\s+/g, "-"),
+      price: parseFloat(formData.price),
+      originalPrice: parseFloat(formData.originalPrice),
+      rating: parseFloat(formData.rating),
+      reviews: parseInt(formData.reviews),
+      stockCount: parseInt(formData.stockCount),
     };
-    setProductList((prev) => [...prev, formatted]);
+
+    if (editProductId) {
+      dispatch(updateProduct(parsedProduct));
+    } else {
+      // You can dispatch(addProduct(parsedProduct)) if you have an `addProduct` action
+      console.log("Add product logic here", parsedProduct);
+    }
+
+    // Reset state
     setIsModalOpen(false);
-    setForm({ name: "", category: "", price: "", stock: "", description: "" }); // reset
+    setEditProductId(null);
+    setForm({
+      name: "",
+      title: "",
+      category: "",
+      price: "",
+      originalPrice: "",
+      discount: "",
+      stockCount: "",
+      inStock: true,
+      rating: "",
+      reviews: "",
+      description: "",
+      features: [],
+      specifications: {},
+      label: "",
+      labelType: "",
+      backgroundColor: "",
+      images: [],
+    });
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,7 +189,30 @@ const RetailerDashboard: React.FC = () => {
           <h2 className="text-xl font-bold">Product Management</h2>
           <button
             className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              // 🔑 Clear form and editing state
+              setEditProductId(null);
+              setForm({
+                name: "",
+                title: "",
+                category: "",
+                price: "",
+                originalPrice: "",
+                discount: "",
+                stockCount: "",
+                inStock: true,
+                rating: "",
+                reviews: "",
+                description: "",
+                features: [],
+                specifications: {},
+                label: "",
+                labelType: "",
+                backgroundColor: "",
+                images: [],
+              });
+              setIsModalOpen(true);
+            }}
           >
             <FaPlus />
             Add Product
@@ -184,74 +230,77 @@ const RetailerDashboard: React.FC = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto h-[338px] ">
-          <table className="w-full text-left text-sm relative">
-            <thead className="text-gray-400 border-b border-gray-700">
-              <tr>
-                <th className="py-2">Product Name</th>
-                <th className="py-2">Category</th>
-                <th className="py-2">Price</th>
-                <th className="py-2">Stock</th>
-                <th className="py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedProducts.map((p, i) => (
-                <tr key={i} className="border-b border-gray-800 ">
-                  <td className="py-3 font-semibold">{p.name}</td>
-                  <td>{p.category}</td>
-                  <td className="text-green-400">{p.price}</td>
-                  <td>{p.stock}</td>
-                  <td className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(p)}
-                      className="p-2 bg-white rounded"
-                    >
-                      <FaEdit className="text-black" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(p.name)}
-                      className="p-2 bg-red-600 rounded"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-center items-center gap-2 mt-4 absolute bottom-[-50px] right-[45%]  p-4">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
-              disabled={currentPage === 1}
-            >
-              Prev
-            </button>
-
-            {[...Array(totalPages)].map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === index + 1
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-700 text-gray-300"
-                }`}
+        <div className="overflow-x-auto h-[400px]   ">
+          {/* Product Card Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 relative">
+            {paginatedProducts.map((p, i) => (
+              <div
+                key={i}
+                className="bg-[#1e293b] p-4 rounded-lg shadow-md flex flex-col items-center text-center"
               >
-                {index + 1}
-              </button>
-            ))}
+                {/* Product Image (placeholder) */}
+                <div className="w-24 h-24 bg-gray-700 rounded-full mb-4 flex items-center justify-center text-white text-xl">
+                  IMG
+                </div>
 
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
+                {/* Product Details */}
+                <h3 className="text-lg font-semibold mb-1">{p.name}</h3>
+                <p className="text-sm text-gray-400 mb-1">{p.category}</p>
+                <p className="text-green-400 font-bold mb-1">{p.price}</p>
+                <p className="text-sm text-gray-300 mb-4">
+                  Stock: {p.stockCount}
+                </p>
+
+                {/* Actions */}
+                <div className="flex gap-2 mt-auto">
+                  <button
+                    onClick={() => handleEdit(p)}
+                    className="p-2 bg-white text-black rounded"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.name)}
+                    className="p-2 bg-red-600 text-white rounded"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-center items-center gap-2    absolute bottom-[-10%] lg:bottom-[-30%] lg:left-[40%] p-4 ">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                disabled={currentPage === 1}
+              >
+                Prev
+              </button>
+
+              {[...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === index + 1
+                      ? "bg-red-600 text-white"
+                      : "bg-gray-700 text-gray-300"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

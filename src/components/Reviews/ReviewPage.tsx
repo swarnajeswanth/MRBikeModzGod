@@ -1,68 +1,31 @@
 "use client";
-import React, { useState } from "react";
+
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/components/store";
+import {
+  addReview,
+  deleteReview,
+  sortReviews,
+  filterByRating,
+  clearFilter,
+} from "@/components/store/ReviewSlice";
+
 import ReviewsList from "@/components/Reviews/ReviewList";
 import ReviewForm from "@/components/Reviews/ReviewForm";
 
-export interface Review {
-  id: string;
-  username: string;
-  rating: number;
-  comment: string;
-  date: string;
-  verified: boolean;
-}
-
 const ReviewPage = () => {
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: "1",
-      username: "Mike Johnson",
-      rating: 5,
-      comment:
-        "Absolutely fantastic experience! The premium auto parts transformed my ride completely. Quality is top-notch and installation was smooth.",
-      date: "2024-06-15",
-      verified: true,
-    },
-    {
-      id: "2",
-      username: "Sarah Chen",
-      rating: 4,
-      comment:
-        "Great selection of performance parts. The exhaust system I ordered exceeded my expectations. Fast shipping and excellent customer service.",
-      date: "2024-06-10",
-      verified: true,
-    },
-    {
-      id: "3",
-      username: "Alex Rodriguez",
-      rating: 5,
-      comment:
-        "Been using their suspension components for months now. The difference in handling is incredible. Highly recommend for any serious car enthusiast.",
-      date: "2024-06-05",
-      verified: false,
-    },
-    {
-      id: "4",
-      username: "Jennifer Smith",
-      rating: 4,
-      comment:
-        "Electronics package was exactly what I needed. Latest tech integration worked flawlessly with my vehicle. Professional installation guide included.",
-      date: "2024-05-28",
-      verified: true,
-    },
-  ]);
+  const dispatch = useDispatch();
 
-  const addReview = (newReview: Omit<Review, "id" | "date">) => {
-    const review: Review = {
-      ...newReview,
-      id: Date.now().toString(),
-      date: new Date().toISOString().split("T")[0],
-    };
-    setReviews((prev) => [review, ...prev]);
-  };
+  const { items, filteredItems, filterRating } = useSelector(
+    (state: RootState) => state.reviews
+  );
+
+  const reviews = filteredItems.length > 0 ? filteredItems : items;
 
   const averageRating =
-    reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+    reviews.reduce((sum, review) => sum + review.rating, 0) /
+    (reviews.length || 1);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0f172a" }}>
@@ -111,12 +74,19 @@ const ReviewPage = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Reviews List */}
           <div className="lg:col-span-2">
-            <ReviewsList reviews={reviews} />
+            <ReviewsList
+              reviews={reviews}
+              onDelete={(id) => dispatch(deleteReview(id))}
+              onSort={(criteria) => dispatch(sortReviews(criteria))}
+              onFilter={(rating) => dispatch(filterByRating(rating))}
+              onClearFilter={() => dispatch(clearFilter())}
+              currentFilter={filterRating}
+            />
           </div>
 
           {/* Review Form */}
           <div className="lg:col-span-1">
-            <ReviewForm onSubmit={addReview} />
+            <ReviewForm />
           </div>
         </div>
       </div>

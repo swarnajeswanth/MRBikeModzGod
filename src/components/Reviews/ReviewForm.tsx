@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { Review } from "./ReviewPage";
+import { useDispatch } from "react-redux";
+import { addReview } from "@/components/store/ReviewSlice";
 import StarRating from "./StarRating";
 
-interface ReviewFormProps {
-  onSubmit: (review: Omit<Review, "id" | "date">) => void;
-}
-
-const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
+const ReviewForm: React.FC = () => {
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     username: "",
     rating: 0,
@@ -18,25 +16,15 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.username || !formData.comment || formData.rating === 0) {
+    if (!formData.username || !formData.comment || formData.rating === 0)
       return;
-    }
 
     setIsSubmitting(true);
-
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    onSubmit(formData);
+    dispatch(addReview(formData));
 
-    // Reset form
-    setFormData({
-      username: "",
-      rating: 0,
-      comment: "",
-      verified: false,
-    });
-
+    setFormData({ username: "", rating: 0, comment: "", verified: false });
     setIsSubmitting(false);
   };
 
@@ -44,17 +32,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleRatingChange = (rating: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      rating,
-    }));
+    setFormData((prev) => ({ ...prev, rating }));
   };
 
   return (
@@ -63,7 +45,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
         <h3 className="text-xl font-bold text-white mb-6">Write a Review</h3>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Username */}
           <div>
             <label
               htmlFor="username"
@@ -83,7 +64,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
             />
           </div>
 
-          {/* Rating */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Rating
@@ -101,7 +81,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
             </div>
           </div>
 
-          {/* Comment */}
           <div>
             <label
               htmlFor="comment"
@@ -121,7 +100,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
             />
           </div>
 
-          {/* Verified Purchase */}
           <div className="flex items-center space-x-3">
             <input
               type="checkbox"
@@ -137,7 +115,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
             </label>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={

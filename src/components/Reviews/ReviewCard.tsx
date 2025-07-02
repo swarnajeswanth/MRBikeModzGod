@@ -1,11 +1,12 @@
 import React from "react";
-import { Review } from "@/components/Reviews/ReviewPage";
+import { Review } from "@/components/Reviews/ReviewCard";
 
 interface ReviewCardProps {
   review: Review;
+  onDelete?: (id: string) => void;
 }
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
+const ReviewCard: React.FC<ReviewCardProps> = ({ review, onDelete }) => {
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-[1.02]">
       {/* Header */}
@@ -64,6 +65,14 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
             <span>Helpful</span>
           </button>
           <button className="hover:text-white transition-colors">Reply</button>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(review.id)}
+              className="text-red-400 hover:text-red-500 ml-auto"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
     </div>

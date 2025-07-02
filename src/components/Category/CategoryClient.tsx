@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   ArrowLeft,
 } from "lucide-react";
+import AddToCartButton from "../Cart/AddToCart";
 
 interface Props {
   categoryName: string;
@@ -357,14 +358,11 @@ export default function CategoryClient({ categoryName }: Props) {
                   <h3 className="text-xl font-semibold text-white mb-2">
                     {product.name}
                   </h3>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col items-left justify-between">
                     <span className="text-2xl font-bold text-green-400">
                       ${product.price}
                     </span>
-                    <button className="bg-red-600 hover:bg-red-700 p-2 flex items-center">
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Add to Cart
-                    </button>
+                    <AddToCartButton />
                   </div>
                 </div>
               </div>
