@@ -61,7 +61,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative overflow-hidden py-20 lg:py-32">
+    <section className="relative overflow-hidden py-5 lg:py-32 h-full">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-transparent"></div>
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-red-500/10 to-transparent"></div>
@@ -101,47 +101,6 @@ const Hero = () => {
               <div>
                 <div className="text-3xl font-bold text-white">15+</div>
                 <div className="text-gray-400">Years Experience</div>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT Side Cards */}
-          <div className="relative" ref={rightRef}>
-            <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 shadow-2xl border border-gray-700">
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  {
-                    color: "red",
-                    title: "Engine Parts",
-                    desc: "High Performance",
-                  },
-                  {
-                    color: "blue",
-                    title: "Suspension",
-                    desc: "Premium Quality",
-                  },
-                  { color: "green", title: "Exhaust", desc: "Custom Tuned" },
-                  {
-                    color: "purple",
-                    title: "Electronics",
-                    desc: "Latest Tech",
-                  },
-                ].map((item, index) => (
-                  <div
-                    key={item.title}
-                    ref={(el) => {
-                      if (el) cardsRef.current[index] = el;
-                    }}
-                    className={`bg-${item.color}-600/20 rounded-lg p-4 border border-${item.color}-600/30 transform transition-transform duration-300 hover:scale-105`}
-                  >
-                    <div className={`text-${item.color}-400 font-semibold`}>
-                      {item.title}
-                    </div>
-                    <div className="text-gray-300 text-sm mt-1">
-                      {item.desc}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           </div>

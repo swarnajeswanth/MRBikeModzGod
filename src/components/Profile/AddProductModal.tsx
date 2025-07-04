@@ -87,6 +87,23 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            // Pre-submit check for required fields
+            if (
+              !form.name ||
+              !form.description ||
+              !form.price ||
+              !form.category
+            ) {
+              toast.error(
+                "Name, description, price, and category are required."
+              );
+              return;
+            }
+            if (isNaN(Number(form.price)) || Number(form.price) <= 0) {
+              toast.error("Price must be a valid number greater than 0.");
+              return;
+            }
+            // onSubmit expects ProductForm type, so just pass form
             onSubmit(form);
           }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -200,6 +217,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             className="input col-span-1 md:col-span-2"
             value={form.description}
             onChange={handleInput}
+            required
           />
 
           {/* <textarea

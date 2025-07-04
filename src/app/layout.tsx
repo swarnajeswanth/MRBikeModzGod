@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "./provider";
-import LoadingOverlay from "@/components/Loaders/LoadingSpinner"; // ✅ Add this
+import LoadingOverlay from "@/components/Loaders/LoadingSpinner";
+import PageTransitionWrapper from "@/components/Loaders/PageTransitionWrapper";
 import DebugTools from "@/components/DebugTools";
 import { Toaster } from "react-hot-toast";
 import RealTimeSync from "@/components/RealTimeSync";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,6 +32,7 @@ export default function RootLayout({
     <html>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ReduxProvider>
+          <PageTransitionWrapper />
           <LoadingOverlay />
           <RealTimeSync />
           <Toaster
@@ -48,7 +51,6 @@ export default function RootLayout({
             position="top-right"
             reverseOrder={false}
           />
-          {/* ✅ Show full-app loading indicator */}
           {children}
           {/* <DebugTools /> */}
         </ReduxProvider>

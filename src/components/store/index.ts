@@ -8,6 +8,7 @@ import loadingReducer from "./LoadingSlice";
 import userReducer from "./UserSlice";
 import reviewsReducer from "./ReviewSlice";
 import storeSettingsReducer from "./storeSettingsSlice";
+import sliderReducer from "./sliderSlice";
 import { useSelector } from "react-redux";
 import { selectIsPageAccessible } from "@/components/store/storeSettingsSlice";
 
@@ -134,7 +135,7 @@ const persistConfig = {
   storage,
   whitelist: ["user", "product", "storeSettings"], // persist user, product, and store settings slices
   migrate: migration,
-  version: 3, // Increment version to trigger migration
+  version: 4, // Increment version to trigger migration and fix user state issues
 };
 
 const rootReducer = combineReducers({
@@ -143,6 +144,7 @@ const rootReducer = combineReducers({
   reviews: reviewsReducer,
   user: userReducer,
   storeSettings: storeSettingsReducer,
+  slider: sliderReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -169,6 +171,7 @@ try {
     "user",
     "reviews",
     "storeSettings",
+    "slider",
   ];
   const missingKeys = expectedKeys.filter((key) => !(key in initialState));
 

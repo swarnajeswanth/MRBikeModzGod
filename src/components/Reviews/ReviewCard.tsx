@@ -51,25 +51,25 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   const isOwner = user?.id === review.userId;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
+          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
             <User className="h-5 w-5 text-white" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-gray-900 dark:text-white">
+              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                 {review.userName}
               </h3>
               {review.verified && (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-              <Calendar className="h-3 w-3" />
-              <span>
+              <Calendar className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">
                 {formatDistanceToNow(new Date(review.createdAt), {
                   addSuffix: true,
                 })}
@@ -79,7 +79,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         </div>
 
         {/* Rating */}
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-1 flex-shrink-0">
           {renderStars(review.rating)}
           <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">
             {review.rating}/5
@@ -89,16 +89,16 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
 
       {/* Review Content */}
       <div className="mb-4">
-        <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+        <h4 className="font-medium text-gray-900 dark:text-white mb-2 break-words">
           {review.title}
         </h4>
-        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed break-words">
           {review.comment}
         </p>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center space-x-4">
           {/* Helpful Vote */}
           <button

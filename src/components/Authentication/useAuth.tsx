@@ -8,6 +8,7 @@ type UserRole = "customer" | "retailer";
 
 interface LoginResponse {
   user: {
+    id: string;
     username: string;
     image: string;
     role: UserRole;
@@ -38,6 +39,7 @@ export function useAuth() {
         // Update Redux state with user data
         dispatch(
           loginAction({
+            id: response.data.user.id,
             username: response.data.user.username,
             image: response.data.user.image,
             role: response.data.user.role,

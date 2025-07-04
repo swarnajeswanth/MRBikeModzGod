@@ -9,11 +9,13 @@ import {
   FaEdit,
   FaTrash,
   FaCog,
+  FaImages,
 } from "react-icons/fa";
 import AddProductModal, {
   ProductForm,
 } from "@/components/Profile/AddProductModal";
 import StoreSettings from "@/components/Profile/StoreSettings";
+import SliderManager from "./SliderManager";
 import { useSelector } from "react-redux";
 import {
   selectAllProducts,
@@ -75,6 +77,7 @@ const RetailerDashboard = () => {
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSliderManagerOpen, setIsSliderManagerOpen] = useState(false);
   const [form, setForm] = useState<ProductForm>({
     name: "",
     title: "",
@@ -138,7 +141,8 @@ const RetailerDashboard = () => {
 
   const handleAddProduct = async (formData: ProductForm) => {
     try {
-      const productData = {
+      // Prepare payload for API
+      const payload = {
         name: formData.name,
         title: formData.title,
         category: formData.category,
@@ -147,7 +151,7 @@ const RetailerDashboard = () => {
           ? parseFloat(formData.originalPrice)
           : 0,
         discount: formData.discount,
-        stockCount: parseInt(formData.stockCount),
+        stockCount: formData.stockCount ? parseInt(formData.stockCount) : 0,
         inStock: formData.inStock,
         rating: formData.rating ? parseFloat(formData.rating) : 0,
         reviews: formData.reviews ? parseInt(formData.reviews) : 0,
@@ -156,18 +160,23 @@ const RetailerDashboard = () => {
         specifications: formData.specifications,
         label: formData.label,
         labelType: formData.labelType,
-        backgroundColor: "#1f2937", // Default background color
+        backgroundColor: "#1f2937",
         images: formData.images,
+        // image: formData.images && formData.images.length > 0 ? formData.images[0] : undefined,
       };
 
       if (editProductId) {
         await dispatch(
-          updateProductById({ id: editProductId, productData }) as any
+          updateProductById({ id: editProductId, productData: payload }) as any
         );
         toast.success("Product updated successfully");
       } else {
-        await dispatch(createProduct(productData) as any);
+        const result = await dispatch(createProduct(payload) as any);
+        console.log("Product creation result:", result);
         toast.success("Product created successfully");
+
+        // Refresh products to ensure they're up to date
+        dispatch(fetchProducts() as any);
       }
 
       setIsModalOpen(false);
@@ -191,6 +200,7 @@ const RetailerDashboard = () => {
         images: [],
       });
     } catch (error) {
+      console.error("Product creation error:", error);
       toast.error("Failed to save product");
     }
   };
@@ -203,6 +213,7 @@ const RetailerDashboard = () => {
   // Tab configuration
   const tabs = [
     { id: "products", label: "Product Management", icon: FaBox },
+    { id: "slider", label: "Hero Slider", icon: FaImages },
     { id: "settings", label: "Store Settings", icon: FaCog },
   ];
 
@@ -226,7 +237,7 @@ const RetailerDashboard = () => {
 
       {/* Navigation Tabs */}
       <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-2 rounded-lg">
-        <div className="flex space-x-1">
+        <div className="flex space-x-1 flex-wrap">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -308,57 +319,125 @@ const RetailerDashboard = () => {
             </div>
           )}
 
-          {/* Products Table */}
+          {/* Products Display */}
           {!loading && !error && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-gray-700/50">
-                  <tr>
-                    <th className="px-6 py-3 text-gray-300">Product</th>
-                    <th className="px-6 py-3 text-gray-300">Category</th>
-                    <th className="px-6 py-3 text-gray-300">Price</th>
-                    <th className="px-6 py-3 text-gray-300">Stock</th>
-                    <th className="px-6 py-3 text-gray-300">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedProducts.map((product, index) => (
-                    <tr
-                      key={product.id}
-                      className="border-b border-gray-700 hover:bg-gray-700/30"
-                    >
-                      <td className="px-6 py-4 text-white">{product.name}</td>
-                      <td className="px-6 py-4 text-gray-300">
-                        {product.category}
-                      </td>
-                      <td className="px-6 py-4 text-white">${product.price}</td>
-                      <td className="px-6 py-4 text-gray-300">
-                        {product.stockCount}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="text-blue-400 hover:text-blue-300"
-                          >
-                            <FaEdit />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
-                      </td>
+            <div>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs uppercase bg-gray-700/50">
+                    <tr>
+                      <th className="px-6 py-3 text-gray-300">Product</th>
+                      <th className="px-6 py-3 text-gray-300">Category</th>
+                      <th className="px-6 py-3 text-gray-300">Price</th>
+                      <th className="px-6 py-3 text-gray-300">Stock</th>
+                      <th className="px-6 py-3 text-gray-300">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paginatedProducts.map((product, index) => (
+                      <tr
+                        key={product.id}
+                        className="border-b border-gray-700 hover:bg-gray-700/30"
+                      >
+                        <td className="px-6 py-4 text-white">{product.name}</td>
+                        <td className="px-6 py-4 text-gray-300">
+                          {product.category}
+                        </td>
+                        <td className="px-6 py-4 text-white">
+                          ${product.price}
+                        </td>
+                        <td className="px-6 py-4 text-gray-300">
+                          {product.stockCount}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEdit(product)}
+                              className="text-blue-400 hover:text-blue-300"
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(product.id)}
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {paginatedProducts.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="bg-gray-700/30 border border-gray-600 rounded-lg p-4 hover:bg-gray-700/50 transition-colors"
+                  >
+                    {/* Product Image */}
+                    <div className="flex items-start space-x-4 mb-3">
+                      <div className="flex-shrink-0">
+                        {product.images && product.images.length > 0 ? (
+                          <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center">
+                            <FaBox className="text-gray-400 text-xl" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-semibold text-sm truncate">
+                          {product.name}
+                        </h3>
+                        <p className="text-gray-400 text-xs mt-1">
+                          {product.category}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-white font-bold">
+                            ${product.price}
+                          </span>
+                          <span className="text-gray-400 text-xs">
+                            Stock: {product.stockCount}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end space-x-2 pt-2 border-t border-gray-600">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-xs"
+                      >
+                        <FaEdit className="text-sm" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="flex items-center space-x-1 text-red-400 hover:text-red-300 text-xs"
+                      >
+                        <FaTrash className="text-sm" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center mt-4">
+                <div className="flex justify-center mt-6">
                   <div className="flex gap-2">
                     {Array.from({ length: totalPages }, (_, i) => (
                       <button
@@ -381,6 +460,50 @@ const RetailerDashboard = () => {
         </div>
       )}
 
+      {activeTab === "slider" && (
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-6 rounded-lg">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+            <h2 className="text-xl font-bold text-white">
+              Hero Slider Management
+            </h2>
+            <div className="flex gap-2">
+              <button
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/slider/seed", {
+                      method: "POST",
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                      toast.success("Default slider images added successfully");
+                      // Refresh the slider images
+                      window.location.reload();
+                    } else {
+                      toast.error("Failed to add default images");
+                    }
+                  } catch (error) {
+                    toast.error("Failed to add default images");
+                  }
+                }}
+              >
+                <FaPlus /> Add Default Images
+              </button>
+              <button
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+                onClick={() => setIsSliderManagerOpen(true)}
+              >
+                <FaImages /> Manage Slider Images
+              </button>
+            </div>
+          </div>
+          <p className="text-gray-400">
+            Upload, edit, and manage the images displayed in the hero slider on
+            your homepage.
+          </p>
+        </div>
+      )}
+
       {activeTab === "settings" && <StoreSettings />}
 
       {/* Add/Edit Product Modal */}
@@ -390,6 +513,12 @@ const RetailerDashboard = () => {
         onSubmit={handleAddProduct}
         form={form}
         setForm={setForm}
+      />
+
+      {/* Slider Manager Modal */}
+      <SliderManager
+        isOpen={isSliderManagerOpen}
+        onClose={() => setIsSliderManagerOpen(false)}
       />
     </div>
   );

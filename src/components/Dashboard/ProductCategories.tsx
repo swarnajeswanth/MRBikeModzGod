@@ -74,6 +74,48 @@ const ProductCategories = () => {
       borderColor: "border-yellow-500/30",
       textColor: "text-yellow-400",
     },
+    // Additional common categories
+    parts: {
+      name: "Parts",
+      description: "Bike parts and components",
+      icon: Cog,
+      color: "from-indigo-500 to-indigo-600",
+      borderColor: "border-indigo-500/30",
+      textColor: "text-indigo-400",
+    },
+    tools: {
+      name: "Tools",
+      description: "Bike maintenance tools",
+      icon: Wrench,
+      color: "from-orange-500 to-orange-600",
+      borderColor: "border-orange-500/30",
+      textColor: "text-orange-400",
+    },
+    clothing: {
+      name: "Clothing",
+      description: "Bike riding apparel",
+      icon: Shield,
+      color: "from-pink-500 to-pink-600",
+      borderColor: "border-pink-500/30",
+      textColor: "text-pink-400",
+    },
+    electronics: {
+      name: "Electronics",
+      description: "Bike electronics and gadgets",
+      icon: Zap,
+      color: "from-cyan-500 to-cyan-600",
+      borderColor: "border-cyan-500/30",
+      textColor: "text-cyan-400",
+    },
+    // Default configuration for any new categories
+    default: {
+      name: "Other",
+      description: "Various products and accessories",
+      icon: Grid3X3,
+      color: "from-gray-500 to-gray-600",
+      borderColor: "border-gray-500/30",
+      textColor: "text-gray-400",
+    },
   };
 
   // Get unique categories from products
@@ -82,14 +124,23 @@ const ProductCategories = () => {
   ];
 
   // Create categories array with configuration
-  const categories = uniqueCategories
-    .filter(
-      (category) => categoryConfig[category as keyof typeof categoryConfig]
-    )
-    .map((category) => ({
-      ...categoryConfig[category as keyof typeof categoryConfig],
+  const categories = uniqueCategories.map((category) => {
+    const config =
+      categoryConfig[category as keyof typeof categoryConfig] ||
+      categoryConfig.default;
+    return {
+      ...config,
       slug: category,
-    }));
+      name:
+        config === categoryConfig.default
+          ? category.charAt(0).toUpperCase() + category.slice(1)
+          : config.name,
+      description:
+        config === categoryConfig.default
+          ? `${category} products and accessories`
+          : config.description,
+    };
+  });
 
   const handleCategoryClick = (slug: string) => {
     if (!features?.categories) {

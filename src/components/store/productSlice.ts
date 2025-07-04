@@ -50,6 +50,8 @@ export const fetchProducts = createAsyncThunk(
 export const createProduct = createAsyncThunk(
   "products/createProduct",
   async (productData: Omit<Product, "id" | "_id">) => {
+    console.log("Creating product with data:", productData);
+
     const response = await fetch("/api/products", {
       method: "POST",
       headers: {
@@ -57,10 +59,20 @@ export const createProduct = createAsyncThunk(
       },
       body: JSON.stringify(productData),
     });
+
+    console.log("API response status:", response.status);
+
     if (!response.ok) {
-      throw new Error("Failed to create product");
+      const errorData = await response.json().catch(() => ({}));
+      console.error("API error response:", errorData);
+      throw new Error(
+        errorData.message || `Failed to create product: ${response.status}`
+      );
     }
-    return response.json();
+
+    const result = await response.json();
+    console.log("API success response:", result);
+    return result;
   }
 );
 
@@ -73,6 +85,8 @@ export const updateProductById = createAsyncThunk(
     id: string;
     productData: Partial<Product>;
   }) => {
+    console.log("Updating product with ID:", id, "Data:", productData);
+
     const response = await fetch(`/api/products/${id}`, {
       method: "PUT",
       headers: {
@@ -80,10 +94,20 @@ export const updateProductById = createAsyncThunk(
       },
       body: JSON.stringify(productData),
     });
+
+    console.log("Update API response status:", response.status);
+
     if (!response.ok) {
-      throw new Error("Failed to update product");
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Update API error response:", errorData);
+      throw new Error(
+        errorData.message || `Failed to update product: ${response.status}`
+      );
     }
-    return response.json();
+
+    const result = await response.json();
+    console.log("Update API success response:", result);
+    return result;
   }
 );
 
@@ -203,7 +227,11 @@ const productSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
-        state.products.push(action.payload.product);
+        // Handle both direct product object and wrapped response
+        const product = action.payload.product || action.payload;
+        if (product) {
+          state.products.push(product);
+        }
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;

@@ -46,6 +46,7 @@ const Header = () => {
     if (features?.categories) {
       baseNav.push({ name: "Categories", href: "#categories" });
     }
+    baseNav.push({ name: "Store Location", href: "#store-location" });
     baseNav.push({ name: "About", href: "#footer" });
     baseNav.push({ name: "Contact", href: "#footer" });
 
@@ -117,7 +118,7 @@ const Header = () => {
       </div>
 
       {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
         {/* Logo */}
         <div className="text-2xl font-bold text-white">
           MR<span className="text-red-600">BIKEMODZ</span>
