@@ -186,3 +186,17 @@ start-websocket.bat
 2. Use browser dev tools to verify the WebSocket connection URL and status.
 3. Test the WebSocket endpoint directly using a tool like [websocat](https://github.com/vi/websocat) or a simple Node.js client.
 4. If you see CORS or protocol errors, ensure you are using `wss://` (not `ws://`) for secure connections in production.
+
+### **Additional Fix for WebSocket Connection Errors**
+
+If you're still encountering WebSocket connection errors, you might want to add a check to ensure WebSocket code only runs in the browser:
+
+```js
+if (typeof window !== "undefined") {
+  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";
+  const ws = new WebSocket(wsUrl);
+  // ...rest of your WebSocket logic
+}
+```
+
+This check ensures that WebSocket code is only executed in the browser, preventing errors during server-side rendering or build time.

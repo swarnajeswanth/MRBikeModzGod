@@ -8,7 +8,9 @@ const instances = [];
 
 function createInstance(id, type) {
   // Use environment variable for WebSocket URL (Railway compatible)
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";
+  const wsUrl =
+    process.env.NEXT_PUBLIC_WS_URL ||
+    "wss://websocket-server-production-ffd1.up.railway.app/sync";
   const ws = new WebSocket(wsUrl);
 
   ws.on("open", () => {

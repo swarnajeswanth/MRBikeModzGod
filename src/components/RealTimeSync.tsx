@@ -33,6 +33,13 @@ const RealTimeSync: React.FC = () => {
   ).current;
 
   const connectWebSocket = () => {
+    // Only run in browser
+    if (typeof window === "undefined") return;
+    // Use Railway URL in production, fallback to localhost for dev
+    const wsUrl =
+      process.env.NEXT_PUBLIC_WS_URL ||
+      "wss://websocket-server-production-ffd1.up.railway.app/sync";
+
     // Don't attempt to connect if we've exceeded max attempts
     if (connectionAttempts >= maxReconnectAttempts) {
       console.log(
@@ -50,9 +57,6 @@ const RealTimeSync: React.FC = () => {
         return;
       }
 
-      // Use environment variable for WebSocket URL (Railway compatible)
-      const wsUrl =
-        process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {

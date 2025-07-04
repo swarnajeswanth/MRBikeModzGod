@@ -84,6 +84,11 @@ if (typeof window !== "undefined") {
       console.error("Failed to log Redux state:", error);
     }
   };
+
+  const wsUrl =
+    process.env.NEXT_PUBLIC_WS_URL ||
+    "wss://websocket-server-production-ffd1.up.railway.app/sync";
+  const ws = new WebSocket(wsUrl);
 }
 
 // Utility to clear old persisted state (uncomment if needed)
@@ -201,7 +206,3 @@ export {
   voteReview,
   seedReviews,
 } from "./ReviewSlice";
-
-// Use environment variable for WebSocket URL (Railway compatible)
-const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";
-const ws = new WebSocket(wsUrl);
