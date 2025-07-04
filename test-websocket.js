@@ -2,8 +2,9 @@ const WebSocket = require("ws");
 
 console.log("Testing WebSocket connection...");
 
-// Try to connect to the WebSocket server
-const ws = new WebSocket("ws://localhost:3001/sync");
+// Use environment variable for WebSocket URL (Railway compatible)
+const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";
+const ws = new WebSocket(wsUrl);
 
 ws.on("open", () => {
   console.log("✅ WebSocket connection successful!");

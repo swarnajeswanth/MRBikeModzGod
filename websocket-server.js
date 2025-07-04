@@ -1,63 +1,34 @@
+require("dotenv").config();
 const WebSocket = require("ws");
+const http = require("http");
 
-// Create WebSocket server
-const wss = new WebSocket.Server({ port: 3001 });
+const port = process.env.PORT || 3001;
+const server = http.createServer();
 
-console.log("WebSocket server started on port 3001");
-
-// Store connected clients
-const clients = new Set();
+const wss = new WebSocket.Server({ server, path: "/sync" });
 
 wss.on("connection", (ws) => {
-  console.log("New client connected");
-  clients.add(ws);
-
-  // Send welcome message
-  ws.send(
-    JSON.stringify({
-      type: "CONNECTED",
-      message: "Connected to real-time sync server",
-      timestamp: Date.now(),
-    })
-  );
+  console.log("🔗 Client connected");
 
   ws.on("message", (message) => {
+    console.log("📩 Message received:", message.toString());
+
     try {
       const data = JSON.parse(message);
-      console.log("Received message:", data);
-
-      // Broadcast message to all other clients
-      let broadcastCount = 0;
-      clients.forEach((client) => {
+      // Broadcast to all clients except sender
+      wss.clients.forEach((client) => {
         if (client !== ws && client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(data));
-          broadcastCount++;
         }
       });
-      console.log(`Broadcasted to ${broadcastCount} other clients`);
-    } catch (error) {
-      console.error("Error parsing message:", error);
+    } catch (err) {
+      console.error("Invalid message format", err);
     }
   });
 
-  ws.on("close", () => {
-    console.log("Client disconnected");
-    clients.delete(ws);
-  });
-
-  ws.on("error", (error) => {
-    console.error("WebSocket error:", error);
-    clients.delete(ws);
-  });
+  ws.on("close", () => console.log("❌ Client disconnected"));
 });
 
-// Handle server shutdown
-process.on("SIGINT", () => {
-  console.log("Shutting down WebSocket server...");
-  wss.close(() => {
-    console.log("WebSocket server closed");
-    process.exit(0);
-  });
+server.listen(port, () => {
+  console.log(`🚀 WebSocket server running on port ${port}`);
 });
-
-module.exports = wss;

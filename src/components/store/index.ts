@@ -202,4 +202,6 @@ export {
   seedReviews,
 } from "./ReviewSlice";
 
-const ws = new WebSocket("ws://192.168.1.100:3001/sync");
+// Use environment variable for WebSocket URL (Railway compatible)
+const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";
+const ws = new WebSocket(wsUrl);

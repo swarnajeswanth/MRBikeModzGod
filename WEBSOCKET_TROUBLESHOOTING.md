@@ -156,3 +156,33 @@ start-websocket.bat
 # Unix/Linux convenience
 ./start-websocket.sh
 ```
+
+## 🚀 Railway Deployment Troubleshooting
+
+### Common Issues
+
+- **WebSocket server not connecting:**
+
+  - Ensure the Railway service for `websocket-server.js` is running.
+  - Check that Railway sets the `PORT` environment variable (your code uses it automatically).
+  - Make sure your frontend's `NEXT_PUBLIC_WS_URL` is set to the Railway WebSocket endpoint (e.g., `wss://your-railway-app.up.railway.app/sync`).
+
+- **Frontend not receiving updates:**
+
+  - Double-check the value of `NEXT_PUBLIC_WS_URL` in the Railway frontend service.
+  - Confirm the WebSocket server is accessible from the public internet (Railway exposes a public URL for web services).
+
+- **Local development works, but Railway does not:**
+  - Make sure you are not using `localhost` in production. Always use the Railway-provided WebSocket URL in `NEXT_PUBLIC_WS_URL`.
+
+### Environment Variables
+
+- `PORT` (set by Railway for the WebSocket server)
+- `NEXT_PUBLIC_WS_URL` (set in the frontend service to the Railway WebSocket endpoint)
+
+### Debugging Steps
+
+1. Check Railway service logs for errors.
+2. Use browser dev tools to verify the WebSocket connection URL and status.
+3. Test the WebSocket endpoint directly using a tool like [websocat](https://github.com/vi/websocat) or a simple Node.js client.
+4. If you see CORS or protocol errors, ensure you are using `wss://` (not `ws://`) for secure connections in production.

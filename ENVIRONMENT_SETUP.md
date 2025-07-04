@@ -97,3 +97,16 @@ All API calls automatically show toast notifications for:
 - Authentication errors
 
 The system provides user-friendly error messages for different scenarios.
+
+## Railway Deployment Environment Variables
+
+- `PORT`: Set automatically by Railway for the WebSocket server. No manual action needed.
+- `NEXT_PUBLIC_WS_URL`: Set this in your Railway frontend service to the public WebSocket endpoint provided by Railway (e.g., `wss://your-railway-app.up.railway.app/sync`).
+
+For local development, you can use a `.env` file with:
+
+```
+NEXT_PUBLIC_WS_URL=ws://localhost:3001/sync
+```
+
+No changes are needed to your code to switch between local and Railway deployments—just set the environment variable appropriately.

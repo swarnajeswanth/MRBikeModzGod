@@ -77,3 +77,43 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## 🚀 Railway Deployment Guide
+
+### 1. Deploy WebSocket Server to Railway
+
+- Create a new Railway project and add your repo.
+- Set up a new service for `websocket-server.js` (Node.js service).
+- Railway will automatically set the `PORT` environment variable for you (no need to hardcode it).
+- The WebSocket server will listen on `process.env.PORT` (already handled in your code).
+
+### 2. Set Environment Variables
+
+- In your Railway **frontend** service, set:
+  - `NEXT_PUBLIC_WS_URL` to your Railway WebSocket endpoint, e.g.:
+    - `wss://your-railway-app.up.railway.app/sync`
+- In your Railway **websocket server** service, no extra variables are needed unless you want to override the port.
+
+### 3. Update Client Code
+
+- The client now uses `NEXT_PUBLIC_WS_URL` (with fallback to local dev):
+  - `const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";`
+- This is already implemented in `src/components/RealTimeSync.tsx`, `src/components/store/index.ts`, and all test scripts.
+
+### 4. Local Development
+
+- You can still run everything locally with the default settings:
+  - WebSocket server: `node websocket-server.js` (on port 3001)
+  - Frontend: `npm run dev` (connects to ws://localhost:3001/sync)
+- For local testing with a custom WebSocket URL, create a `.env` file with:
+  - `NEXT_PUBLIC_WS_URL=ws://localhost:3001/sync`
+
+### 5. Production/Cloud Usage
+
+- When deployed, the frontend will connect to the Railway WebSocket endpoint using the value of `NEXT_PUBLIC_WS_URL`.
+- No code changes are needed for switching between local and Railway deployments—just set the environment variable.
+
+### 6. Troubleshooting
+
+- If you see connection errors, check that both services are running and the URLs are correct.
+- See `WEBSOCKET_TROUBLESHOOTING.md` for more help.

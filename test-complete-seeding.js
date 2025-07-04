@@ -80,39 +80,38 @@ function testWebSocketSync() {
     let receivedMessages = 0;
     const expectedMessages = 2; // 2 other instances should receive the message
 
-    // Create 3 test instances
-    for (let i = 1; i <= 3; i++) {
-      const ws = new WebSocket("ws://localhost:3001/sync");
+    // Use environment variable for WebSocket URL (Railway compatible)
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";
+    const ws = new WebSocket(wsUrl);
 
-      ws.on("open", () => {
-        console.log(`✅ Instance ${i} connected`);
-      });
+    ws.on("open", () => {
+      console.log(`✅ Instance connected`);
+    });
 
-      ws.on("message", (data) => {
-        try {
-          const message = JSON.parse(data);
-          if (message.type === "PRODUCTS_UPDATED") {
-            console.log(
-              `📨 Instance ${i} received: ${message.type} from ${message.source}`
-            );
-            receivedMessages++;
+    ws.on("message", (data) => {
+      try {
+        const message = JSON.parse(data);
+        if (message.type === "PRODUCTS_UPDATED") {
+          console.log(
+            `📨 Instance received: ${message.type} from ${message.source}`
+          );
+          receivedMessages++;
 
-            if (receivedMessages === expectedMessages) {
-              console.log(`✅ All instances received the broadcast message`);
-              resolve();
-            }
+          if (receivedMessages === expectedMessages) {
+            console.log(`✅ All instances received the broadcast message`);
+            resolve();
           }
-        } catch (error) {
-          console.error(`❌ Instance ${i} failed to parse message:`, error);
         }
-      });
+      } catch (error) {
+        console.error(`❌ Instance failed to parse message:`, error);
+      }
+    });
 
-      ws.on("error", (error) => {
-        console.error(`❌ Instance ${i} WebSocket error:`, error.message);
-      });
+    ws.on("error", (error) => {
+      console.error(`❌ Instance WebSocket error:`, error.message);
+    });
 
-      instances.push(ws);
-    }
+    instances.push(ws);
 
     // Wait for connections to establish, then broadcast
     setTimeout(() => {
