@@ -1,22 +1,12 @@
 "use client";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CategoryClient from "@/components/Category/CategoryClient";
 import { useSelector } from "react-redux";
 import { selectIsPageAccessible } from "@/components/store/storeSettingsSlice";
 import GuestAccessGuard from "@/components/GuestAccessGuard";
+import Wishlist from "@/components/Wishlist";
 
-// Define the props type for the main page function
-interface PageProps {
-  params: {
-    categoryName: string;
-  };
-}
-
-// ✅ Page component — standard sync usage of params is fine
-export default function CategoryPage({ params }: any) {
-  const isCategoryAccessible = useSelector(selectIsPageAccessible("category"));
-  if (!isCategoryAccessible) {
+export default function WishlistPage() {
+  const isWishlistAccessible = useSelector(selectIsPageAccessible("wishlist"));
+  if (!isWishlistAccessible) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-white bg-black/80">
         <h2 className="text-2xl font-bold mb-2">Access Restricted</h2>
@@ -28,7 +18,7 @@ export default function CategoryPage({ params }: any) {
   }
   return (
     <GuestAccessGuard>
-      <CategoryClient categoryName={params.categoryName} />
+      <Wishlist />
     </GuestAccessGuard>
   );
 }

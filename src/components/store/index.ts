@@ -1,4 +1,4 @@
-// store/index.ts
+"use client";
 import { configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage
@@ -8,6 +8,8 @@ import loadingReducer from "./LoadingSlice";
 import userReducer from "./UserSlice";
 import reviewsReducer from "./ReviewSlice";
 import storeSettingsReducer from "./storeSettingsSlice";
+import { useSelector } from "react-redux";
+import { selectIsPageAccessible } from "@/components/store/storeSettingsSlice";
 
 // Utility to clear localStorage and fix state structure issues
 export const clearReduxStateAndReload = () => {
@@ -97,9 +99,7 @@ if (typeof window !== "undefined") {
 // Migration function to handle old state structure
 const migration = (state: any): Promise<any> => {
   return new Promise((resolve) => {
-    // Handle null/undefined state (no persisted state)
-    if (!state) {
-      console.log("No persisted state found, using clean initial state");
+    if (!state || typeof state !== "object") {
       resolve({
         product: productReducer(undefined, { type: "@@INIT" }),
         loading: loadingReducer(undefined, { type: "@@INIT" }),
@@ -109,126 +109,16 @@ const migration = (state: any): Promise<any> => {
       });
       return;
     }
-
-    // Additional safety check for state that might cause Object.keys to fail
-    try {
-      console.log("Migration running, current state keys:", Object.keys(state));
-    } catch (error) {
-      console.error("Error getting state keys:", error);
-      console.log("State value:", state);
-      console.log("State type:", typeof state);
-
-      // If Object.keys fails, return clean initial state
-      resolve({
-        product: productReducer(undefined, { type: "@@INIT" }),
-        loading: loadingReducer(undefined, { type: "@@INIT" }),
-        user: userReducer(undefined, { type: "@@INIT" }),
-        reviews: reviewsReducer(undefined, { type: "@@INIT" }),
-        storeSettings: storeSettingsReducer(undefined, { type: "@@INIT" }),
-      });
-      return;
-    }
-
-    // Check if state has the expected structure
-    const expectedKeys = [
-      "product",
-      "loading",
-      "user",
-      "reviews",
-      "storeSettings",
-    ];
-
-    // Additional safety check for state structure
-    if (typeof state !== "object" || state === null) {
-      console.log("Invalid state type, using clean initial state");
-      resolve({
-        product: productReducer(undefined, { type: "@@INIT" }),
-        loading: loadingReducer(undefined, { type: "@@INIT" }),
-        user: userReducer(undefined, { type: "@@INIT" }),
-        reviews: reviewsReducer(undefined, { type: "@@INIT" }),
-        storeSettings: storeSettingsReducer(undefined, { type: "@@INIT" }),
-      });
-      return;
-    }
-
-    const hasUnexpectedKeys = Object.keys(state).some(
-      (key) => !expectedKeys.includes(key)
-    );
-
-    if (hasUnexpectedKeys || !state.storeSettings) {
-      console.log(
-        "State structure mismatch or missing storeSettings, clearing localStorage"
-      );
-      try {
-        localStorage.removeItem("persist:root");
-        console.log("LocalStorage cleared due to state structure issues");
-      } catch (error) {
-        console.error("Failed to clear localStorage:", error);
-      }
-
-      // Return a clean initial state
-      resolve({
-        product: productReducer(undefined, { type: "@@INIT" }),
-        loading: loadingReducer(undefined, { type: "@@INIT" }),
-        user: userReducer(undefined, { type: "@@INIT" }),
-        reviews: reviewsReducer(undefined, { type: "@@INIT" }),
-        storeSettings: storeSettingsReducer(undefined, { type: "@@INIT" }),
-      });
-      return;
-    }
-
-    // If storeSettings is missing, add it with default values
-    if (!state.storeSettings) {
-      console.log("Adding missing storeSettings to state");
-      state.storeSettings = {
-        features: {
-          addToCart: true,
-          wishlist: true,
-          reviews: true,
-          ratings: true,
-          search: true,
-          filters: true,
-          categories: true,
-          productImages: true,
-          productDetails: true,
-          priceDisplay: true,
-          stockDisplay: true,
-          discountDisplay: true,
-          relatedProducts: true,
-          shareProducts: true,
-        },
-        pages: {
-          home: true,
-          allProducts: true,
-          individualProduct: true,
-          category: true,
-          wishlist: true,
-          cart: true,
-          customerDashboard: true,
-          auth: true,
-        },
-        storeInfo: {
-          name: "MrBikeModzGod",
-          description: "Premium bike parts and accessories",
-          logo: "",
-          theme: "dark",
-          maintenanceMode: false,
-          maintenanceMessage:
-            "Store is under maintenance. Please check back later.",
-        },
-        customerExperience: {
-          allowGuestBrowsing: true,
-          requireLoginForPurchase: true,
-          requireLoginForWishlist: true,
-          showPrices: true,
-          showStock: true,
-          allowProductSharing: true,
-          enableNotifications: true,
-        },
-      };
-    }
-
-    console.log("Migration completed, final state keys:", Object.keys(state));
+    // Add missing slices with default values, but don't reset everything
+    if (!state.product)
+      state.product = productReducer(undefined, { type: "@@INIT" });
+    if (!state.loading)
+      state.loading = loadingReducer(undefined, { type: "@@INIT" });
+    if (!state.user) state.user = userReducer(undefined, { type: "@@INIT" });
+    if (!state.reviews)
+      state.reviews = reviewsReducer(undefined, { type: "@@INIT" });
+    if (!state.storeSettings)
+      state.storeSettings = storeSettingsReducer(undefined, { type: "@@INIT" });
     resolve(state);
   });
 };
@@ -311,3 +201,5 @@ export {
   voteReview,
   seedReviews,
 } from "./ReviewSlice";
+
+const ws = new WebSocket("ws://192.168.1.100:3001/sync");

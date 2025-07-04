@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login as loginAction } from "@/components/store/UserSlice";
 import { apiRequest } from "@/components/lib/apiUtils";
 import { RootState } from "@/components/store";
+import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
 
 type UserRole = "customer" | "retailer";
 
@@ -19,6 +20,12 @@ interface LoginResponse {
 export function useAuth() {
   const dispatch = useDispatch();
   const { isLoggedIn } = useSelector((state: RootState) => state.user);
+  const allowGuestBrowsing = useSelector(
+    selectIsCustomerExperienceEnabled("allowGuestBrowsing")
+  );
+  const requireLoginForPurchase = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForPurchase")
+  );
 
   const login = async (username: string, password: string, role?: UserRole) => {
     try {
@@ -65,5 +72,11 @@ export function useAuth() {
     }
   };
 
-  return { login, signup, isAuthenticated: isLoggedIn };
+  return {
+    login,
+    signup,
+    isAuthenticated: isLoggedIn,
+    allowGuestBrowsing,
+    requireLoginForPurchase,
+  };
 }

@@ -8,6 +8,8 @@ import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/Authentication/useAuth";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
 
 gsap.registerPlugin(ScrambleTextPlugin, MorphSVGPlugin);
 
@@ -19,7 +21,13 @@ const ENCRYPT_SPEED = 0.6;
 const FLIP_DURATION = 0.6;
 
 const AuthPage = () => {
-  const { isAuthenticated, login, signup } = useAuth();
+  const {
+    isAuthenticated,
+    login,
+    signup,
+    allowGuestBrowsing,
+    requireLoginForPurchase,
+  } = useAuth();
   const router = useRouter();
 
   const [isLogin, setIsLogin] = useState(true);
@@ -35,6 +43,7 @@ const AuthPage = () => {
   const proxyRef = useRef<HTMLDivElement | null>(null);
   const shouldBlink = useRef(true);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [rehydrated, setRehydrated] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,6 +259,24 @@ const AuthPage = () => {
         duration: 0,
       });
   };
+
+  useEffect(() => {
+    // Wait for Redux Persist rehydration
+    const unsub = (window as any).store?.subscribe?.(() => {
+      const state = (window as any).store?.getState?.();
+      if (state && state._persist && state._persist.rehydrated) {
+        setRehydrated(true);
+        unsub?.();
+      }
+    });
+    // Fallback: set rehydrated after short delay if not using store on window
+    setTimeout(() => setRehydrated(true), 1000);
+    return () => unsub?.();
+  }, []);
+
+  if (!rehydrated) {
+    return <LoadingSpinner />;
+  }
 
   if (isAuthenticated) {
     return null; // Prevent render flicker

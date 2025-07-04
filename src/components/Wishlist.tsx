@@ -15,7 +15,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { RootState } from "./store";
 import { removeFromWishlist, clearWishlist } from "./store/UserSlice";
-import { selectIsFeatureEnabled } from "./store/storeSettingsSlice";
+import {
+  selectIsFeatureEnabled,
+  selectIsCustomerExperienceEnabled,
+} from "./store/storeSettingsSlice";
 import { toast } from "react-hot-toast";
 
 const featureIcons = {
@@ -37,8 +40,13 @@ const featureIcons = {
 const Wishlist: React.FC = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { wishlist } = useSelector((state: RootState) => state.user);
+  const { wishlist, isLoggedIn } = useSelector(
+    (state: RootState) => state.user
+  );
   const isWishlistEnabled = useSelector(selectIsFeatureEnabled("wishlist"));
+  const requireLoginForWishlist = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
+  );
 
   const handleRemoveFromWishlist = (productId: string) => {
     if (!isWishlistEnabled) {
@@ -59,6 +67,26 @@ const Wishlist: React.FC = () => {
     // TODO: Implement add to cart functionality
     toast.success("Added to cart");
   };
+
+  // Hide wishlist if requireLoginForWishlist is true and user is not logged in
+  if (requireLoginForWishlist && !isLoggedIn) {
+    return (
+      <div className="w-full bg-[#101828] text-white p-6 rounded-lg shadow-lg">
+        <div className="flex items-center gap-3 mb-5">
+          <XCircle className="text-gray-400 text-2xl" />
+          <h2 className="text-2xl font-bold text-gray-400">
+            My Wishlist (Login Required)
+          </h2>
+        </div>
+        <div className="text-center py-8">
+          <Lock className="text-gray-400 text-4xl mx-auto mb-4" />
+          <p className="text-gray-400">
+            Please log in to use the wishlist feature
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Show disabled state if wishlist feature is disabled
   if (!isWishlistEnabled) {

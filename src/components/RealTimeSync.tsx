@@ -150,18 +150,21 @@ const RealTimeSync: React.FC = () => {
         case "STORE_SETTINGS_UPDATED":
           await dispatch(fetchStoreSettings());
           setForceUpdate((n) => n + 1); // Force re-render
-          // Clear any stale localStorage to prevent state structure issues
-          let cleared = false;
+          // Clear only storeSettings from persisted state to prevent user logout
           try {
             const persistedState = localStorage.getItem("persist:root");
             if (persistedState) {
               const parsedState = JSON.parse(persistedState);
               if (!parsedState.storeSettings) {
                 console.log(
-                  "Clearing stale localStorage due to missing storeSettings"
+                  "Clearing stale storeSettings from localStorage due to missing storeSettings"
                 );
-                localStorage.removeItem("persist:root");
-                cleared = true;
+                // Only remove storeSettings key, not the whole state
+                delete parsedState.storeSettings;
+                localStorage.setItem(
+                  "persist:root",
+                  JSON.stringify(parsedState)
+                );
               }
             }
           } catch (error) {
