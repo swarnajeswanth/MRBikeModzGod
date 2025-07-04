@@ -1,11 +1,38 @@
+"use client";
+
 import { FaBox, FaHeart, FaTrash } from "react-icons/fa";
-import { Heart, XCircle, Lock } from "lucide-react";
+import {
+  Heart,
+  XCircle,
+  Lock,
+  HeartOff,
+  ShoppingCart,
+  ShoppingCartOff,
+  Star,
+  StarOff,
+} from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { RootState } from "./store";
 import { removeFromWishlist, clearWishlist } from "./store/UserSlice";
 import { selectIsFeatureEnabled } from "./store/storeSettingsSlice";
 import { toast } from "react-hot-toast";
+
+const featureIcons = {
+  wishlist: {
+    enabled: <Heart className="text-pink-500" />,
+    disabled: <HeartOff className="text-gray-400" />,
+  },
+  addToCart: {
+    enabled: <ShoppingCart className="text-green-500" />,
+    disabled: <ShoppingCartOff className="text-gray-400" />,
+  },
+  reviews: {
+    enabled: <Star className="text-yellow-400" />,
+    disabled: <StarOff className="text-gray-400" />,
+  },
+  // ...add for all features
+};
 
 const Wishlist: React.FC = () => {
   const dispatch = useDispatch();
