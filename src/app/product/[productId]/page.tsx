@@ -1,9 +1,9 @@
-// app/product/[productTitle]/page.tsx
+// app/product/[productId]/page.tsx
 import PageTransitionWrapper from "@/components/Loaders/PageTransitionWrapper";
 import ProductPage from "@/components/SingleProductPage";
 
 interface Props {
-  params: { productTitle: string };
+  params: { productId: string };
 }
 
 export default function Product() {

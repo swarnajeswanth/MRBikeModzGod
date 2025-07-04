@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
 import {
   ArrowLeft,
   Heart,
@@ -13,400 +14,460 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { RootState } from "@/components/store";
+import {
+  selectProductById,
+  selectProductsByCategory,
+  selectAllProducts,
+} from "@/components/store/productSlice";
+import { toggleWishlist } from "@/components/store/UserSlice";
+import { toast } from "react-hot-toast";
 
 const ProductPage = () => {
   const router = useRouter();
-  const params = useParams().productId as string;
+  const params = useParams();
+  const dispatch = useDispatch();
+  const productId = params.productId as string;
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedImage, setSelectedImage] = useState<number>(0);
 
-  const products = [
-    {
-      id: "racing-brake-pads",
-      name: "Racing Brake Pads",
-      label: "SALE",
-      labelType: "sale",
-      backgroundColor: "#a855f7",
-      category: "Brakes",
-      title: "Racing Brake Pads",
-      rating: 4.8,
-      reviews: 178,
-      price: 199.99,
-      originalPrice: 249.99,
-      discount: "20%",
-      description:
-        "High-performance racing brake pads designed for maximum stopping power and durability. Perfect for track days and aggressive street driving.",
-      features: [
-        "Superior heat dissipation",
-        "Extended pad life",
-        "Reduced brake fade",
-        "Compatible with most brake systems",
-        "Professional grade compound",
-      ],
-      specifications: {
-        Material: "Ceramic composite",
-        "Temperature Range": "-40°C to 650°C",
-        Compatibility: "Universal fit",
-        Warranty: "2 years",
-      },
-      images: [
-        "bg-gradient-to-br from-purple-500 to-purple-700",
-        "bg-gradient-to-br from-purple-400 to-purple-600",
-        "bg-gradient-to-br from-purple-600 to-purple-800",
-      ],
-      inStock: true,
-      stockCount: 15,
-    },
-    {
-      id: "led-headlight-kit",
-      name: "LED Headlight Kit",
-      label: "PREMIUM",
-      labelType: "premium",
-      backgroundColor: "#facc15",
-      category: "Lighting",
-      title: "LED Headlight Kit",
-      rating: 4.9,
-      reviews: 267,
-      price: 449.99,
-      originalPrice: 499.99,
-      discount: "10%",
-      description:
-        "High-brightness LED headlight kit for enhanced visibility and energy efficiency. Designed for easy installation and long-lasting performance.",
-      features: [
-        "Ultra-bright output",
-        "Low power consumption",
-        "Plug-and-play installation",
-        "Waterproof and dustproof",
-        "Long lifespan (30,000+ hrs)",
-      ],
-      specifications: {
-        Voltage: "12V",
-        Lumens: "8000lm",
-        Compatibility: "Universal",
-        Warranty: "1 year",
-      },
-      images: [
-        "bg-gradient-to-br from-yellow-400 to-yellow-600",
-        "bg-gradient-to-br from-yellow-300 to-yellow-500",
-        "bg-gradient-to-br from-yellow-500 to-yellow-700",
-      ],
-      inStock: true,
-      stockCount: 25,
-    },
-    {
-      id: "coilover-kit",
-      name: "Coilover Kit",
-      label: "HOT",
-      labelType: "sale",
-      backgroundColor: "#f472b6",
-      category: "Suspension",
-      title: "Coilover Kit",
-      rating: 4.7,
-      reviews: 134,
-      price: 299.99,
-      originalPrice: 359.99,
-      discount: "17%",
-      description:
-        "Adjustable coilover kit designed to improve handling and ride quality. Suitable for both street and track applications.",
-      features: [
-        "Ride height adjustability",
-        "High-strength materials",
-        "Improved cornering stability",
-        "Corrosion-resistant finish",
-        "Track-ready performance",
-      ],
-      specifications: {
-        Material: "Aluminum & Steel",
-        Adjustment: "Height & Preload",
-        Compatibility: "Vehicle-specific",
-        Warranty: "2 years",
-      },
-      images: [
-        "bg-gradient-to-br from-pink-500 to-pink-700",
-        "bg-gradient-to-br from-pink-400 to-pink-600",
-        "bg-gradient-to-br from-pink-600 to-pink-800",
-      ],
-      inStock: true,
-      stockCount: 10,
-    },
-    {
-      id: "ecu-tuner",
-      name: "ECU Tuner",
-      label: "NEW",
-      labelType: "premium",
-      backgroundColor: "#60a5fa",
-      category: "Electronics",
-      title: "ECU Tuner",
-      rating: 4.5,
-      reviews: 89,
-      price: 579.99,
-      originalPrice: 649.99,
-      discount: "11%",
-      description:
-        "Advanced ECU tuning device that allows customization of vehicle performance parameters. Unlock the true potential of your engine.",
-      features: [
-        "Real-time diagnostics",
-        "Preloaded and custom maps",
-        "Plug-and-play setup",
-        "Improves fuel efficiency",
-        "Boosts horsepower and torque",
-      ],
-      specifications: {
-        Interface: "USB/OBD2",
-        Compatibility: "Most cars 2008+",
-        Updates: "Over-the-air",
-        Warranty: "1 year",
-      },
-      images: [
-        "bg-gradient-to-br from-blue-500 to-blue-700",
-        "bg-gradient-to-br from-blue-400 to-blue-600",
-        "bg-gradient-to-br from-blue-600 to-blue-800",
-      ],
-      inStock: true,
-      stockCount: 8,
-    },
-  ];
+  // Get product from Redux store - try by ID first, then by title
+  const product = useSelector((state: RootState) => {
+    const productById = selectProductById(state, productId);
+    if (productById) return productById;
 
-  const relatedProducts = [
-    {
-      id: "brake-fluid",
-      name: "Premium Brake Fluid",
-      price: 29.99,
-      originalPrice: 39.99,
-      rating: 4.7,
-      image: "bg-gradient-to-br from-blue-500 to-blue-700",
-    },
-    {
-      id: "brake-rotors",
-      name: "Performance Brake Rotors",
-      price: 299.99,
-      rating: 4.6,
-      image: "bg-gradient-to-br from-red-500 to-red-700",
-    },
-    {
-      id: "brake-lines",
-      name: "Stainless Steel Brake Lines",
-      price: 149.99,
-      originalPrice: 179.99,
-      rating: 4.8,
-      image: "bg-gradient-to-br from-gray-500 to-gray-700",
-    },
-  ];
-
-  const product = useMemo(() => {
-    if (!params) return undefined;
-
-    return products.find(
-      (p) => p.title.toLowerCase() === decodeURIComponent(params).toLowerCase()
+    // If not found by ID, try to find by title
+    const allProducts = state.product.products;
+    return allProducts.find(
+      (p: any) =>
+        p.title?.toLowerCase() ===
+          decodeURIComponent(productId).toLowerCase() ||
+        p.name?.toLowerCase() === decodeURIComponent(productId).toLowerCase()
     );
-  }, [params, products]);
+  });
 
+  // Get related products from same category
+  const relatedProducts = useSelector((state: RootState) =>
+    product ? selectProductsByCategory(state, product.category) : []
+  )
+    .filter((p) => p.id !== productId)
+    .slice(0, 3);
+
+  // Get all products and wishlist state
+  const products = useSelector(selectAllProducts);
+  const { wishlist } = useSelector((state: RootState) => state.user);
+  const isInWishlist = product
+    ? wishlist.some((item) => item.id === product.id)
+    : false;
+
+  // Handle wishlist toggle
+  const handleToggleWishlist = () => {
+    if (!product) return;
+
+    const wishlistItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      category: product.category,
+    };
+
+    dispatch(toggleWishlist(wishlistItem));
+
+    if (isInWishlist) {
+      toast.success("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
+  };
+
+  // Handle quantity change
+  const handleQuantityChange = (delta: number) => {
+    const newQuantity = Math.max(1, quantity + delta);
+    setQuantity(newQuantity);
+  };
+
+  // Handle add to cart
+  const handleAddToCart = () => {
+    toast.success(`Added ${quantity} ${product?.name} to cart`);
+  };
+
+  // Handle share
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.name,
+          text: product?.description,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log("Error sharing:", error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
+  // Navigate to product
+  const navigateToProduct = (productId: string) => {
+    router.push(`/product/${productId}`);
+  };
+
+  // Navigate to category
+  const navigateToCategory = (category: string) => {
+    router.push(`/category/${category.toLowerCase()}`);
+  };
+
+  // If product not found, show loading or error
   if (!product) {
     return (
-      <div className="min-h-screen bg-black text-white p-12">
+      <div className="min-h-screen bg-black">
         <Header />
-        <h1 className="text-3xl font-bold">Product not found</h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-16">
+            <div className="text-white text-xl">Product not found</div>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
-  const handleQuantityChange = (delta: number) => {
-    setQuantity(Math.max(1, Math.min(product.stockCount, quantity + delta)));
-  };
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center text-gray-400 hover:text-white mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back
-        </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+  // Get unique categories from products for the shop by categories section
+  const shopByCategories = [...new Set(products.map((p) => p.category))];
+
+  return (
+    <div className="min-h-screen bg-black">
+      <Header />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumb */}
+        <div className="flex items-center space-x-2 text-sm text-gray-400 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center hover:text-white transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back
+          </button>
+          <span>/</span>
+          <button
+            onClick={() => navigateToCategory(product.category)}
+            className="hover:text-white transition-colors"
+          >
+            {product.category}
+          </button>
+          <span>/</span>
+          <span className="text-white">{product.name}</span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
             <div
-              className={`aspect-square ${product.images[selectedImage]} rounded-lg flex items-center justify-center`}
+              className={`aspect-square rounded-lg overflow-hidden ${
+                product.images && product.images.length > 0 ? "bg-gray-800" : ""
+              }`}
+              style={
+                !product.images || product.images.length === 0
+                  ? { background: product.backgroundColor }
+                  : {}
+              }
             >
-              <div className="text-8xl font-bold opacity-20">B</div>
+              {product.images && product.images.length > 0 ? (
+                <img
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-6xl font-bold text-white opacity-20">
+                  {product.name.charAt(0)}
+                </div>
+              )}
             </div>
-            <div className="flex space-x-2">
-              {product.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`w-20 h-20 ${img} rounded-lg flex items-center justify-center ${
-                    selectedImage === idx ? "ring-2 ring-red-500" : "opacity-70"
-                  }`}
-                >
-                  <div className="text-sm font-bold opacity-50">B</div>
-                </button>
-              ))}
-            </div>
+
+            {/* Image Thumbnails */}
+            {product.images && product.images.length > 1 && (
+              <div className="flex space-x-2">
+                {product.images.map((image: string, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                      selectedImage === index
+                        ? "border-red-500"
+                        : "border-gray-600"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Gradient Background Thumbnails (when no images) */}
+            {(!product.images || product.images.length === 0) &&
+              product.backgroundColor && (
+                <div className="flex space-x-2">
+                  {[0, 1, 2].map((index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`w-20 h-20 rounded-lg border-2 ${
+                        selectedImage === index
+                          ? "border-red-500"
+                          : "border-gray-600"
+                      }`}
+                      style={{ background: product.backgroundColor }}
+                    >
+                      <div className="w-full h-full flex items-center justify-center text-white opacity-20">
+                        {product.name.charAt(0)}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
           </div>
 
           {/* Product Info */}
           <div className="space-y-6">
-            <div>
-              <span className="bg-purple-600 text-white px-2 py-1 rounded text-sm inline-block mb-2">
-                {product.category}
+            {/* Product Label */}
+            {product.label && (
+              <span
+                className="inline-block px-3 py-1 text-sm font-semibold text-white rounded"
+                style={{ backgroundColor: product.backgroundColor }}
+              >
+                {product.label}
               </span>
-              <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-              <div className="flex items-center mb-4">
+            )}
+
+            {/* Product Title */}
+            <h1 className="text-3xl font-bold text-white">{product.name}</h1>
+
+            {/* Rating */}
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
                     className={`h-5 w-5 ${
                       i < Math.floor(product.rating)
-                        ? "text-yellow-400"
+                        ? "text-yellow-400 fill-current"
                         : "text-gray-600"
                     }`}
                   />
                 ))}
-                <span className="ml-2 text-gray-400">
-                  {product.rating} ({product.reviews} reviews)
-                </span>
               </div>
-              <div className="flex items-center space-x-3 mb-6">
-                <span className="text-3xl font-bold">${product.price}</span>
-                {product.originalPrice && (
+              <span className="text-gray-400">
+                {product.rating} ({product.reviews} reviews)
+              </span>
+            </div>
+
+            {/* Price */}
+            <div className="flex items-center space-x-4">
+              <span className="text-3xl font-bold text-white">
+                ${product.price}
+              </span>
+              {product.originalPrice &&
+                product.originalPrice > product.price && (
                   <>
                     <span className="text-xl text-gray-500 line-through">
                       ${product.originalPrice}
                     </span>
-                    <span className="bg-green-600 px-2 py-1 text-xs rounded">
-                      SAVE{" "}
-                      {Math.round(
-                        ((product.originalPrice - product.price) /
-                          product.originalPrice) *
-                          100
-                      )}
-                      %
+                    <span className="bg-green-600 text-white px-2 py-1 rounded text-sm">
+                      {product.discount}
                     </span>
                   </>
                 )}
-              </div>
             </div>
 
-            <p className="text-gray-300 text-lg">{product.description}</p>
-
-            <div>
-              <h3 className="font-semibold mb-3">Key Features:</h3>
-              <ul className="space-y-2">
-                {product.features.map((f, i) => (
-                  <li key={i} className="flex items-center text-gray-300">
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
+            {/* Stock Status */}
+            <div className="flex items-center space-x-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  product.inStock ? "bg-green-500" : "bg-red-500"
+                }`}
+              />
+              <span className="text-gray-400">
+                {product.inStock
+                  ? `${product.stockCount} in stock`
+                  : "Out of stock"}
+              </span>
             </div>
 
+            {/* Description */}
+            <p className="text-gray-300 leading-relaxed">
+              {product.description}
+            </p>
+
+            {/* Quantity and Add to Cart */}
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <span>Quantity:</span>
-                <div className="flex items-center border border-gray-600 rounded-lg">
+                <div className="flex items-center border border-gray-600 rounded">
                   <button
                     onClick={() => handleQuantityChange(-1)}
-                    className="text-gray-400 hover:text-white px-2 py-1"
+                    className="p-2 hover:bg-gray-700 transition-colors"
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-4 w-4 text-white" />
                   </button>
-                  <span className="px-4 py-2">{quantity}</span>
+                  <span className="px-4 py-2 text-white">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    className="text-gray-400 hover:text-white px-2 py-1"
+                    className="p-2 hover:bg-gray-700 transition-colors"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-4 w-4 text-white" />
                   </button>
                 </div>
-                <span className="text-gray-400">
-                  ({product.stockCount} in stock)
-                </span>
               </div>
-              <div className="flex space-x-3">
-                <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded flex items-center justify-center">
-                  <ShoppingCart className="h-5 w-5 mr-2" /> Add to Cart
-                </button>
-                <button className="border border-gray-600 text-gray-400 hover:text-white p-3 rounded">
-                  <Heart className="h-5 w-5" />
-                </button>
-                <button className="border border-gray-600 text-gray-400 hover:text-white p-3 rounded">
-                  <Share2 className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
 
-            <div>
-              <h3 className="font-semibold mb-3">Specifications:</h3>
-              <div className="space-y-2">
-                {Object.entries(product.specifications).map(([key, val]) => (
-                  <div
-                    key={key}
-                    className="flex justify-between py-2 border-b border-gray-700"
-                  >
-                    <span className="text-gray-400">{key}:</span>
-                    <span>{val}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-bold mb-8">Related Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {relatedProducts.map((item) => (
-              <div
-                key={item.id}
-                className="bg-gray-800/50 border border-gray-700 hover:border-red-500/30 rounded-lg overflow-hidden cursor-pointer"
-              >
-                <div
-                  className={`h-48 ${item.image} flex items-center justify-center`}
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!product.inStock}
+                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
                 >
-                  <div className="text-white text-4xl font-bold opacity-20">
-                    P
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold mb-2">{item.name}</h3>
-                  <div className="flex items-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(item.rating)
-                            ? "text-yellow-400"
-                            : "text-gray-600"
-                        }`}
-                      />
-                    ))}
-                    <span className="text-gray-400 text-sm ml-2">
-                      {item.rating}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-white font-bold">
-                        ${item.price}
-                      </span>
-                      {item.originalPrice && (
-                        <span className="text-gray-500 line-through text-sm">
-                          ${item.originalPrice}
-                        </span>
-                      )}
-                    </div>
-                    <button className="bg-red-600 hover:bg-red-700 text-sm text-white px-3 py-1 rounded">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Add to Cart</span>
+                </button>
+
+                <button
+                  onClick={handleToggleWishlist}
+                  className="p-3 border border-gray-600 hover:border-red-500 rounded-lg transition-colors"
+                >
+                  <Heart
+                    className={`h-6 w-6 ${
+                      isInWishlist
+                        ? "text-red-500 fill-current"
+                        : "text-gray-400"
+                    }`}
+                  />
+                </button>
+
+                <button
+                  onClick={handleShare}
+                  className="p-3 border border-gray-600 hover:border-red-500 rounded-lg transition-colors"
+                >
+                  <Share2 className="h-6 w-6 text-gray-400" />
+                </button>
               </div>
-            ))}
+            </div>
+
+            {/* Features */}
+            {product.features && product.features.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-3">
+                  Key Features
+                </h3>
+                <ul className="space-y-2">
+                  {product.features.map((feature: string, index: number) => (
+                    <li key={index} className="flex items-start space-x-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
+                      <span className="text-gray-300">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Specifications */}
+            {product.specifications &&
+              Object.keys(product.specifications).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Specifications
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {Object.entries(product.specifications).map(
+                      ([key, value]: [string, any]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-gray-400">{key}:</span>
+                          <span className="text-white">{value}</span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
           </div>
         </div>
-      </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Related Products
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedProducts.map((relatedProduct) => (
+                <div
+                  key={relatedProduct.id}
+                  onClick={() => navigateToProduct(relatedProduct.id)}
+                  className="bg-gray-800/50 border border-gray-700 hover:border-red-500/30 transition-all duration-300 rounded-lg overflow-hidden cursor-pointer"
+                >
+                  <div
+                    className={`aspect-square flex items-center justify-center ${
+                      relatedProduct.images && relatedProduct.images.length > 0
+                        ? "bg-gray-700"
+                        : ""
+                    }`}
+                    style={
+                      !relatedProduct.images ||
+                      relatedProduct.images.length === 0
+                        ? { background: relatedProduct.backgroundColor }
+                        : {}
+                    }
+                  >
+                    {relatedProduct.images &&
+                    relatedProduct.images.length > 0 ? (
+                      <img
+                        src={relatedProduct.images[0]}
+                        alt={relatedProduct.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-4xl font-bold text-white opacity-20">
+                        {relatedProduct.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      {relatedProduct.name}
+                    </h3>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold text-white">
+                        ${relatedProduct.price}
+                      </span>
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        <span className="text-gray-400 text-sm ml-1">
+                          {relatedProduct.rating}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      <Footer />
     </div>
   );
 };

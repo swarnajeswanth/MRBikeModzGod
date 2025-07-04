@@ -1,194 +1,20 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import ProductCard from "../IndividualProduct";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, EyeOff } from "lucide-react";
 import "./productgrid.css";
-
 import { useRouter } from "next/navigation";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
+import { selectAllProducts } from "@/components/store/productSlice";
+import { selectFeatures } from "@/components/store/storeSettingsSlice";
 
 gsap.registerPlugin(Draggable);
-const products = [
-  {
-    label: "SALE",
-    labelType: "sale",
-    backgroundColor: "#a855f7",
-    category: "Brakes",
-    title: "Racing Brake Pads",
-    rating: 4.8,
-    reviews: 178,
-    price: 199.99,
-    originalPrice: 249.99,
-    discount: "20%",
-  },
-  {
-    label: "PREMIUM",
-    labelType: "premium",
-    backgroundColor: "#facc15",
-    category: "Lighting",
-    title: "LED Headlight Kit",
-    rating: 4.9,
-    reviews: 267,
-    price: 449.99,
-  },
-  {
-    label: "HOT",
-    labelType: "sale",
-    backgroundColor: "#f472b6",
-    category: "Suspension",
-    title: "Coilover Kit",
-    rating: 4.7,
-    reviews: 134,
-    price: 299.99,
-    originalPrice: 359.99,
-    discount: "17%",
-  },
-  {
-    label: "NEW",
-    labelType: "premium",
-    backgroundColor: "#60a5fa",
-    category: "Electronics",
-    title: "ECU Tuner",
-    rating: 4.5,
-    reviews: 89,
-    price: 579.99,
-  },
-  {
-    label: "SALE",
-    labelType: "sale",
-    backgroundColor: "#a855f7",
-    category: "Brakes",
-    title: "Racing Brake Pads",
-    rating: 4.8,
-    reviews: 178,
-    price: 199.99,
-    originalPrice: 249.99,
-    discount: "20%",
-  },
-  {
-    label: "PREMIUM",
-    labelType: "premium",
-    backgroundColor: "#facc15",
-    category: "Lighting",
-    title: "LED Headlight Kit",
-    rating: 4.9,
-    reviews: 267,
-    price: 449.99,
-  },
-  {
-    label: "HOT",
-    labelType: "sale",
-    backgroundColor: "#f472b6",
-    category: "Suspension",
-    title: "Coilover Kit",
-    rating: 4.7,
-    reviews: 134,
-    price: 299.99,
-    originalPrice: 359.99,
-    discount: "17%",
-  },
-  {
-    label: "NEW",
-    labelType: "premium",
-    backgroundColor: "#60a5fa",
-    category: "Electronics",
-    title: "ECU Tuner",
-    rating: 4.5,
-    reviews: 89,
-    price: 579.99,
-  },
-  {
-    label: "SALE",
-    labelType: "sale",
-    backgroundColor: "#a855f7",
-    category: "Brakes",
-    title: "Racing Brake Pads",
-    rating: 4.8,
-    reviews: 178,
-    price: 199.99,
-    originalPrice: 249.99,
-    discount: "20%",
-  },
-  {
-    label: "PREMIUM",
-    labelType: "premium",
-    backgroundColor: "#facc15",
-    category: "Lighting",
-    title: "LED Headlight Kit",
-    rating: 4.9,
-    reviews: 267,
-    price: 449.99,
-  },
-  {
-    label: "HOT",
-    labelType: "sale",
-    backgroundColor: "#f472b6",
-    category: "Suspension",
-    title: "Coilover Kit",
-    rating: 4.7,
-    reviews: 134,
-    price: 299.99,
-    originalPrice: 359.99,
-    discount: "17%",
-  },
-  {
-    label: "NEW",
-    labelType: "premium",
-    backgroundColor: "#60a5fa",
-    category: "Electronics",
-    title: "ECU Tuner",
-    rating: 4.5,
-    reviews: 89,
-    price: 579.99,
-  },
-  {
-    label: "SALE",
-    labelType: "sale",
-    backgroundColor: "#a855f7",
-    category: "Brakes",
-    title: "Racing Brake Pads",
-    rating: 4.8,
-    reviews: 178,
-    price: 199.99,
-    originalPrice: 249.99,
-    discount: "20%",
-  },
-  {
-    label: "PREMIUM",
-    labelType: "premium",
-    backgroundColor: "#facc15",
-    category: "Lighting",
-    title: "LED Headlight Kit",
-    rating: 4.9,
-    reviews: 267,
-    price: 449.99,
-  },
-  {
-    label: "HOT",
-    labelType: "sale",
-    backgroundColor: "#f472b6",
-    category: "Suspension",
-    title: "Coilover Kit",
-    rating: 4.7,
-    reviews: 134,
-    price: 299.99,
-    originalPrice: 359.99,
-    discount: "17%",
-  },
-  {
-    label: "NEW",
-    labelType: "premium",
-    backgroundColor: "#60a5fa",
-    category: "Electronics",
-    title: "ECU Tuner",
-    rating: 4.5,
-    reviews: 89,
-    price: 579.99,
-  },
-];
 
 const ProductCarousel: React.FC = () => {
+  const products = useSelector(selectAllProducts);
+  const features = useSelector(selectFeatures);
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -199,6 +25,7 @@ const ProductCarousel: React.FC = () => {
         setContainerWidth(containerRef.current.clientWidth);
       }
     };
+
     updateWidth();
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
@@ -213,6 +40,22 @@ const ProductCarousel: React.FC = () => {
   const totalSlideWidth = CARD_WIDTH + GAP;
   const centerOffset = (containerWidth - CARD_WIDTH) / 2;
   const x = centerOffset - activeIndex * totalSlideWidth;
+
+  // Show disabled state if product display features are disabled
+  if (!features?.productImages && !features?.productDetails) {
+    return (
+      <div className="scroll-container" ref={containerRef}>
+        <div className="flex items-center justify-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className="text-center">
+            <EyeOff className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">
+              Product display is currently disabled
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="scroll-container" ref={containerRef}>
@@ -237,16 +80,17 @@ const ProductCarousel: React.FC = () => {
             }
           >
             <ProductCard
-              label={p.label}
-              labelType={p.labelType}
+              label={features?.discountDisplay ? p.label : ""}
+              labelType={features?.discountDisplay ? p.labelType : ""}
               backgroundColor={p.backgroundColor}
               category={p.category}
               title={p.title}
-              rating={p.rating}
-              reviews={p.reviews}
-              price={p.price}
-              originalPrice={p.originalPrice}
-              discount={p.discount}
+              rating={features?.ratings ? p.rating : 0}
+              reviews={features?.reviews ? p.reviews : 0}
+              price={features?.priceDisplay ? p.price : 0}
+              originalPrice={features?.priceDisplay ? p.originalPrice : 0}
+              discount={features?.discountDisplay ? p.discount : ""}
+              images={features?.productImages ? p.images : []}
             />
           </div>
         ))}

@@ -1,7 +1,8 @@
 // store/productSlice.ts
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 
 export type Product = {
+  _id?: string;
   id: string;
   name: string;
   label: string;
@@ -20,177 +21,237 @@ export type Product = {
   images: string[];
   inStock: boolean;
   stockCount: number;
+  // Database fields
+  brand?: string;
+  stock?: number;
+  image?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 type ProductState = {
   products: Product[];
+  loading: boolean;
+  error: string | null;
 };
 
+// Async thunks for database operations
+export const fetchProducts = createAsyncThunk(
+  "products/fetchProducts",
+  async () => {
+    const response = await fetch("/api/products");
+    if (!response.ok) {
+      throw new Error("Failed to fetch products");
+    }
+    return response.json();
+  }
+);
+
+export const createProduct = createAsyncThunk(
+  "products/createProduct",
+  async (productData: Omit<Product, "id" | "_id">) => {
+    const response = await fetch("/api/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(productData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to create product");
+    }
+    return response.json();
+  }
+);
+
+export const updateProductById = createAsyncThunk(
+  "products/updateProduct",
+  async ({
+    id,
+    productData,
+  }: {
+    id: string;
+    productData: Partial<Product>;
+  }) => {
+    const response = await fetch(`/api/products/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(productData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update product");
+    }
+    return response.json();
+  }
+);
+
+export const deleteProductById = createAsyncThunk(
+  "products/deleteProduct",
+  async (id: string) => {
+    const response = await fetch(`/api/products/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete product");
+    }
+    return { id };
+  }
+);
+
 const initialState: ProductState = {
-  products: [
-    {
-      id: "racing-brake-pads",
-      name: "Racing Brake Pads",
-      label: "SALE",
-      labelType: "sale",
-      backgroundColor: "#a855f7",
-      category: "Brakes",
-      title: "Racing Brake Pads",
-      rating: 4.8,
-      reviews: 178,
-      price: 199.99,
-      originalPrice: 249.99,
-      discount: "20%",
-      description:
-        "High-performance racing brake pads designed for maximum stopping power and durability. Perfect for track days and aggressive street driving.",
-      features: [
-        "Superior heat dissipation",
-        "Extended pad life",
-        "Reduced brake fade",
-        "Compatible with most brake systems",
-        "Professional grade compound",
-      ],
-      specifications: {
-        Material: "Ceramic composite",
-        "Temperature Range": "-40°C to 650°C",
-        Compatibility: "Universal fit",
-        Warranty: "2 years",
-      },
-      images: [
-        "bg-gradient-to-br from-purple-500 to-purple-700",
-        "bg-gradient-to-br from-purple-400 to-purple-600",
-        "bg-gradient-to-br from-purple-600 to-purple-800",
-      ],
-      inStock: true,
-      stockCount: 15,
-    },
-    {
-      id: "led-headlight-kit",
-      name: "LED Headlight Kit",
-      label: "PREMIUM",
-      labelType: "premium",
-      backgroundColor: "#facc15",
-      category: "Lighting",
-      title: "LED Headlight Kit",
-      rating: 4.9,
-      reviews: 267,
-      price: 449.99,
-      originalPrice: 499.99,
-      discount: "10%",
-      description:
-        "High-brightness LED headlight kit for enhanced visibility and energy efficiency. Designed for easy installation and long-lasting performance.",
-      features: [
-        "Ultra-bright output",
-        "Low power consumption",
-        "Plug-and-play installation",
-        "Waterproof and dustproof",
-        "Long lifespan (30,000+ hrs)",
-      ],
-      specifications: {
-        Voltage: "12V",
-        Lumens: "8000lm",
-        Compatibility: "Universal",
-        Warranty: "1 year",
-      },
-      images: [
-        "bg-gradient-to-br from-yellow-400 to-yellow-600",
-        "bg-gradient-to-br from-yellow-300 to-yellow-500",
-        "bg-gradient-to-br from-yellow-500 to-yellow-700",
-      ],
-      inStock: true,
-      stockCount: 25,
-    },
-    {
-      id: "coilover-kit",
-      name: "Coilover Kit",
-      label: "HOT",
-      labelType: "sale",
-      backgroundColor: "#f472b6",
-      category: "Suspension",
-      title: "Coilover Kit",
-      rating: 4.7,
-      reviews: 134,
-      price: 299.99,
-      originalPrice: 359.99,
-      discount: "17%",
-      description:
-        "Adjustable coilover kit designed to improve handling and ride quality. Suitable for both street and track applications.",
-      features: [
-        "Ride height adjustability",
-        "High-strength materials",
-        "Improved cornering stability",
-        "Corrosion-resistant finish",
-        "Track-ready performance",
-      ],
-      specifications: {
-        Material: "Aluminum & Steel",
-        Adjustment: "Height & Preload",
-        Compatibility: "Vehicle-specific",
-        Warranty: "2 years",
-      },
-      images: [
-        "bg-gradient-to-br from-pink-500 to-pink-700",
-        "bg-gradient-to-br from-pink-400 to-pink-600",
-        "bg-gradient-to-br from-pink-600 to-pink-800",
-      ],
-      inStock: true,
-      stockCount: 10,
-    },
-    {
-      id: "ecu-tuner",
-      name: "ECU Tuner",
-      label: "NEW",
-      labelType: "premium",
-      backgroundColor: "#60a5fa",
-      category: "Electronics",
-      title: "ECU Tuner",
-      rating: 4.5,
-      reviews: 89,
-      price: 579.99,
-      originalPrice: 649.99,
-      discount: "11%",
-      description:
-        "Advanced ECU tuning device that allows customization of vehicle performance parameters. Unlock the true potential of your engine.",
-      features: [
-        "Real-time diagnostics",
-        "Preloaded and custom maps",
-        "Plug-and-play setup",
-        "Improves fuel efficiency",
-        "Boosts horsepower and torque",
-      ],
-      specifications: {
-        Interface: "USB/OBD2",
-        Compatibility: "Most cars 2008+",
-        Updates: "Over-the-air",
-        Warranty: "1 year",
-      },
-      images: [
-        "bg-gradient-to-br from-blue-500 to-blue-700",
-        "bg-gradient-to-br from-blue-400 to-blue-600",
-        "bg-gradient-to-br from-blue-600 to-blue-800",
-      ],
-      inStock: true,
-      stockCount: 8,
-    },
-  ],
+  products: [],
+  loading: false,
+  error: null,
 };
 
 const productSlice = createSlice({
   name: "product",
   initialState,
   reducers: {
-    updateProduct: (state, action) => {
+    // Set loading state
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+
+    // Set error state
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+
+    // Add new product
+    addProduct: (state, action: PayloadAction<Product>) => {
+      state.products.push(action.payload);
+    },
+
+    // Update existing product
+    updateProduct: (state, action: PayloadAction<Product>) => {
       const updatedProduct = action.payload;
-      const index = state.products.findIndex((p) => p.id === updatedProduct.id);
+      const index = state.products.findIndex(
+        (p) => p.id === updatedProduct.id || p._id === updatedProduct._id
+      );
       if (index !== -1) {
-        state.products[index] = updatedProduct;
+        state.products[index] = { ...state.products[index], ...updatedProduct };
       }
     },
+
+    // Delete product
+    deleteProduct: (state, action: PayloadAction<string>) => {
+      const productId = action.payload;
+      state.products = state.products.filter(
+        (p) => p.id !== productId && p._id !== productId
+      );
+    },
+
+    // Set all products (for initial load)
+    setProducts: (state, action: PayloadAction<Product[]>) => {
+      state.products = action.payload;
+    },
+
+    // Clear products
+    clearProducts: (state) => {
+      state.products = [];
+    },
+  },
+  extraReducers: (builder) => {
+    // Fetch products
+    builder
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload;
+      })
+      .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch products";
+      });
+
+    // Create product
+    builder
+      .addCase(createProduct.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products.push(action.payload.product);
+      })
+      .addCase(createProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to create product";
+      });
+
+    // Update product
+    builder
+      .addCase(updateProductById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedProduct = action.payload.product;
+        const index = state.products.findIndex(
+          (p) => p.id === updatedProduct.id || p._id === updatedProduct._id
+        );
+        if (index !== -1) {
+          state.products[index] = updatedProduct;
+        }
+      })
+      .addCase(updateProductById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to update product";
+      });
+
+    // Delete product
+    builder
+      .addCase(deleteProductById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = state.products.filter(
+          (p) => p.id !== action.payload.id && p._id !== action.payload.id
+        );
+      })
+      .addCase(deleteProductById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to delete product";
+      });
   },
 });
 
 export default productSlice.reducer;
-export const { updateProduct } = productSlice.actions;
+export const {
+  setLoading,
+  setError,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  setProducts,
+  clearProducts,
+} = productSlice.actions;
 
 export const selectAllProducts = (state: { product: ProductState }) =>
   state.product.products;
+
+export const selectProductById = (
+  state: { product: ProductState },
+  productId: string
+) =>
+  state.product.products.find((p) => p.id === productId || p._id === productId);
+
+export const selectProductsByCategory = (
+  state: { product: ProductState },
+  category: string
+) => state.product.products.filter((p) => p.category === category);
+
+export const selectLoading = (state: { product: ProductState }) =>
+  state.product.loading;
+
+export const selectError = (state: { product: ProductState }) =>
+  state.product.error;

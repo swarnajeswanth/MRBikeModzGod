@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import gsap from "gsap";
 import { Zap } from "lucide-react";
 import ShopNowButton from "./ShopNowButton";
@@ -147,6 +147,12 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      {/* <SliderManager
+        images={sliderImages}
+        onImagesChange={setSliderImages}
+        onClose={() => setShowSlider(false)}
+      /> */}
     </section>
   );
 };

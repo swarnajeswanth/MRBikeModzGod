@@ -2,12 +2,17 @@
 
 import React from "react";
 import "./individualproduct.css";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaRegHeart, FaHeart } from "react-icons/fa";
+import { Heart, XCircle, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AddToCartButton from "@/components/Cart/AddToCart"; // Adjust path if needed
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { startLoading, stopLoading } from "@/components/store/LoadingSlice";
 import { useTransition } from "react";
+import { toggleWishlist } from "@/components/store/UserSlice";
+import { RootState } from "@/components/store";
+import { selectFeatures } from "@/components/store/storeSettingsSlice";
+import { toast } from "react-hot-toast";
 
 interface ProductCardProps {
   label?: string;
@@ -20,6 +25,7 @@ interface ProductCardProps {
   price: number;
   originalPrice?: number;
   discount?: string;
+  images?: string[];
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -33,8 +39,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   originalPrice,
   discount,
+  images,
 }) => {
   const [isPending, startTransition] = useTransition();
+  const { wishlist } = useSelector((state: RootState) => state.user);
+  const features = useSelector(selectFeatures);
 
   const handleProductClick = (productId: string) => {
     dispatch(startLoading());
@@ -48,46 +57,120 @@ const ProductCard: React.FC<ProductCardProps> = ({
     });
   };
 
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!features?.wishlist) {
+      toast.error("Wishlist feature is currently disabled");
+      return;
+    }
+
+    const wishlistItem = {
+      id: title, // Using title as ID for now
+      name: title,
+      price: price,
+      category: category,
+    };
+
+    dispatch(toggleWishlist(wishlistItem));
+
+    const isInWishlist = wishlist.some((item) => item.id === title);
+    if (isInWishlist) {
+      toast.success("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
+  };
+
   const router = useRouter();
   const dispatch = useDispatch();
+
+  // Show disabled state if product display is disabled
+  if (!features?.productImages && !features?.productDetails) {
+    return (
+      <div className="product-card">
+        <div className="product-image bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+          <div className="text-center">
+            <EyeOff className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-gray-500 text-sm">Product display disabled</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="product-card">
       <div className="product-image" style={{ backgroundColor }}>
-        {label && <div className={`label ${labelType}`}>{label}</div>}
-        <span className="product-letter">{title.charAt(0)}</span>
+        {features?.discountDisplay && label && (
+          <div className={`label ${labelType}`}>{label}</div>
+        )}
+
+        {/* Wishlist Button - Only show if wishlist feature is enabled */}
+        {features?.wishlist && (
+          <button
+            className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
+            onClick={handleToggleWishlist}
+          >
+            {wishlist.some((item) => item.id === title) ? (
+              <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
+            ) : (
+              <FaRegHeart className="w-5 h-5 text-white" />
+            )}
+          </button>
+        )}
+
+        {/* Product Image - Only show if product images feature is enabled */}
+        {features?.productImages && images && images.length > 0 ? (
+          <img
+            src={images[0]}
+            alt={title}
+            className="w-full h-full object-cover rounded-t-lg"
+          />
+        ) : (
+          <span className="product-letter">{title.charAt(0)}</span>
+        )}
       </div>
 
       <div className="product-info">
         <span className="category-tag">{category}</span>
         <h3
           style={{ cursor: "pointer" }}
-          onClick={() => handleProductClick(title)}
+          onClick={() => router.push(`/product/${title}`)}
         >
           {title}
         </h3>
 
-        <div className="rating">
-          <FaStar color="#FFD700" />
-          <span>{rating}</span>
-          <span className="reviews">({reviews} reviews)</span>
-        </div>
+        {/* Rating - Only show if ratings feature is enabled */}
+        {features?.ratings && (
+          <div className="rating">
+            <FaStar color="#FFD700" />
+            <span>{rating}</span>
+            {features?.reviews && (
+              <span className="reviews">({reviews} reviews)</span>
+            )}
+          </div>
+        )}
 
-        <div className="price-row">
-          <span className="price">${price.toFixed(2)}</span>
-          {originalPrice && (
-            <>
-              <span className="original-price">
-                ${originalPrice.toFixed(2)}
-              </span>
-              {discount && (
-                <span className="discount-badge">SAVE {discount}</span>
-              )}
-            </>
-          )}
-        </div>
+        {/* Price - Only show if price display feature is enabled */}
+        {features?.priceDisplay && (
+          <div className="price-row">
+            <span className="price">${price.toFixed(2)}</span>
+            {originalPrice && (
+              <>
+                <span className="original-price">
+                  ${originalPrice.toFixed(2)}
+                </span>
+                {features?.discountDisplay && discount && (
+                  <span className="discount-badge">SAVE {discount}</span>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
-        {/* Custom GSAP-powered Add to Cart Button */}
-        <AddToCartButton />
+        {/* Add to Cart Button - Only show if add to cart feature is enabled */}
+        {features?.addToCart && <AddToCartButton />}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+import React, { useRef, useState } from "react";
+import { toast } from "react-hot-toast";
 
 export interface ProductForm {
   name: string;
@@ -17,7 +18,6 @@ export interface ProductForm {
   specifications: Record<string, string>;
   label: string;
   labelType: string;
-  backgroundColor: string;
   images: string[]; // should be array
 }
 
@@ -38,11 +38,39 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleInput = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        setForm((prev) => ({ ...prev, images: [data.url] }));
+        toast.success("Image uploaded!");
+      } else {
+        toast.error(data.error || "Upload failed");
+      }
+    } catch (err) {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -204,26 +232,32 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             value={form.labelType}
             onChange={handleInput}
           />
-          <input
-            name="backgroundColor"
-            placeholder="Background Color (e.g., #a855f7)"
-            className="input"
-            value={form.backgroundColor}
-            onChange={handleInput}
-          />
 
-          <input
-            name="images"
-            placeholder="Images (comma-separated URLs)"
-            className="input col-span-1 md:col-span-2"
-            value={form.images.join(", ")}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                images: e.target.value.split(",").map((img) => img.trim()),
-              }))
-            }
-          />
+          {/* Image Upload */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="block text-sm mb-1">Product Image</label>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700"
+              disabled={uploading}
+            />
+            {uploading && (
+              <div className="text-xs text-yellow-400 mt-1">Uploading...</div>
+            )}
+            {form.images[0] && (
+              <div className="mt-2">
+                <img
+                  src={form.images[0]}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded border border-gray-700"
+                />
+                <div className="text-xs text-gray-400 mt-1">Image Preview</div>
+              </div>
+            )}
+          </div>
 
           {/* Buttons - full width on large screen */}
           <div className="col-span-1 md:col-span-2 flex justify-end gap-2 pt-4">

@@ -1,100 +1,35 @@
 "use client";
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Star, ShoppingCart, Filter, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import AddToCartButton from "./Cart/AddToCart";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-
-// Mock products data
-const allProducts = [
-  {
-    id: "racing-brake-pads",
-    name: "Racing Brake Pads",
-    price: 199.99,
-    originalPrice: 249.99,
-    rating: 4.8,
-    reviews: 178,
-    category: "brakes",
-    image: "bg-gradient-to-br from-purple-500 to-purple-700",
-    badge: "SALE",
-    badgeColor: "bg-purple-600",
-    hasOffer: true,
-    isDeal: true,
-  },
-  {
-    id: "racing-helmet",
-    name: "Professional Racing Helmet",
-    price: 299.99,
-    originalPrice: 399.99,
-    rating: 4.9,
-    reviews: 234,
-    category: "helmet",
-    image: "bg-gradient-to-br from-red-500 to-red-700",
-    badge: "HOT DEAL",
-    badgeColor: "bg-red-600",
-    hasOffer: true,
-    isDeal: true,
-  },
-  {
-    id: "sport-bike",
-    name: "Mountain Bike Pro",
-    price: 1299.99,
-    rating: 4.7,
-    reviews: 89,
-    category: "bike",
-    image: "bg-gradient-to-br from-green-500 to-green-700",
-    badge: "NEW",
-    badgeColor: "bg-green-600",
-    hasOffer: false,
-    isDeal: false,
-  },
-  {
-    id: "bike-accessories-kit",
-    name: "Complete Accessories Kit",
-    price: 89.99,
-    originalPrice: 119.99,
-    rating: 4.6,
-    reviews: 156,
-    category: "accessories",
-    image: "bg-gradient-to-br from-blue-500 to-blue-700",
-    badge: "POPULAR",
-    badgeColor: "bg-blue-600",
-    hasOffer: true,
-    isDeal: false,
-  },
-  {
-    id: "custom-keychain",
-    name: "Premium Custom Keychain",
-    price: 19.99,
-    originalPrice: 29.99,
-    rating: 4.5,
-    reviews: 267,
-    category: "keychains",
-    image: "bg-gradient-to-br from-yellow-500 to-yellow-700",
-    badge: "BESTSELLER",
-    badgeColor: "bg-yellow-600",
-    hasOffer: true,
-    isDeal: false,
-  },
-  {
-    id: "racing-toy-car",
-    name: "Mini Racing Car Set",
-    price: 49.99,
-    rating: 4.8,
-    reviews: 198,
-    category: "toys",
-    image: "bg-gradient-to-br from-pink-500 to-pink-700",
-    badge: "PREMIUM",
-    badgeColor: "bg-pink-600",
-    hasOffer: false,
-    isDeal: false,
-  },
-];
+import {
+  selectAllProducts,
+  selectLoading,
+  selectError,
+} from "@/components/store/productSlice";
+import { RootState } from "@/components/store";
+import { toggleWishlist } from "@/components/store/UserSlice";
+import { toast } from "react-hot-toast";
 
 const AllProductsPage = () => {
+  const dispatch = useDispatch();
+  const products = useSelector(selectAllProducts);
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
+
+  const router = useRouter();
+  const { wishlist } = useSelector((state: RootState) => state.user);
+
+  // Get unique categories from products
+  const uniqueCategories = [
+    ...new Set(products.map((product) => product.category)),
+  ];
+
   const [filters, setFilters] = useState({
     category: "",
     priceRange: "",
@@ -102,24 +37,33 @@ const AllProductsPage = () => {
     offers: "",
   });
   const [promoCode, setPromoCode] = useState("");
-  const router = useRouter();
-  const [wishlist, setWishlist] = useState<{ [productId: string]: boolean }>(
-    {}
-  );
 
-  const toggleWishlist = (productId: string) => {
-    setWishlist((prev) => ({
-      ...prev,
-      [productId]: !prev[productId],
-    }));
+  const handleToggleWishlist = (product: any) => {
+    const wishlistItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+    };
+
+    dispatch(toggleWishlist(wishlistItem));
+
+    const isInWishlist = wishlist.some((item) => item.id === product.id);
+    if (isInWishlist) {
+      toast.success("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
   };
 
   const filterProducts = () => {
-    let filtered = [...allProducts];
+    let filtered = [...products];
 
     if (filters.category) {
       filtered = filtered.filter(
-        (product) => product.category === filters.category
+        (product) =>
+          product.category.toLowerCase() === filters.category.toLowerCase()
       );
     }
 
@@ -141,9 +85,14 @@ const AllProductsPage = () => {
     }
 
     if (filters.offers === "offers") {
-      filtered = filtered.filter((product) => product.hasOffer);
+      filtered = filtered.filter(
+        (product) => product.discount && product.discount !== ""
+      );
     } else if (filters.offers === "deals") {
-      filtered = filtered.filter((product) => product.isDeal);
+      filtered = filtered.filter(
+        (product) =>
+          product.originalPrice && product.originalPrice > product.price
+      );
     }
 
     if (filters.sortBy) {
@@ -174,13 +123,29 @@ const AllProductsPage = () => {
 
   const hasActiveFilters = Object.values(filters).some((val) => val !== "");
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading products...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-red-400 text-xl">Error: {error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">All Products</h1>
           <p className="text-gray-400">
-            Showing {filteredProducts.length} of {allProducts.length} products
+            Showing {filteredProducts.length} of {products.length} products
           </p>
         </div>
 
@@ -205,15 +170,7 @@ const AllProductsPage = () => {
               {
                 label: "Category",
                 value: filters.category,
-                options: [
-                  "",
-                  "helmet",
-                  "bike",
-                  "accessories",
-                  "keychains",
-                  "toys",
-                  "brakes",
-                ],
+                options: ["", ...uniqueCategories],
                 key: "category",
               },
               {
@@ -269,28 +226,40 @@ const AllProductsPage = () => {
               className="bg-gray-800/50 border border-gray-700 hover:border-red-500/30 transition-all duration-300 rounded-lg overflow-hidden cursor-pointer"
             >
               <div
-                className={`h-48 ${product.image} relative flex items-center justify-center`}
+                className="h-48 relative flex items-center justify-center cursor-pointer bg-gray-700"
+                onClick={() => router.push(`/product/${product.id}`)}
               >
-                <span
-                  className={`absolute top-4 left-4 px-2 py-1 text-sm bg-red-500 text-white rounded`}
-                >
-                  {product.badge}
-                </span>
+                {product.label && (
+                  <span
+                    className={`absolute top-4 left-4 px-2 py-1 text-sm text-white rounded`}
+                    style={{ backgroundColor: product.backgroundColor }}
+                  >
+                    {product.label}
+                  </span>
+                )}
 
                 <button
                   className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-                  onClick={() => toggleWishlist(product.id)}
+                  onClick={() => handleToggleWishlist(product)}
                 >
-                  {wishlist[product.id] ? (
+                  {wishlist.some((item) => item.id === product.id) ? (
                     <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
                   ) : (
                     <FaRegHeart className="w-5 h-5 text-white" />
                   )}
                 </button>
 
-                <div className="text-white text-6xl font-bold opacity-20">
-                  {product.name.charAt(0)}
-                </div>
+                {product.images && product.images.length > 0 ? (
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-white text-6xl font-bold opacity-20">
+                    {product.name.charAt(0)}
+                  </div>
+                )}
               </div>
 
               <div className="p-4">

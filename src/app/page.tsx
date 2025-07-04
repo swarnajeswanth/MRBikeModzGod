@@ -12,6 +12,7 @@ const Index = () => {
     <GSAPScrollWrapper>
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-gray-900 to-black space-y-12">
         <Header />
+
         <section className="fade-up">
           <Hero />
         </section>

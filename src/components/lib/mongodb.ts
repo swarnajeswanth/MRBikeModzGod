@@ -1,33 +1,15 @@
+// lib/mongoose.ts
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "";
+const MONGODB_URI = process.env.MONGODB_URI as string;
 
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable");
+  throw new Error("Please define the MONGODB_URI in your environment.");
 }
 
-// Extend globalThis to cache the mongoose connection
-declare global {
-  var mongooseConn:
-    | {
-        conn: typeof mongoose | null;
-        promise: Promise<typeof mongoose> | null;
-      }
-    | undefined;
-}
+let cached = (global as any).mongoose || { conn: null, promise: null };
 
-// Initialize global cache once
-if (!global.mongooseConn) {
-  global.mongooseConn = {
-    conn: null,
-    promise: null,
-  };
-}
-
-// ✅ Now it's safe
-const cached = global.mongooseConn!;
-
-async function dbConnect(): Promise<typeof mongoose> {
+export async function connectToDB() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
@@ -39,5 +21,3 @@ async function dbConnect(): Promise<typeof mongoose> {
   cached.conn = await cached.promise;
   return cached.conn;
 }
-
-export default dbConnect;

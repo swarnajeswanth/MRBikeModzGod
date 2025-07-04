@@ -12,6 +12,7 @@ import {
 import AddProductModal, {
   ProductForm,
 } from "@/components/Profile/AddProductModal"; // adjust path if needed
+import SeedReviewsButton from "@/components/Profile/SeedReviewsButton";
 import { useSelector } from "react-redux";
 import { selectAllProducts } from "@/components/store/productSlice"; // adjust path if needed
 import { useDispatch } from "react-redux";
@@ -69,7 +70,6 @@ const RetailerDashboard: React.FC = () => {
     specifications: {}, // ✅ initialize as object
     label: "",
     labelType: "",
-    backgroundColor: "",
     images: [], // ✅ initialize as array
   });
 
@@ -99,7 +99,6 @@ const RetailerDashboard: React.FC = () => {
       specifications: product.specifications || {},
       label: product.label || "",
       labelType: product.labelType || "",
-      backgroundColor: product.backgroundColor || "",
       images: product.images || [],
     });
 
@@ -120,6 +119,7 @@ const RetailerDashboard: React.FC = () => {
       rating: parseFloat(formData.rating),
       reviews: parseInt(formData.reviews),
       stockCount: parseInt(formData.stockCount),
+      backgroundColor: "#ffffff", // Default background color
     };
 
     if (editProductId) {
@@ -148,7 +148,6 @@ const RetailerDashboard: React.FC = () => {
       specifications: {},
       label: "",
       labelType: "",
-      backgroundColor: "",
       images: [],
     });
   };
@@ -187,36 +186,38 @@ const RetailerDashboard: React.FC = () => {
       <div className="bg-[#1D2939] p-6 rounded-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
           <h2 className="text-xl font-bold">Product Management</h2>
-          <button
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-            onClick={() => {
-              // 🔑 Clear form and editing state
-              setEditProductId(null);
-              setForm({
-                name: "",
-                title: "",
-                category: "",
-                price: "",
-                originalPrice: "",
-                discount: "",
-                stockCount: "",
-                inStock: true,
-                rating: "",
-                reviews: "",
-                description: "",
-                features: [],
-                specifications: {},
-                label: "",
-                labelType: "",
-                backgroundColor: "",
-                images: [],
-              });
-              setIsModalOpen(true);
-            }}
-          >
-            <FaPlus />
-            Add Product
-          </button>
+          <div className="flex gap-2">
+            <SeedReviewsButton />
+            <button
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+              onClick={() => {
+                // 🔑 Clear form and editing state
+                setEditProductId(null);
+                setForm({
+                  name: "",
+                  title: "",
+                  category: "",
+                  price: "",
+                  originalPrice: "",
+                  discount: "",
+                  stockCount: "",
+                  inStock: true,
+                  rating: "",
+                  reviews: "",
+                  description: "",
+                  features: [],
+                  specifications: {},
+                  label: "",
+                  labelType: "",
+                  images: [],
+                });
+                setIsModalOpen(true);
+              }}
+            >
+              <FaPlus />
+              Add Product
+            </button>
+          </div>
         </div>
 
         <div className="mb-4">
