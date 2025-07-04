@@ -11,6 +11,7 @@ export interface WishlistItem {
 }
 
 export interface UserState {
+  id?: string;
   username: string;
   image: string;
   role: UserRole;
@@ -21,6 +22,7 @@ export interface UserState {
 }
 
 const initialState: UserState = {
+  id: "",
   username: "",
   image: "",
   role: "customer",

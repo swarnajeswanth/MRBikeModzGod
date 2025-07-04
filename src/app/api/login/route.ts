@@ -1,11 +1,11 @@
 // app/api/login/route.ts (Next.js App Router)
-import dbConnect from "@/components/lib/mongodb";
+import { connectToDB } from "@/components/lib/mongodb";
 import User from "@/components/models/User";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    await dbConnect();
+    await connectToDB();
 
     const user = await User.findOne({ phoneNumber: body.phoneNumber });
 

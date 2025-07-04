@@ -1,3 +1,5 @@
+"use client";
+
 import DashboardStats from "@/components/Profile/DashboardStats";
 import QuickActions from "@/components/Profile/QuickActions";
 import RecentOrders from "@/components/Profile/RecentOrders";

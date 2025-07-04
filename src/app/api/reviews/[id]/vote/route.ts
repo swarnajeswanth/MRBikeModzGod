@@ -5,10 +5,11 @@ import { Review } from "@/components/models/Review";
 // POST vote on review (helpful/not helpful)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
 
     const body = await request.json();
     const { voteType } = body; // 'helpful' or 'notHelpful'
@@ -23,7 +24,7 @@ export async function POST(
     const updateField = voteType === "helpful" ? "helpful" : "notHelpful";
 
     const review = await Review.findByIdAndUpdate(
-      params.id,
+      id,
       { $inc: { [updateField]: 1 } },
       { new: true }
     );

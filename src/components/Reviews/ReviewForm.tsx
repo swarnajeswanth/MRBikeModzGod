@@ -19,7 +19,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   onSubmit,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.user);
+  const user = useSelector((state: RootState) => state.user);
   const { loading } = useSelector((state: RootState) => state.reviews);
 
   const [formData, setFormData] = useState({
@@ -81,9 +81,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         await dispatch(
           createReview({
             productId,
-            userId: user.id,
-            userName: user.name || "Anonymous",
-            userEmail: user.email || "",
+            userId: user.id || "",
+            userName: user.username || "Anonymous",
+            userEmail: user.phoneNumber || "",
             rating: formData.rating,
             title: formData.title.trim(),
             comment: formData.comment.trim(),

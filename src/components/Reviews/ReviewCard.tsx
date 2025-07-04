@@ -26,7 +26,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   onDelete,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.user);
+  const user = useSelector((state: RootState) => state.user);
   const { loading } = useSelector((state: RootState) => state.reviews);
 
   const handleVote = async (voteType: "helpful" | "notHelpful") => {
@@ -64,10 +64,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
                 {review.userName}
               </h3>
               {review.verified && (
-                <CheckCircle
-                  className="h-4 w-4 text-green-500"
-                  title="Verified Purchase"
-                />
+                <CheckCircle className="h-4 w-4 text-green-500" />
               )}
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">

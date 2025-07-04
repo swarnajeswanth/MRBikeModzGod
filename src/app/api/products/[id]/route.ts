@@ -7,11 +7,12 @@ export const runtime = "nodejs";
 // GET single product by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
-    const product = await ProductModel.findOne({ id: params.id });
+    const { id } = await params;
+    const product = await ProductModel.findOne({ id });
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -30,14 +31,15 @@ export async function GET(
 // PUT update product
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
     const body = await request.json();
 
     const updatedProduct = await ProductModel.findOneAndUpdate(
-      { id: params.id },
+      { id },
       {
         name: body.name,
         title: body.title,
@@ -83,12 +85,13 @@ export async function PUT(
 // DELETE product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
     const deletedProduct = await ProductModel.findOneAndDelete({
-      id: params.id,
+      id,
     });
 
     if (!deletedProduct) {

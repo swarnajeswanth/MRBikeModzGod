@@ -7,7 +7,7 @@ import {
   Lock,
   HeartOff,
   ShoppingCart,
-  ShoppingCartOff,
+  MinusCircle,
   Star,
   StarOff,
 } from "lucide-react";
@@ -25,7 +25,7 @@ const featureIcons = {
   },
   addToCart: {
     enabled: <ShoppingCart className="text-green-500" />,
-    disabled: <ShoppingCartOff className="text-gray-400" />,
+    disabled: <MinusCircle className="text-gray-400" />,
   },
   reviews: {
     enabled: <Star className="text-yellow-400" />,

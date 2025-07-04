@@ -48,7 +48,7 @@ export default function RootLayout({
           />
           {/* ✅ Show full-app loading indicator */}
           {children}
-          <DebugTools />
+          {/* <DebugTools /> */}
         </ReduxProvider>
       </body>
     </html>

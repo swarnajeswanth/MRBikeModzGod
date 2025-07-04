@@ -5,12 +5,13 @@ import { Review } from "@/components/models/Review";
 // GET single review
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
 
-    const review = await Review.findById(params.id).lean();
+    const review = await Review.findById(id).lean();
 
     if (!review) {
       return NextResponse.json(
@@ -35,10 +36,11 @@ export async function GET(
 // PUT update review
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
 
     const body = await request.json();
     const { rating, title, comment } = body;
@@ -60,7 +62,7 @@ export async function PUT(
     }
 
     const review = await Review.findByIdAndUpdate(
-      params.id,
+      id,
       { rating, title, comment },
       { new: true, runValidators: true }
     );
@@ -89,12 +91,13 @@ export async function PUT(
 // DELETE review
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
 
-    const review = await Review.findByIdAndDelete(params.id);
+    const review = await Review.findByIdAndDelete(id);
 
     if (!review) {
       return NextResponse.json(

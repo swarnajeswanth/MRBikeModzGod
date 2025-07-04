@@ -25,7 +25,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
   const { reviews, loading, pagination } = useSelector(
     (state: RootState) => state.reviews
   );
-  const { user } = useSelector((state: RootState) => state.user);
+  const user = useSelector((state: RootState) => state.user);
 
   const [filterRating, setFilterRating] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"createdAt" | "rating" | "helpful">(
