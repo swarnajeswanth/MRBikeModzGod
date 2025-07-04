@@ -15,14 +15,15 @@ const imagekit = new ImageKit({
 // PUT update slider image
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
     const body = await request.json();
     const { alt, title, description } = body;
 
-    const image = await SliderImage.findOne({ id: params.id });
+    const image = await SliderImage.findOne({ id });
     if (!image) {
       return NextResponse.json(
         { success: false, error: "Image not found" },
@@ -60,12 +61,13 @@ export async function PUT(
 // DELETE slider image
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
+    const { id } = await params;
 
-    const image = await SliderImage.findOne({ id: params.id });
+    const image = await SliderImage.findOne({ id });
     if (!image) {
       return NextResponse.json(
         { success: false, error: "Image not found" },
@@ -85,14 +87,14 @@ export async function DELETE(
     }
 
     // Delete from database
-    await SliderImage.deleteOne({ id: params.id });
+    await SliderImage.deleteOne({ id });
 
-    console.log("Slider image deleted successfully:", params.id);
+    console.log("Slider image deleted successfully:", id);
 
     return NextResponse.json({
       success: true,
       message: "Slider image deleted successfully",
-      id: params.id,
+      id: id,
     });
   } catch (error) {
     console.error("Error deleting slider image:", error);

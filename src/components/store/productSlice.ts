@@ -13,7 +13,7 @@ export type Product = {
   rating: number;
   reviews: number;
   price: number;
-  originalPrice: number;
+  originalPrice?: number;
   discount: string;
   description: string;
   features: string[];
