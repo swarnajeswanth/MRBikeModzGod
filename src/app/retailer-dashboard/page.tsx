@@ -12,7 +12,7 @@ import {
 import AddProductModal, {
   ProductForm,
 } from "@/components/Profile/AddProductModal"; // adjust path if needed
-import SeedReviewsButton from "@/components/Profile/SeedReviewsButton";
+import SeedDataManager from "@/components/Profile/SeedDataManager";
 import { useSelector } from "react-redux";
 import { selectAllProducts } from "@/components/store/productSlice"; // adjust path if needed
 import { useDispatch } from "react-redux";
@@ -187,7 +187,7 @@ const RetailerDashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
           <h2 className="text-xl font-bold">Product Management</h2>
           <div className="flex gap-2">
-            <SeedReviewsButton />
+            <SeedDataManager />
             <button
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
               onClick={() => {

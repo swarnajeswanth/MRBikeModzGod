@@ -5,9 +5,15 @@
 import ProductGrid from "@/components/Dashboard/ProductGrid";
 import { useRouter } from "next/navigation";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { startLoading, stopLoading } from "@/components/store/LoadingSlice"; // Adjust path if needed
 import { useTransition } from "react";
+import { useEffect } from "react";
+import {
+  fetchProducts,
+  selectAllProducts,
+} from "@/components/store/productSlice";
+import { AppDispatch } from "@/components/store";
 
 const FeaturedProducts = () => {
   // const products = [
@@ -79,8 +85,15 @@ const FeaturedProducts = () => {
   //   },
   // ];
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [isPending, startTransition] = useTransition();
+  const products = useSelector(selectAllProducts);
+
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
 
   const handleAllClick = () => {
     dispatch(startLoading());

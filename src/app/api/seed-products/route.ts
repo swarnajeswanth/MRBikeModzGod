@@ -705,6 +705,7 @@ export async function POST() {
     await Product.insertMany(products);
 
     return NextResponse.json({
+      success: true,
       message: "Products seeded successfully!",
       count: products.length,
       categories: [...new Set(products.map((p) => p.category))],

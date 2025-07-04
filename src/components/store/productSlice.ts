@@ -100,6 +100,31 @@ export const deleteProductById = createAsyncThunk(
   }
 );
 
+// Seed products async thunk
+export const seedProducts = createAsyncThunk(
+  "products/seedProducts",
+  async () => {
+    const response = await fetch("/api/seed-products", {
+      method: "POST",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || "Failed to seed products");
+    }
+
+    // Fetch the newly seeded products to update the store
+    const productsResponse = await fetch("/api/products");
+    if (!productsResponse.ok) {
+      throw new Error("Failed to fetch seeded products");
+    }
+
+    const productsData = await productsResponse.json();
+    return productsData;
+  }
+);
+
 const initialState: ProductState = {
   products: [],
   loading: false,
@@ -221,6 +246,21 @@ const productSlice = createSlice({
       .addCase(deleteProductById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete product";
+      });
+
+    // Seed products
+    builder
+      .addCase(seedProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(seedProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload;
+      })
+      .addCase(seedProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to seed products";
       });
   },
 });

@@ -1,30 +1,29 @@
 "use client";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store";
+import { seedProducts } from "../store/productSlice";
 import { toast } from "react-hot-toast";
+import { Database, Loader2 } from "lucide-react";
 
 const SeedProductsButton = () => {
   const [seeding, setSeeding] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleSeedProducts = async () => {
-    setSeeding(true);
-    try {
-      const response = await fetch("/api/seed-products", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success(data.message);
-        // Optionally refresh the page or refetch products
-        window.location.reload();
-      } else {
-        toast.error(data.error || "Failed to seed products");
+    if (
+      window.confirm("This will add dummy products to the database. Continue?")
+    ) {
+      setSeeding(true);
+      try {
+        await dispatch(seedProducts()).unwrap();
+        toast.success("Products seeded successfully!");
+      } catch (error) {
+        console.error("Failed to seed products:", error);
+        toast.error("Failed to seed products");
+      } finally {
+        setSeeding(false);
       }
-    } catch (error) {
-      toast.error("Failed to seed products");
-    } finally {
-      setSeeding(false);
     }
   };
 
@@ -32,9 +31,14 @@ const SeedProductsButton = () => {
     <button
       onClick={handleSeedProducts}
       disabled={seeding}
-      className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white px-4 py-2 rounded-md transition-colors"
+      className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {seeding ? "Seeding..." : "Seed Dummy Products"}
+      {seeding ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Database className="h-4 w-4" />
+      )}
+      <span>{seeding ? "Seeding..." : "Seed Products"}</span>
     </button>
   );
 };

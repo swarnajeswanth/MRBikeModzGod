@@ -4,7 +4,7 @@
 import React from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "@/components/persistedStore";
+import { store, persistor } from "@/components/store/index";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
 import StoreSettingsInitializer from "@/components/StoreSettingsInitializer";
 

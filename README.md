@@ -2,19 +2,62 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+### Option 1: Start Everything Together (Recommended)
+
+```bash
+npm run dev:full
+```
+
+This starts both the Next.js app and the WebSocket server for real-time synchronization.
+
+### Option 2: Start Components Separately
+
+**Terminal 1 - Next.js App:**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
+**Terminal 2 - WebSocket Server (for real-time sync):**
+
+```bash
+# Windows
+start-websocket.bat
+
+# Unix/Linux/Mac
+chmod +x start-websocket.sh
+./start-websocket.sh
+
+# Or manually
+npm run websocket
+```
+
+### Access the Application
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+**Note:** For real-time synchronization across multiple app instances, make sure the WebSocket server is running on port 3001.
+
+## Real-Time Features
+
+This application includes comprehensive real-time synchronization for:
+
+- **Product Data**: When retailers seed products, changes are immediately reflected across all instances
+- **Store Settings**: When retailers change store settings, updates are instantly applied to all customer instances
+- **Reviews**: Review changes are synchronized in real-time across all app instances
+
+### Testing Real-Time Features
+
+```bash
+# Test WebSocket connection
+npm run test-websocket
+
+# Test product/review synchronization
+npm run test-realtime
+
+# Test store settings synchronization
+npm run test-store-settings
+```
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

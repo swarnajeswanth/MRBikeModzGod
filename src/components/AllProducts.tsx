@@ -11,13 +11,15 @@ import {
   selectAllProducts,
   selectLoading,
   selectError,
+  fetchProducts,
 } from "@/components/store/productSlice";
 import { RootState } from "@/components/store";
 import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
+import { AppDispatch } from "@/components/store";
 
 const AllProductsPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const products = useSelector(selectAllProducts);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
@@ -37,6 +39,12 @@ const AllProductsPage = () => {
     offers: "",
   });
   const [promoCode, setPromoCode] = useState("");
+
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
 
   const handleToggleWishlist = (product: any) => {
     const wishlistItem = {

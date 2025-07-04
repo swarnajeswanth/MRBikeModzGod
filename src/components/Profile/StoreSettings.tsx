@@ -1,4 +1,83 @@
 "use client";
+/**
+ * Store Settings Component
+ *
+ * This component allows store administrators to control which features are available to customers.
+ * When features are disabled, they are completely hidden from the customer interface.
+ *
+ * HOW FEATURE CONTROLS WORK:
+ *
+ * 1. FEATURES TAB - Controls specific functionality:
+ *    - addToCart: Hides "Add to Cart" buttons throughout the store
+ *    - wishlist: Hides wishlist functionality and buttons
+ *    - reviews: Hides review forms and review display
+ *    - ratings: Hides star ratings on products
+ *    - search: Hides search functionality
+ *    - filters: Hides product filtering options
+ *    - categories: Hides category navigation and browsing
+ *    - productImages: Hides product images, shows placeholder
+ *    - productDetails: Hides detailed product information
+ *    - priceDisplay: Hides all price information
+ *    - stockDisplay: Hides stock availability information
+ *    - discountDisplay: Hides discount badges and promotions
+ *    - relatedProducts: Hides "related products" sections
+ *    - shareProducts: Hides social media sharing buttons
+ *
+ * 2. PAGES TAB - Controls page access:
+ *    - home: Restricts access to homepage
+ *    - allProducts: Restricts access to product listing pages
+ *    - individualProduct: Restricts access to product detail pages
+ *    - category: Restricts access to category pages
+ *    - wishlist: Restricts access to wishlist page
+ *    - cart: Restricts access to shopping cart
+ *    - customerDashboard: Restricts access to customer dashboard
+ *    - auth: Restricts access to login/registration pages
+ *
+ * 3. CUSTOMER EXPERIENCE TAB - Controls user experience:
+ *    - allowGuestBrowsing: Requires login for all browsing
+ *    - requireLoginForPurchase: Requires login before purchase
+ *    - requireLoginForWishlist: Requires login to use wishlist
+ *    - showPrices: Hides prices from all customers
+ *    - showStock: Hides stock information from customers
+ *    - allowProductSharing: Disables social media sharing
+ *    - enableNotifications: Disables customer notifications
+ *
+ * IMPLEMENTATION IN COMPONENTS:
+ *
+ * To use these settings in your components, wrap them with StoreSettingsWrapper:
+ *
+ * ```tsx
+ * import { StoreSettingsWrapper } from "@/components/StoreSettingsWrapper";
+ *
+ * <StoreSettingsWrapper feature="wishlist">
+ *   <WishlistComponent />
+ * </StoreSettingsWrapper>
+ *
+ * <StoreSettingsWrapper feature="addToCart">
+ *   <AddToCartButton />
+ * </StoreSettingsWrapper>
+ * ```
+ *
+ * Or use the selectIsFeatureEnabled selector directly:
+ *
+ * ```tsx
+ * import { useSelector } from "react-redux";
+ * import { selectIsFeatureEnabled } from "@/components/store/storeSettingsSlice";
+ *
+ * const isWishlistEnabled = useSelector(selectIsFeatureEnabled("wishlist"));
+ *
+ * if (!isWishlistEnabled) {
+ *   return <DisabledFeatureMessage />;
+ * }
+ * ```
+ *
+ * VISUAL FEEDBACK:
+ * - Icons change dynamically based on enabled/disabled state
+ * - Color-coded borders and backgrounds indicate status
+ * - Real-time text updates show current state
+ * - Smooth transitions provide visual feedback
+ */
+
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/components/store";
@@ -10,6 +89,7 @@ import {
   toggleCustomerExperience,
   updateStoreInfo,
   resetToDefaults,
+  initialState,
 } from "@/components/store/storeSettingsSlice";
 import {
   Settings,
@@ -21,27 +101,44 @@ import {
   Users,
   Shield,
   ShoppingCart,
+  MinusCircle,
   Heart,
+  HeartOff,
   Star,
+  StarOff,
   Search,
+  X,
   Filter,
+  Slash,
   Grid,
+  Square,
   Image,
+  ImageOff,
   FileText,
+  FileX,
   DollarSign,
   Package,
   Tag,
   Share,
+  Share2,
   Home,
-  ShoppingBag,
   User,
   Lock,
   Eye,
   EyeOff,
   Bell,
+  BellOff,
   Globe,
   Palette,
   Wrench,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Info,
+  Play,
+  Pause,
+  Zap,
+  ZapOff,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -118,31 +215,121 @@ const StoreSettings = () => {
     },
   };
 
-  const handleToggleFeature = (
+  const handleToggleFeature = async (
     feature: keyof typeof currentSettings.features
   ) => {
+    const currentState = currentSettings.features[feature];
+    const newState = !currentState;
+
+    // Update Redux state first
     dispatch(toggleFeature(feature));
-    toast.success(
-      `${feature} ${currentSettings.features[feature] ? "disabled" : "enabled"}`
-    );
+
+    // Save to database and broadcast to other instances
+    try {
+      // Create updated features object with the new state
+      const updatedFeatures = {
+        ...currentSettings.features,
+        [feature]: newState,
+      };
+
+      await dispatch(updateStoreSettings({ features: updatedFeatures }) as any);
+
+      // Broadcast update to other instances
+      if ((window as any).broadcastDataUpdate) {
+        console.log("Broadcasting store settings update to other instances");
+        (window as any).broadcastDataUpdate("STORE_SETTINGS_UPDATED");
+      } else {
+        console.log(
+          "Broadcast function not available - WebSocket may not be connected"
+        );
+      }
+
+      console.log(`Feature ${feature}: ${currentState} -> ${newState}`);
+      toast.success(`${feature} ${newState ? "enabled" : "disabled"}`);
+    } catch (error) {
+      console.error("Failed to update store settings:", error);
+      toast.error("Failed to update store settings");
+    }
   };
 
-  const handleTogglePageAccess = (page: keyof typeof currentSettings.pages) => {
+  const handleTogglePageAccess = async (
+    page: keyof typeof currentSettings.pages
+  ) => {
+    const currentState = currentSettings.pages[page];
+    const newState = !currentState;
+
+    // Update Redux state first
     dispatch(togglePageAccess(page));
-    toast.success(
-      `${page} page ${currentSettings.pages[page] ? "disabled" : "enabled"}`
-    );
+
+    // Save to database and broadcast to other instances
+    try {
+      // Create updated pages object with the new state
+      const updatedPages = {
+        ...currentSettings.pages,
+        [page]: newState,
+      };
+
+      await dispatch(updateStoreSettings({ pages: updatedPages }) as any);
+
+      // Broadcast update to other instances
+      if ((window as any).broadcastDataUpdate) {
+        console.log("Broadcasting store settings update to other instances");
+        (window as any).broadcastDataUpdate("STORE_SETTINGS_UPDATED");
+      } else {
+        console.log(
+          "Broadcast function not available - WebSocket may not be connected"
+        );
+      }
+
+      console.log(`Page ${page}: ${currentState} -> ${newState}`);
+      toast.success(`${page} page ${newState ? "enabled" : "disabled"}`);
+    } catch (error) {
+      console.error("Failed to update store settings:", error);
+      toast.error("Failed to update store settings");
+    }
   };
 
-  const handleToggleCustomerExperience = (
+  const handleToggleCustomerExperience = async (
     setting: keyof typeof currentSettings.customerExperience
   ) => {
+    const currentState = currentSettings.customerExperience[setting];
+    const newState = !currentState;
+
+    // Update Redux state first
     dispatch(toggleCustomerExperience(setting));
-    toast.success(
-      `${setting} ${
-        currentSettings.customerExperience[setting] ? "disabled" : "enabled"
-      }`
-    );
+
+    // Save to database and broadcast to other instances
+    try {
+      // Create updated customer experience object with the new state
+      const updatedCustomerExperience = {
+        ...currentSettings.customerExperience,
+        [setting]: newState,
+      };
+
+      await dispatch(
+        updateStoreSettings({
+          customerExperience: updatedCustomerExperience,
+        }) as any
+      );
+
+      // Broadcast update to other instances
+      if ((window as any).broadcastDataUpdate) {
+        console.log("Broadcasting store settings update to other instances");
+        (window as any).broadcastDataUpdate("STORE_SETTINGS_UPDATED");
+      } else {
+        console.log(
+          "Broadcast function not available - WebSocket may not be connected"
+        );
+      }
+
+      console.log(
+        `Customer Experience ${setting}: ${currentState} -> ${newState}`
+      );
+      toast.success(`${setting} ${newState ? "enabled" : "disabled"}`);
+    } catch (error) {
+      console.error("Failed to update store settings:", error);
+      toast.error("Failed to update store settings");
+    }
   };
 
   const handleStoreInfoChange = (
@@ -156,6 +343,17 @@ const StoreSettings = () => {
     setIsLoading(true);
     try {
       await dispatch(updateStoreSettings({ storeInfo }) as any);
+
+      // Broadcast update to other instances
+      if ((window as any).broadcastDataUpdate) {
+        console.log("Broadcasting store settings update to other instances");
+        (window as any).broadcastDataUpdate("STORE_SETTINGS_UPDATED");
+      } else {
+        console.log(
+          "Broadcast function not available - WebSocket may not be connected"
+        );
+      }
+
       toast.success("Store information updated successfully");
     } catch (error) {
       toast.error("Failed to update store information");
@@ -164,51 +362,138 @@ const StoreSettings = () => {
     }
   };
 
-  const handleResetToDefaults = () => {
+  const handleResetToDefaults = async () => {
     if (
       window.confirm("Are you sure you want to reset all settings to defaults?")
     ) {
       dispatch(resetToDefaults());
-      toast.success("Settings reset to defaults");
+
+      // Save to database and broadcast to other instances
+      try {
+        await dispatch(updateStoreSettings(initialState) as any);
+
+        // Broadcast update to other instances
+        if ((window as any).broadcastDataUpdate) {
+          console.log("Broadcasting store settings update to other instances");
+          (window as any).broadcastDataUpdate("STORE_SETTINGS_UPDATED");
+        } else {
+          console.log(
+            "Broadcast function not available - WebSocket may not be connected"
+          );
+        }
+
+        toast.success("Settings reset to defaults");
+      } catch (error) {
+        console.error("Failed to reset store settings:", error);
+        toast.error("Failed to reset store settings");
+      }
     }
   };
 
-  const featureIcons = {
-    addToCart: ShoppingCart,
-    wishlist: Heart,
-    reviews: Star,
-    ratings: Star,
-    search: Search,
-    filters: Filter,
-    categories: Grid,
-    productImages: Image,
-    productDetails: FileText,
-    priceDisplay: DollarSign,
-    stockDisplay: Package,
-    discountDisplay: Tag,
-    relatedProducts: Grid,
-    shareProducts: Share,
+  // Dynamic feature icons that change based on state
+  const getFeatureIcon = (feature: string, enabled: boolean) => {
+    const iconMap: { [key: string]: { enabled: any; disabled: any } } = {
+      addToCart: { enabled: ShoppingCart, disabled: MinusCircle },
+      wishlist: { enabled: Heart, disabled: HeartOff },
+      reviews: { enabled: Star, disabled: StarOff },
+      ratings: { enabled: Star, disabled: StarOff },
+      search: { enabled: Search, disabled: X },
+      filters: { enabled: Filter, disabled: Slash },
+      categories: { enabled: Grid, disabled: Square },
+      productImages: { enabled: Image, disabled: ImageOff },
+      productDetails: { enabled: FileText, disabled: FileX },
+      priceDisplay: { enabled: DollarSign, disabled: X },
+      stockDisplay: { enabled: Package, disabled: X },
+      discountDisplay: { enabled: Tag, disabled: X },
+      relatedProducts: { enabled: Grid, disabled: Square },
+      shareProducts: { enabled: Share, disabled: Share2 },
+    };
+
+    const icons = iconMap[feature];
+    return enabled ? icons.enabled : icons.disabled;
   };
 
-  const pageIcons = {
-    home: Home,
-    allProducts: ShoppingBag,
-    individualProduct: FileText,
-    category: Grid,
-    wishlist: Heart,
-    cart: ShoppingCart,
-    customerDashboard: User,
-    auth: Lock,
+  // Dynamic page icons that change based on state
+  const getPageIcon = (page: string, enabled: boolean) => {
+    const iconMap: { [key: string]: { enabled: any; disabled: any } } = {
+      home: { enabled: Home, disabled: X },
+      allProducts: { enabled: ShoppingCart, disabled: X },
+      individualProduct: { enabled: FileText, disabled: FileX },
+      category: { enabled: Grid, disabled: Square },
+      wishlist: { enabled: Heart, disabled: HeartOff },
+      cart: { enabled: ShoppingCart, disabled: MinusCircle },
+      customerDashboard: { enabled: User, disabled: X },
+      auth: { enabled: Lock, disabled: X },
+    };
+
+    const icons = iconMap[page];
+    return enabled ? icons.enabled : icons.disabled;
   };
 
-  const customerExperienceIcons = {
-    allowGuestBrowsing: Eye,
-    requireLoginForPurchase: Lock,
-    requireLoginForWishlist: Lock,
-    showPrices: DollarSign,
-    showStock: Package,
-    allowProductSharing: Share,
-    enableNotifications: Bell,
+  // Dynamic customer experience icons that change based on state
+  const getCustomerExperienceIcon = (setting: string, enabled: boolean) => {
+    const iconMap: { [key: string]: { enabled: any; disabled: any } } = {
+      allowGuestBrowsing: { enabled: Eye, disabled: EyeOff },
+      requireLoginForPurchase: { enabled: Lock, disabled: X },
+      requireLoginForWishlist: { enabled: Lock, disabled: X },
+      showPrices: { enabled: DollarSign, disabled: X },
+      showStock: { enabled: Package, disabled: X },
+      allowProductSharing: { enabled: Share, disabled: Share2 },
+      enableNotifications: { enabled: Bell, disabled: BellOff },
+    };
+
+    const icons = iconMap[setting];
+    return enabled ? icons.enabled : icons.disabled;
+  };
+
+  // Feature descriptions for better UX
+  const getFeatureDescription = (feature: string) => {
+    const descriptions: { [key: string]: string } = {
+      addToCart: "Allow customers to add products to cart",
+      wishlist: "Enable wishlist functionality for customers",
+      reviews: "Allow customers to write product reviews",
+      ratings: "Show product ratings and stars",
+      search: "Enable product search functionality",
+      filters: "Allow filtering products by various criteria",
+      categories: "Show product categories and navigation",
+      productImages: "Display product images and galleries",
+      productDetails: "Show detailed product information",
+      priceDisplay: "Display product prices to customers",
+      stockDisplay: "Show product stock availability",
+      discountDisplay: "Display discounts and promotions",
+      relatedProducts: "Show related product suggestions",
+      shareProducts: "Allow sharing products on social media",
+    };
+    return descriptions[feature] || feature;
+  };
+
+  // Page descriptions
+  const getPageDescription = (page: string) => {
+    const descriptions: { [key: string]: string } = {
+      home: "Main store homepage",
+      allProducts: "Browse all products page",
+      individualProduct: "Individual product detail pages",
+      category: "Product category pages",
+      wishlist: "Customer wishlist page",
+      cart: "Shopping cart page",
+      customerDashboard: "Customer account dashboard",
+      auth: "Login and registration pages",
+    };
+    return descriptions[page] || page;
+  };
+
+  // Customer experience descriptions
+  const getCustomerExperienceDescription = (setting: string) => {
+    const descriptions: { [key: string]: string } = {
+      allowGuestBrowsing: "Allow browsing without login",
+      requireLoginForPurchase: "Require login to make purchases",
+      requireLoginForWishlist: "Require login to use wishlist",
+      showPrices: "Display prices to all customers",
+      showStock: "Show stock availability to customers",
+      allowProductSharing: "Allow sharing products on social media",
+      enableNotifications: "Send notifications to customers",
+    };
+    return descriptions[setting] || setting;
   };
 
   const tabs = [
@@ -265,22 +550,49 @@ const StoreSettings = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {Object.entries(currentSettings.features).map(
                   ([feature, enabled]) => {
-                    const Icon =
-                      featureIcons[feature as keyof typeof featureIcons];
+                    const Icon = getFeatureIcon(feature, enabled);
                     return (
                       <div
                         key={feature}
-                        className="bg-gray-700 p-3 sm:p-4 rounded-lg flex items-center justify-between"
+                        className={`bg-gray-700 p-3 sm:p-4 rounded-lg flex items-center justify-between transition-all duration-200 hover:bg-gray-600 ${
+                          enabled
+                            ? "border-l-4 border-green-500"
+                            : "border-l-4 border-gray-500"
+                        }`}
                       >
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 flex-shrink-0" />
+                          <div
+                            className={`p-2 rounded-lg ${
+                              enabled ? "bg-green-500/20" : "bg-gray-500/20"
+                            }`}
+                          >
+                            <Icon
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                                enabled ? "text-green-400" : "text-gray-400"
+                              } flex-shrink-0`}
+                            />
+                          </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-white font-medium capitalize text-sm sm:text-base truncate">
                               {feature.replace(/([A-Z])/g, " $1").trim()}
                             </p>
-                            <p className="text-gray-400 text-xs sm:text-sm">
-                              {enabled ? "Enabled" : "Disabled"}
+                            <p className="text-gray-400 text-xs sm:text-sm truncate">
+                              {getFeatureDescription(feature)}
                             </p>
+                            <div className="flex items-center space-x-1 mt-1">
+                              {enabled ? (
+                                <CheckCircle className="h-3 w-3 text-green-400" />
+                              ) : (
+                                <XCircle className="h-3 w-3 text-gray-400" />
+                              )}
+                              <span
+                                className={`text-xs ${
+                                  enabled ? "text-green-400" : "text-gray-400"
+                                }`}
+                              >
+                                {enabled ? "Enabled" : "Disabled"}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <button
@@ -289,16 +601,16 @@ const StoreSettings = () => {
                               feature as keyof typeof currentSettings.features
                             )
                           }
-                          className={`p-1.5 sm:p-2 rounded-lg transition-colors flex-shrink-0 ${
+                          className={`p-2 rounded-lg transition-all duration-200 flex-shrink-0 ${
                             enabled
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-gray-600 hover:bg-gray-500"
+                              ? "bg-green-600 hover:bg-green-700 text-white"
+                              : "bg-gray-600 hover:bg-gray-500 text-white"
                           }`}
                         >
                           {enabled ? (
-                            <ToggleRight className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                            <ToggleRight className="h-4 w-4" />
                           ) : (
-                            <ToggleLeft className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                            <ToggleLeft className="h-4 w-4" />
                           )}
                         </button>
                       </div>
@@ -318,21 +630,49 @@ const StoreSettings = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {Object.entries(currentSettings.pages).map(
                   ([page, enabled]) => {
-                    const Icon = pageIcons[page as keyof typeof pageIcons];
+                    const Icon = getPageIcon(page, enabled);
                     return (
                       <div
                         key={page}
-                        className="bg-gray-700 p-3 sm:p-4 rounded-lg flex items-center justify-between"
+                        className={`bg-gray-700 p-3 sm:p-4 rounded-lg flex items-center justify-between transition-all duration-200 hover:bg-gray-600 ${
+                          enabled
+                            ? "border-l-4 border-blue-500"
+                            : "border-l-4 border-gray-500"
+                        }`}
                       >
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400 flex-shrink-0" />
+                          <div
+                            className={`p-2 rounded-lg ${
+                              enabled ? "bg-blue-500/20" : "bg-gray-500/20"
+                            }`}
+                          >
+                            <Icon
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                                enabled ? "text-blue-400" : "text-gray-400"
+                              } flex-shrink-0`}
+                            />
+                          </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-white font-medium capitalize text-sm sm:text-base truncate">
                               {page.replace(/([A-Z])/g, " $1").trim()}
                             </p>
-                            <p className="text-gray-400 text-xs sm:text-sm">
-                              {enabled ? "Accessible" : "Restricted"}
+                            <p className="text-gray-400 text-xs sm:text-sm truncate">
+                              {getPageDescription(page)}
                             </p>
+                            <div className="flex items-center space-x-1 mt-1">
+                              {enabled ? (
+                                <CheckCircle className="h-3 w-3 text-blue-400" />
+                              ) : (
+                                <XCircle className="h-3 w-3 text-gray-400" />
+                              )}
+                              <span
+                                className={`text-xs ${
+                                  enabled ? "text-blue-400" : "text-gray-400"
+                                }`}
+                              >
+                                {enabled ? "Accessible" : "Restricted"}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <button
@@ -341,16 +681,16 @@ const StoreSettings = () => {
                               page as keyof typeof currentSettings.pages
                             )
                           }
-                          className={`p-1.5 sm:p-2 rounded-lg transition-colors flex-shrink-0 ${
+                          className={`p-2 rounded-lg transition-all duration-200 flex-shrink-0 ${
                             enabled
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-gray-600 hover:bg-gray-500"
+                              ? "bg-blue-600 hover:bg-blue-700 text-white"
+                              : "bg-gray-600 hover:bg-gray-500 text-white"
                           }`}
                         >
                           {enabled ? (
-                            <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                            <Eye className="h-4 w-4" />
                           ) : (
-                            <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                            <EyeOff className="h-4 w-4" />
                           )}
                         </button>
                       </div>
@@ -370,24 +710,49 @@ const StoreSettings = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {Object.entries(currentSettings.customerExperience).map(
                   ([setting, enabled]) => {
-                    const Icon =
-                      customerExperienceIcons[
-                        setting as keyof typeof customerExperienceIcons
-                      ];
+                    const Icon = getCustomerExperienceIcon(setting, enabled);
                     return (
                       <div
                         key={setting}
-                        className="bg-gray-700 p-3 sm:p-4 rounded-lg flex items-center justify-between"
+                        className={`bg-gray-700 p-3 sm:p-4 rounded-lg flex items-center justify-between transition-all duration-200 hover:bg-gray-600 ${
+                          enabled
+                            ? "border-l-4 border-yellow-500"
+                            : "border-l-4 border-gray-500"
+                        }`}
                       >
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 flex-shrink-0" />
+                          <div
+                            className={`p-2 rounded-lg ${
+                              enabled ? "bg-yellow-500/20" : "bg-gray-500/20"
+                            }`}
+                          >
+                            <Icon
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                                enabled ? "text-yellow-400" : "text-gray-400"
+                              } flex-shrink-0`}
+                            />
+                          </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-white font-medium capitalize text-sm sm:text-base truncate">
                               {setting.replace(/([A-Z])/g, " $1").trim()}
                             </p>
-                            <p className="text-gray-400 text-xs sm:text-sm">
-                              {enabled ? "Enabled" : "Disabled"}
+                            <p className="text-gray-400 text-xs sm:text-sm truncate">
+                              {getCustomerExperienceDescription(setting)}
                             </p>
+                            <div className="flex items-center space-x-1 mt-1">
+                              {enabled ? (
+                                <CheckCircle className="h-3 w-3 text-yellow-400" />
+                              ) : (
+                                <XCircle className="h-3 w-3 text-gray-400" />
+                              )}
+                              <span
+                                className={`text-xs ${
+                                  enabled ? "text-yellow-400" : "text-gray-400"
+                                }`}
+                              >
+                                {enabled ? "Enabled" : "Disabled"}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <button
@@ -396,16 +761,16 @@ const StoreSettings = () => {
                               setting as keyof typeof currentSettings.customerExperience
                             )
                           }
-                          className={`p-1.5 sm:p-2 rounded-lg transition-colors flex-shrink-0 ${
+                          className={`p-2 rounded-lg transition-all duration-200 flex-shrink-0 ${
                             enabled
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-gray-600 hover:bg-gray-500"
+                              ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                              : "bg-gray-600 hover:bg-gray-500 text-white"
                           }`}
                         >
                           {enabled ? (
-                            <ToggleRight className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                            <ToggleRight className="h-4 w-4" />
                           ) : (
-                            <ToggleLeft className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                            <ToggleLeft className="h-4 w-4" />
                           )}
                         </button>
                       </div>

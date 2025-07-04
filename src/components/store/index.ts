@@ -9,6 +9,51 @@ import userReducer from "./UserSlice";
 import reviewsReducer from "./ReviewSlice";
 import storeSettingsReducer from "./storeSettingsSlice";
 
+// Utility to clear localStorage and fix state structure issues
+export const clearReduxStateAndReload = () => {
+  try {
+    localStorage.removeItem("persist:root");
+    console.log("Redux state cleared. Reloading page...");
+    window.location.reload();
+  } catch (error) {
+    console.error("Failed to clear Redux state:", error);
+  }
+};
+
+// More robust state clearing utility
+export const clearStateAndReload = () => {
+  try {
+    // Clear all persist-related items
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("persist:")) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach((key) => {
+      try {
+        localStorage.removeItem(key);
+        console.log(`Cleared: ${key}`);
+      } catch (e) {
+        console.error(`Failed to clear ${key}:`, e);
+      }
+    });
+
+    console.log("All Redux persist state cleared. Reloading page...");
+    window.location.reload();
+  } catch (error) {
+    console.error("Failed to clear Redux state:", error);
+    // Fallback: try to reload anyway
+    try {
+      window.location.reload();
+    } catch (reloadError) {
+      console.error("Failed to reload page:", reloadError);
+    }
+  }
+};
+
 // Global function to clear localStorage (can be called from browser console)
 if (typeof window !== "undefined") {
   (window as any).clearReduxState = () => {
@@ -21,6 +66,9 @@ if (typeof window !== "undefined") {
       return false;
     }
   };
+
+  (window as any).clearReduxStateAndReload = clearReduxStateAndReload;
+  (window as any).clearStateAndReload = clearStateAndReload;
 
   (window as any).logReduxState = () => {
     try {
@@ -49,7 +97,85 @@ if (typeof window !== "undefined") {
 // Migration function to handle old state structure
 const migration = (state: any): Promise<any> => {
   return new Promise((resolve) => {
-    console.log("Migration running, current state keys:", Object.keys(state));
+    // Handle null/undefined state (no persisted state)
+    if (!state) {
+      console.log("No persisted state found, using clean initial state");
+      resolve({
+        product: productReducer(undefined, { type: "@@INIT" }),
+        loading: loadingReducer(undefined, { type: "@@INIT" }),
+        user: userReducer(undefined, { type: "@@INIT" }),
+        reviews: reviewsReducer(undefined, { type: "@@INIT" }),
+        storeSettings: storeSettingsReducer(undefined, { type: "@@INIT" }),
+      });
+      return;
+    }
+
+    // Additional safety check for state that might cause Object.keys to fail
+    try {
+      console.log("Migration running, current state keys:", Object.keys(state));
+    } catch (error) {
+      console.error("Error getting state keys:", error);
+      console.log("State value:", state);
+      console.log("State type:", typeof state);
+
+      // If Object.keys fails, return clean initial state
+      resolve({
+        product: productReducer(undefined, { type: "@@INIT" }),
+        loading: loadingReducer(undefined, { type: "@@INIT" }),
+        user: userReducer(undefined, { type: "@@INIT" }),
+        reviews: reviewsReducer(undefined, { type: "@@INIT" }),
+        storeSettings: storeSettingsReducer(undefined, { type: "@@INIT" }),
+      });
+      return;
+    }
+
+    // Check if state has the expected structure
+    const expectedKeys = [
+      "product",
+      "loading",
+      "user",
+      "reviews",
+      "storeSettings",
+    ];
+
+    // Additional safety check for state structure
+    if (typeof state !== "object" || state === null) {
+      console.log("Invalid state type, using clean initial state");
+      resolve({
+        product: productReducer(undefined, { type: "@@INIT" }),
+        loading: loadingReducer(undefined, { type: "@@INIT" }),
+        user: userReducer(undefined, { type: "@@INIT" }),
+        reviews: reviewsReducer(undefined, { type: "@@INIT" }),
+        storeSettings: storeSettingsReducer(undefined, { type: "@@INIT" }),
+      });
+      return;
+    }
+
+    const hasUnexpectedKeys = Object.keys(state).some(
+      (key) => !expectedKeys.includes(key)
+    );
+
+    if (hasUnexpectedKeys || !state.storeSettings) {
+      console.log(
+        "State structure mismatch or missing storeSettings, clearing localStorage"
+      );
+      try {
+        localStorage.removeItem("persist:root");
+        console.log("LocalStorage cleared due to state structure issues");
+      } catch (error) {
+        console.error("Failed to clear localStorage:", error);
+      }
+
+      // Return a clean initial state
+      resolve({
+        product: productReducer(undefined, { type: "@@INIT" }),
+        loading: loadingReducer(undefined, { type: "@@INIT" }),
+        user: userReducer(undefined, { type: "@@INIT" }),
+        reviews: reviewsReducer(undefined, { type: "@@INIT" }),
+        storeSettings: storeSettingsReducer(undefined, { type: "@@INIT" }),
+      });
+      return;
+    }
 
     // If storeSettings is missing, add it with default values
     if (!state.storeSettings) {
@@ -113,7 +239,7 @@ const persistConfig = {
   storage,
   whitelist: ["user", "product", "storeSettings"], // persist user, product, and store settings slices
   migrate: migration,
-  version: 2, // Increment version to trigger migration
+  version: 3, // Increment version to trigger migration
 };
 
 const rootReducer = combineReducers({
@@ -136,11 +262,42 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-// Debug: Log initial state
-console.log(
-  "Store initialized with state keys:",
-  Object.keys(store.getState())
-);
+// Debug: Log initial state and handle any issues
+try {
+  const initialState = store.getState();
+  console.log("Store initialized with state keys:", Object.keys(initialState));
+
+  // Check if all expected reducers are present
+  const expectedKeys = [
+    "product",
+    "loading",
+    "user",
+    "reviews",
+    "storeSettings",
+  ];
+  const missingKeys = expectedKeys.filter((key) => !(key in initialState));
+
+  if (missingKeys.length > 0) {
+    console.warn("Missing reducers in store:", missingKeys);
+    console.warn(
+      "This may cause state structure issues. Consider clearing localStorage."
+    );
+  }
+} catch (error) {
+  console.error("Error during store initialization:", error);
+  // If there's an error, clear localStorage and reload
+  if (typeof window !== "undefined") {
+    console.log("Clearing localStorage due to store initialization error");
+    try {
+      localStorage.removeItem("persist:root");
+      console.log("LocalStorage cleared successfully");
+    } catch (localStorageError) {
+      console.error("Failed to clear localStorage:", localStorageError);
+    }
+    // Don't auto-reload, let the user handle it
+    console.log("Please refresh the page manually to resolve the issue");
+  }
+}
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

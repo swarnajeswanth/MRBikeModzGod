@@ -53,7 +53,7 @@ export interface StoreSettings {
   };
 }
 
-const initialState: StoreSettings = {
+export const initialState: StoreSettings = {
   features: {
     addToCart: true,
     wishlist: true,

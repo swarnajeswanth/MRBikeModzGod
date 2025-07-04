@@ -5,6 +5,7 @@ import { ReduxProvider } from "./provider";
 import LoadingOverlay from "@/components/Loaders/LoadingSpinner"; // ✅ Add this
 import DebugTools from "@/components/DebugTools";
 import { Toaster } from "react-hot-toast";
+import RealTimeSync from "@/components/RealTimeSync";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ReduxProvider>
           <LoadingOverlay />
+          <RealTimeSync />
           <Toaster
             toastOptions={{
               style: {

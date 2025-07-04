@@ -1,36 +1,43 @@
 import { FaShoppingBag, FaHeart, FaBox, FaCreditCard } from "react-icons/fa";
-import { ReactNode } from "react";
-
-type StatCard = {
-  label: string;
-  value: string | number;
-  icon: ReactNode;
-};
-
-const stats: StatCard[] = [
-  {
-    label: "Total Orders",
-    value: 12,
-    icon: <FaShoppingBag className="text-blue-400 text-3xl" />,
-  },
-  {
-    label: "Wishlist Items",
-    value: 5,
-    icon: <FaHeart className="text-red-400 text-3xl" />,
-  },
-  {
-    label: "Active Orders",
-    value: 2,
-    icon: <FaBox className="text-green-400 text-3xl" />,
-  },
-  {
-    label: "Total Spent",
-    value: "$2,450",
-    icon: <FaCreditCard className="text-purple-400 text-3xl" />,
-  },
-];
+import { ReactNode, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchProducts,
+  selectAllProducts,
+} from "@/components/store/productSlice";
+import type { AppDispatch } from "@/components/store";
 
 const DashboardStats: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const products = useSelector(selectAllProducts);
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+  const stats = [
+    {
+      label: "Total Products",
+      value: products.length,
+      icon: <FaBox className="text-green-400 text-3xl" />,
+    },
+    {
+      label: "Total Orders",
+      value: 12, // Placeholder
+      icon: <FaShoppingBag className="text-blue-400 text-3xl" />,
+    },
+    {
+      label: "Wishlist Items",
+      value: 5, // Placeholder
+      icon: <FaHeart className="text-red-400 text-3xl" />,
+    },
+    {
+      label: "Total Spent",
+      value: "$2,450", // Placeholder
+      icon: <FaCreditCard className="text-purple-400 text-3xl" />,
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {stats.map((stat, idx) => (
