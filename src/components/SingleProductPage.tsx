@@ -51,6 +51,9 @@ const ProductPage = () => {
     );
   });
 
+  // Get all products and wishlist state
+  const products = useSelector(selectAllProducts);
+
   // Get related products from same category
   const relatedProducts = useSelector((state: RootState) =>
     product ? selectProductsByCategory(state, product.category) : []
@@ -58,8 +61,54 @@ const ProductPage = () => {
     .filter((p) => p.id !== productId)
     .slice(0, 3);
 
-  // Get all products and wishlist state
-  const products = useSelector(selectAllProducts);
+  // If product is not found, show a better error message
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-900">
+        <Header />
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <div className="text-center">
+            <div className="mb-8">
+              <div className="text-6xl mb-4">🔍</div>
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Product Not Found
+              </h1>
+              <p className="text-gray-400 mb-6">
+                Looking for product ID:{" "}
+                <span className="text-red-400">{productId}</span>
+              </p>
+              <p className="text-gray-400 mb-8">
+                Total products loaded: {products.length}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-gray-300">
+                The product you're looking for doesn't exist or may have been
+                removed.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => router.push("/")}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  Go to Homepage
+                </button>
+                <button
+                  onClick={() => router.push("/product/allproducts")}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  Browse All Products
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
   const { wishlist, isLoggedIn } = useSelector(
     (state: RootState) => state.user
   );

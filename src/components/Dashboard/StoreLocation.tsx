@@ -39,11 +39,11 @@ const StoreLocation = () => {
           </p>
         </div>
 
-        <div className="flex  justify-center w-full">
+        <div className="flex justify-center w-full">
           {/* Store Information */}
-          <div className="space-y-8 flex gap-6 lg:gap-16  items-center  justify-between w-[80vw] flex-wrap">
-            <div className="space-y-6 grow-2">
-              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-6 rounded-lg ">
+          <div className="space-y-8 flex gap-6 lg:gap-16 items-center justify-between w-full lg:w-[80vw] flex-wrap">
+            <div className="space-y-6 grow-2 w-full lg:w-auto">
+              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-6 rounded-lg w-full">
                 <h3 className="text-xl font-bold text-white mb-4">
                   Store Location
                 </h3>

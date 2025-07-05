@@ -30,13 +30,23 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
       return cleaned.substring(1);
     }
 
-    // If it's a 10-digit number, assume it's US/Canada and add +1
+    // If it's a 10-digit number, assume it's Indian and add +91
     if (cleaned.length === 10) {
-      return `1${cleaned}`;
+      return `91${cleaned}`;
     }
 
-    // If it's already 11 digits and starts with 1, it's probably US/Canada
-    if (cleaned.length === 11 && cleaned.startsWith("1")) {
+    // If it's already 12 digits and starts with 91, it's Indian
+    if (cleaned.length === 12 && cleaned.startsWith("91")) {
+      return cleaned;
+    }
+
+    // If it's 11 digits and starts with 91, it's Indian
+    if (cleaned.length === 11 && cleaned.startsWith("91")) {
+      return cleaned;
+    }
+
+    // If it's 13 digits and starts with 91, it's Indian
+    if (cleaned.length === 13 && cleaned.startsWith("91")) {
       return cleaned;
     }
 

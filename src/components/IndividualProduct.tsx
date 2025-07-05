@@ -59,6 +59,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
 
   const handleProductClick = (productId: string) => {
+    if (!productId) {
+      toast.error("Product ID not found");
+      return;
+    }
     dispatch(startLoading());
     startTransition(() => {
       router.push(`/product/${productId}`);
@@ -116,7 +120,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   }
 
   return (
-    <div className="product-card">
+    <div
+      className="product-card"
+      onClick={() => handleProductClick(id || title)}
+      style={{ cursor: "pointer" }}
+    >
       <div className="product-image" style={{ backgroundColor }}>
         {features?.discountDisplay && label && (
           <div className={`label ${labelType}`}>{label}</div>
@@ -152,7 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <span className="category-tag">{category}</span>
         <h3
           style={{ cursor: "pointer" }}
-          onClick={() => router.push(`/product/${title}`)}
+          onClick={() => handleProductClick(id || title)}
         >
           {title}
         </h3>

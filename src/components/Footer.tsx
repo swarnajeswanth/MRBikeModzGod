@@ -107,7 +107,7 @@ const Footer = () => {
               <div className="space-y-3">
                 <div className="flex items-center text-gray-400">
                   <Phone className="h-5 w-5 mr-3 text-red-400" />
-                  <span>+1 (555) 123-4567</span>
+                  <span>+91 6304187805</span>
                 </div>
                 <div className="flex items-center text-gray-400">
                   <Mail className="h-5 w-5 mr-3 text-red-400" />
@@ -115,7 +115,10 @@ const Footer = () => {
                 </div>
                 <div className="flex items-center text-gray-400">
                   <MapPin className="h-5 w-5 mr-3 text-red-400" />
-                  <span>123 Auto Street, Car City, CC 12345</span>
+                  <span>
+                    Anitha, Uma, Maheswari tample, VRC Centre, Nellore, Andhra
+                    Pradesh 524001
+                  </span>
                 </div>
               </div>
 

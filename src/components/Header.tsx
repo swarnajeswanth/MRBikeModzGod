@@ -8,6 +8,12 @@ import {
   LogOut,
   Heart,
   ShoppingCart,
+  Home as HomeIcon,
+  List,
+  MapPin,
+  Info,
+  User,
+  LogIn,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,8 +30,8 @@ import toast from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
 
 type NavigationItem =
-  | { name: string; href: string; isLogout?: never }
-  | { name: string; href: string; isLogout: boolean };
+  | { name: string; href: string; icon: React.ReactNode; isLogout?: never }
+  | { name: string; href: string; icon: React.ReactNode; isLogout: boolean };
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -50,37 +56,68 @@ const Header = () => {
   const getNavigation = (): NavigationItem[] => {
     const baseNav: NavigationItem[] = [];
 
-    // Only add navigation items if the corresponding pages are enabled
     if (pages?.home) {
-      baseNav.push({ name: "Home", href: "/" });
+      baseNav.push({
+        name: "Home",
+        href: "/",
+        icon: <HomeIcon className="h-4 w-4 mr-2" />,
+      });
     }
 
-    // Only show Products and Categories on the home route
     if (pathname === "/") {
       if (pages?.allProducts) {
-        baseNav.push({ name: "Products", href: "#products" });
+        baseNav.push({
+          name: "Products",
+          href: "#products",
+          icon: <ShoppingCart className="h-4 w-4 mr-2" />,
+        });
       }
       if (features?.categories) {
-        baseNav.push({ name: "Categories", href: "#categories" });
+        baseNav.push({
+          name: "Categories",
+          href: "#categories",
+          icon: <List className="h-4 w-4 mr-2" />,
+        });
       }
+      baseNav.push({
+        name: "Store Location",
+        href: "#store-location",
+        icon: <MapPin className="h-4 w-4 mr-2" />,
+      });
+      baseNav.push({
+        name: "About",
+        href: "#footer",
+        icon: <Info className="h-4 w-4 mr-2" />,
+      });
     }
 
-    baseNav.push({ name: "Store Location", href: "#store-location" });
-    baseNav.push({ name: "About", href: "#footer" });
-    baseNav.push({ name: "Contact", href: "#footer" });
+    baseNav.push({
+      name: "Contact",
+      href: "#footer",
+      icon: <Mail className="h-4 w-4 mr-2" />,
+    });
 
     if (isLoggedIn) {
       if (pages?.customerDashboard) {
-        baseNav.push({ name: "Dashboard", href: "/dashboard" });
+        baseNav.push({
+          name: "Dashboard",
+          href: "/dashboard",
+          icon: <User className="h-4 w-4 mr-2" />,
+        });
       }
       baseNav.push({
         name: `Logout (${username})`,
         href: "#logout",
+        icon: <LogOut className="h-4 w-4 mr-2" />,
         isLogout: true,
       });
     } else {
       if (pages?.auth) {
-        baseNav.push({ name: "Login", href: "/auth" });
+        baseNav.push({
+          name: "Login",
+          href: "/auth",
+          icon: <LogIn className="h-4 w-4 mr-2" />,
+        });
       }
     }
 
@@ -166,8 +203,8 @@ const Header = () => {
                   loadingText="Logging out..."
                   variant="secondary"
                   size="sm"
-                  className="flex items-center text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none"
-                  icon={<LogOut className="h-4 w-4 mr-1" />}
+                  className="flex items-center text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none p-0"
+                  icon={item.icon}
                 >
                   Logout
                 </LoadingButton>
@@ -178,12 +215,13 @@ const Header = () => {
                     navRefs.current[index] = el;
                   }}
                   onClick={() => setActiveIndex(index)}
-                  className={`relative text-sm font-medium transition-colors duration-200 ${
+                  className={`relative flex items-center text-sm font-medium transition-colors duration-200 ${
                     index === activeIndex
                       ? "text-red-400"
                       : "text-gray-300 hover:text-red-400"
                   }`}
                 >
+                  {item.icon}
                   {item.name}
                 </Link>
               )}
@@ -259,8 +297,8 @@ const Header = () => {
                   loadingText="Logging out..."
                   variant="secondary"
                   size="sm"
-                  className="flex items-center w-full py-2 font-medium transition-colors text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none"
-                  icon={<LogOut className="h-4 w-4 mr-2" />}
+                  className="flex items-center w-full py-2 pl-0 font-medium transition-colors text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none justify-start"
+                  icon={item.icon}
                 >
                   Logout
                 </LoadingButton>
@@ -271,12 +309,13 @@ const Header = () => {
                     setActiveIndex(index);
                     setIsMenuOpen(false);
                   }}
-                  className={`block py-2 font-medium transition-colors ${
+                  className={`block flex items-center py-2 font-medium transition-colors ${
                     index === activeIndex
                       ? "text-red-400"
                       : "text-gray-300 hover:text-red-400"
                   }`}
                 >
+                  {item.icon}
                   {item.name}
                 </Link>
               )}

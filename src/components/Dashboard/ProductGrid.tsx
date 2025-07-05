@@ -129,6 +129,7 @@ const ProductCarousel: React.FC = () => {
             }
           >
             <ProductCard
+              id={p.id}
               label={features?.discountDisplay ? p.label : ""}
               labelType={features?.discountDisplay ? p.labelType : ""}
               backgroundColor={p.backgroundColor}
