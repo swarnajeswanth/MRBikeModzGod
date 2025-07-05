@@ -12,6 +12,14 @@ import {
   Search,
   ShoppingCart,
   ArrowLeft,
+  Cog,
+  Zap,
+  Gauge,
+  Settings,
+  Car,
+  Battery,
+  Disc,
+  Grid3X3,
 } from "lucide-react";
 import AddToCartButton from "../Cart/AddToCart";
 import { RootState, AppDispatch } from "@/components/store";
@@ -21,16 +29,16 @@ import {
   selectAllProducts,
 } from "@/components/store/productSlice";
 import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
-import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { useEffect } from "react";
+import { useWishlist } from "../hooks/useWishlist";
 
 interface Props {
   categoryName: string;
 }
 
-// Dynamic category configuration
+// Dynamic category configuration with fallback
 const categoryConfig = {
   helmet: {
     name: "Helmets",
@@ -66,6 +74,77 @@ const categoryConfig = {
     icon: Gift,
     color: "from-yellow-500 to-yellow-600",
     textColor: "text-yellow-400",
+  },
+  exhausts: {
+    name: "Exhausts",
+    description: "Performance exhaust systems",
+    icon: Cog,
+    color: "from-orange-500 to-orange-600",
+    textColor: "text-orange-400",
+  },
+  parts: {
+    name: "Parts",
+    description: "Bike parts and components",
+    icon: Cog,
+    color: "from-indigo-500 to-indigo-600",
+    textColor: "text-indigo-400",
+  },
+  tools: {
+    name: "Tools",
+    description: "Bike maintenance tools",
+    icon: Wrench,
+    color: "from-orange-500 to-orange-600",
+    textColor: "text-orange-400",
+  },
+  clothing: {
+    name: "Clothing",
+    description: "Bike riding apparel",
+    icon: Shield,
+    color: "from-pink-500 to-pink-600",
+    textColor: "text-pink-400",
+  },
+  electronics: {
+    name: "Electronics",
+    description: "Bike electronics and gadgets",
+    icon: Zap,
+    color: "from-cyan-500 to-cyan-600",
+    textColor: "text-cyan-400",
+  },
+  engine: {
+    name: "Engine",
+    description: "Engine parts and components",
+    icon: Gauge,
+    color: "from-red-500 to-red-600",
+    textColor: "text-red-400",
+  },
+  brakes: {
+    name: "Brakes",
+    description: "Brake systems and components",
+    icon: Disc,
+    color: "from-gray-500 to-gray-600",
+    textColor: "text-gray-400",
+  },
+  suspension: {
+    name: "Suspension",
+    description: "Suspension systems",
+    icon: Settings,
+    color: "from-blue-500 to-blue-600",
+    textColor: "text-blue-400",
+  },
+  lighting: {
+    name: "Lighting",
+    description: "Bike lighting systems",
+    icon: Zap,
+    color: "from-yellow-500 to-yellow-600",
+    textColor: "text-yellow-400",
+  },
+  // Default configuration for any new categories
+  default: {
+    name: "Products",
+    description: "Various products and accessories",
+    icon: Grid3X3,
+    color: "from-gray-500 to-gray-600",
+    textColor: "text-gray-400",
   },
 };
 
@@ -107,26 +186,23 @@ export default function CategoryClient({ categoryName }: Props) {
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
 
+  // Get category configuration with fallback to default
   const currentCategory =
-    categoryConfig[categoryName.toLowerCase() as keyof typeof categoryConfig];
+    categoryConfig[categoryName.toLowerCase() as keyof typeof categoryConfig] ||
+    categoryConfig.default;
 
-  if (!currentCategory) {
-    return (
-      <div className="min-h-screen bg-black">
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center text-white">
-            <h1 className="text-4xl mb-4">Category Not Found</h1>
-            <button
-              onClick={() => router.back()}
-              className="bg-red-600 hover:bg-red-700 py-2 px-4 rounded"
-            >
-              Go Back
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Update the name and description for unknown categories
+  const displayName =
+    currentCategory === categoryConfig.default
+      ? categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
+      : currentCategory.name;
+
+  const displayDescription =
+    currentCategory === categoryConfig.default
+      ? `${categoryName} products and accessories`
+      : currentCategory.description;
+
+  const { isInWishlist, toggleWishlistItem } = useWishlist();
 
   const Icon = currentCategory.icon;
   const filteredProducts = products.filter((p) =>
@@ -151,14 +227,7 @@ export default function CategoryClient({ categoryName }: Props) {
       category: product.category,
     };
 
-    dispatch(toggleWishlist(wishlistItem));
-
-    const isInWishlist = wishlist.some((item) => item.id === product.id);
-    if (isInWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    toggleWishlistItem(wishlistItem);
   };
 
   return (
@@ -182,10 +251,10 @@ export default function CategoryClient({ categoryName }: Props) {
             <h1
               className={`text-4xl lg:text-5xl font-bold ${currentCategory.textColor} mb-4`}
             >
-              {currentCategory.name}
+              {displayName}
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              {currentCategory.description}
+              {displayDescription}
             </p>
           </div>
 
@@ -210,8 +279,7 @@ export default function CategoryClient({ categoryName }: Props) {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-gray-800/50 backdrop-blur-sm border-gray-700 hover:bg-gray-700/50 transition-all duration-300 group cursor-pointer relative"
-                onClick={() => router.push(`/product/${product.id}`)}
+                className="bg-gray-800/50 backdrop-blur-sm border-gray-700 hover:bg-gray-700/50 transition-all duration-300 group relative"
               >
                 <div className="aspect-video overflow-hidden rounded-t-lg">
                   {product.images && product.images.length > 0 ? (
@@ -235,7 +303,7 @@ export default function CategoryClient({ categoryName }: Props) {
                   className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
                   onClick={(e) => handleToggleWishlist(product, e)}
                 >
-                  {wishlist.some((item) => item.id === product.id) ? (
+                  {isInWishlist(product.id) ? (
                     <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
                   ) : (
                     <FaRegHeart className="w-5 h-5 text-white" />
@@ -243,7 +311,10 @@ export default function CategoryClient({ categoryName }: Props) {
                 </button>
 
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-white mb-2">
+                  <h3
+                    className="text-xl font-semibold text-white mb-2 cursor-pointer hover:text-red-400 transition-colors duration-200"
+                    onClick={() => router.push(`/product/${product.id}`)}
+                  >
                     {product.name}
                   </h3>
                   <div className="flex flex-col items-left justify-between">

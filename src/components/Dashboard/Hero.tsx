@@ -14,6 +14,7 @@ import {
   fetchSliderImages,
 } from "../store/sliderSlice";
 import { AppDispatch } from "../store";
+import { useTheme } from "../hooks/useTheme";
 
 const Hero = () => {
   const leftRef = useRef<HTMLDivElement>(null);
@@ -23,6 +24,7 @@ const Hero = () => {
   const sliderLoading = useSelector(selectSliderLoading);
   const sliderImages = useSelector(selectSliderImages);
   const [hasTriedSeeding, setHasTriedSeeding] = useState(false);
+  const { getClass, getClasses } = useTheme();
 
   // Fetch slider images on component mount
   useEffect(() => {
@@ -106,8 +108,17 @@ const Hero = () => {
   return (
     <section className="relative overflow-hidden min-h-screen flex flex-col">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-red-600/20 to-transparent"></div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-red-500/10 to-transparent"></div>
+      <div
+        className={`absolute inset-0 ${getClass("accentPrimary").replace(
+          "text-",
+          "bg-"
+        )}/20`}
+      ></div>
+      <div
+        className={`absolute top-0 left-0 w-full h-full ${getClass(
+          "accentPrimary"
+        ).replace("text-", "bg-")}/10`}
+      ></div>
 
       <div className="relative flex-1 flex flex-col">
         {/* TOP - Slider Section */}
@@ -155,18 +166,38 @@ const Hero = () => {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-8 pt-8 border-t border-gray-800 max-w-2xl mx-auto">
+              <div
+                className={`grid grid-cols-3 gap-8 pt-8 ${getClass(
+                  "divider"
+                )} max-w-2xl mx-auto`}
+              >
                 <div>
-                  <div className="text-3xl font-bold text-white">10K+</div>
-                  <div className="text-gray-400">Products</div>
+                  <div
+                    className={`text-3xl font-bold ${getClass("textPrimary")}`}
+                  >
+                    10K+
+                  </div>
+                  <div className={getClass("textSecondary")}>Products</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-white">50K+</div>
-                  <div className="text-gray-400">Happy Customers</div>
+                  <div
+                    className={`text-3xl font-bold ${getClass("textPrimary")}`}
+                  >
+                    50K+
+                  </div>
+                  <div className={getClass("textSecondary")}>
+                    Happy Customers
+                  </div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-white">15+</div>
-                  <div className="text-gray-400">Years Experience</div>
+                  <div
+                    className={`text-3xl font-bold ${getClass("textPrimary")}`}
+                  >
+                    15+
+                  </div>
+                  <div className={getClass("textSecondary")}>
+                    Years Experience
+                  </div>
                 </div>
               </div>
             </div>

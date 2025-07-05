@@ -20,10 +20,14 @@ import {
   updateCartItemQuantity,
   removeFromCart,
 } from "@/components/store/cartSlice";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/components/hooks/useCart";
 
 export default function CartPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const isCartAccessible = useSelector(selectIsPageAccessible("cart"));
+  const { updateLoading, removeLoading } = useCart();
 
   if (!isCartAccessible) {
     return (
@@ -52,6 +56,10 @@ export default function CartPage() {
     await dispatch(removeFromCart(id));
   };
 
+  const handleContinueShopping = () => {
+    router.push("/");
+  };
+
   const subtotal = cartTotal;
   const shipping = cartItems.length ? 25 : 0;
   const tax = +(subtotal * 0.1).toFixed(2);
@@ -73,7 +81,10 @@ export default function CartPage() {
             <p className="text-gray-400 mb-6">
               Add some products to get started
             </p>
-            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+            <button
+              onClick={handleContinueShopping}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors"
+            >
               Continue Shopping
             </button>
           </div>
@@ -110,9 +121,14 @@ export default function CartPage() {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity - 1)
                           }
-                          className="h-8 w-8 flex items-center justify-center border border-gray-600 text-gray-300 rounded"
+                          disabled={updateLoading}
+                          className="h-8 w-8 flex items-center justify-center border border-gray-600 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Minus className="h-4 w-4" />
+                          {updateLoading ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                          ) : (
+                            <Minus className="h-4 w-4" />
+                          )}
                         </button>
                         <span className="text-white font-medium w-8 text-center">
                           {item.quantity}
@@ -121,17 +137,27 @@ export default function CartPage() {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity + 1)
                           }
-                          className="h-8 w-8 flex items-center justify-center border border-gray-600 text-gray-300 rounded"
+                          disabled={updateLoading}
+                          className="h-8 w-8 flex items-center justify-center border border-gray-600 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Plus className="h-4 w-4" />
+                          {updateLoading ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                          ) : (
+                            <Plus className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
 
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="h-8 px-3 flex items-center justify-center border border-red-600 text-red-400 hover:bg-red-600/20 rounded"
+                        disabled={removeLoading}
+                        className="h-8 px-3 flex items-center justify-center border border-red-600 text-red-400 hover:bg-red-600/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {removeLoading ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-b border-red-400"></div>
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -188,7 +214,10 @@ export default function CartPage() {
               </div>
 
               {/* Continue Shopping */}
-              <button className="w-full border border-gray-600 text-gray-300 hover:bg-gray-800 py-2 rounded">
+              <button
+                onClick={handleContinueShopping}
+                className="w-full border border-gray-600 text-gray-300 hover:bg-gray-800 py-2 rounded transition-colors"
+              >
                 Continue Shopping
               </button>
             </div>

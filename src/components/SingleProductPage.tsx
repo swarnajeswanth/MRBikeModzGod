@@ -17,6 +17,8 @@ import {
 import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
 import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
+import { useWishlist } from "./hooks/useWishlist";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 const ProductPage = () => {
   const router = useRouter();
@@ -107,9 +109,7 @@ const ProductPage = () => {
   const requireLoginForWishlist = useSelector(
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
-  const isInWishlist = product
-    ? wishlist.some((item) => item.id === product.id)
-    : false;
+  const { isInWishlist, toggleWishlistItem } = useWishlist();
 
   // Load products if not already loaded
   useEffect(() => {
@@ -131,12 +131,6 @@ const ProductPage = () => {
 
   // Handle wishlist toggle
   const handleToggleWishlist = () => {
-    // Check if product exists
-    if (!product) {
-      toast.error("Product not found");
-      return;
-    }
-
     // Check if login is required for wishlist and user is not logged in
     if (requireLoginForWishlist && !isLoggedIn) {
       toast.error("Please log in to use the wishlist.");
@@ -153,14 +147,7 @@ const ProductPage = () => {
       category: product.category,
     };
 
-    dispatch(toggleWishlist(wishlistItem));
-
-    const isInWishlist = wishlist.some((item) => item.id === product.id);
-    if (isInWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    toggleWishlistItem(wishlistItem);
   };
 
   // Handle share
@@ -401,17 +388,13 @@ const ProductPage = () => {
                 <button
                   onClick={handleToggleWishlist}
                   className="p-3 border border-gray-600 hover:border-red-500 rounded-lg transition-colors"
-                  title={
-                    isInWishlist ? "Remove from wishlist" : "Add to wishlist"
-                  }
+                  title="Add to wishlist"
                 >
-                  <Heart
-                    className={`h-6 w-6 ${
-                      isInWishlist
-                        ? "text-red-500 fill-current"
-                        : "text-gray-400"
-                    }`}
-                  />
+                  {isInWishlist(product.id) ? (
+                    <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
+                  ) : (
+                    <FaRegHeart className="w-5 h-5 text-white" />
+                  )}
                 </button>
 
                 <button

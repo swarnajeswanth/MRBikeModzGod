@@ -13,11 +13,13 @@ import {
   selectLoading,
 } from "@/components/store/productSlice";
 import { useRouter } from "next/navigation";
+import { useTheme } from "./hooks/useTheme";
 
 const Footer = () => {
   const router = useRouter();
   const uniqueCategories = useSelector(selectUniqueCategories);
   const loading = useSelector(selectLoading);
+  const { getFooterClasses, getClass, getClasses } = useTheme();
 
   // Format categories for display (capitalize first letter)
   const formattedCategories = uniqueCategories.map(
@@ -49,14 +51,7 @@ const Footer = () => {
     },
     {
       title: "Support",
-      links: [
-        "Installation Guide",
-        "Warranty",
-        "Returns",
-        "FAQ",
-        "Technical Support",
-        "Live Chat",
-      ],
+      links: ["Installation Guide", "Warranty", "Returns", "FAQ"],
     },
     {
       title: "Company",
@@ -86,7 +81,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer id="footer" className="bg-black border-t border-gray-800">
+    <footer id="footer" className={getFooterClasses()}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-16">
@@ -94,10 +89,14 @@ const Footer = () => {
             {/* Company Info */}
             <div className="lg:col-span-1">
               <div className="mb-6">
-                <div className="text-2xl font-bold text-white mb-2">
-                  MR<span className="text-red-600">BIKEMODZ</span>
+                <div
+                  className={`text-2xl font-bold ${getClass(
+                    "textPrimary"
+                  )} mb-2`}
+                >
+                  MR<span className={getClass("accentPrimary")}>BIKEMODZ</span>
                 </div>
-                <p className="text-gray-400">
+                <p className={getClass("textSecondary")}>
                   Your trusted partner for premium auto spare parts and
                   accessories. Quality, performance, and reliability guaranteed.
                 </p>
@@ -105,16 +104,28 @@ const Footer = () => {
 
               {/* Contact Info */}
               <div className="space-y-3">
-                <div className="flex items-center text-gray-400">
-                  <Phone className="h-5 w-5 mr-3 text-red-400" />
+                <div
+                  className={`flex items-center ${getClass("textSecondary")}`}
+                >
+                  <Phone
+                    className={`h-5 w-5 mr-3 ${getClass("accentPrimary")}`}
+                  />
                   <span>+91 6304187805</span>
                 </div>
-                <div className="flex items-center text-gray-400">
-                  <Mail className="h-5 w-5 mr-3 text-red-400" />
+                <div
+                  className={`flex items-center ${getClass("textSecondary")}`}
+                >
+                  <Mail
+                    className={`h-5 w-5 mr-3 ${getClass("accentPrimary")}`}
+                  />
                   <span>mrbikemodz@gmail.com</span>
                 </div>
-                <div className="flex items-center text-gray-400">
-                  <MapPin className="h-5 w-5 mr-3 text-red-400" />
+                <div
+                  className={`flex items-center ${getClass("textSecondary")}`}
+                >
+                  <MapPin
+                    className={`h-5 w-5 mr-3 ${getClass("accentPrimary")}`}
+                  />
                   <span>
                     Anitha, Uma, Maheswari tample, VRC Centre, Nellore, Andhra
                     Pradesh 524001
@@ -132,7 +143,9 @@ const Footer = () => {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`text-gray-400 ${social.color} transition-colors duration-200`}
+                      className={`${getClass("textSecondary")} ${
+                        social.color
+                      } transition-colors duration-200`}
                       aria-label={`Follow us on ${social.icon.name}`}
                     >
                       <Icon className="h-6 w-6" />
@@ -145,7 +158,11 @@ const Footer = () => {
             {/* Footer Links */}
             {footerSections.map((section) => (
               <div key={section.title}>
-                <h3 className="text-white font-semibold text-lg mb-4">
+                <h3
+                  className={`${getClass(
+                    "textPrimary"
+                  )} font-semibold text-lg mb-4`}
+                >
                   {section.title}
                 </h3>
                 <ul className="space-y-2">
@@ -161,7 +178,12 @@ const Footer = () => {
                             router.push(`/category/${categorySlug}`);
                           }
                         }}
-                        className="text-gray-400 hover:text-red-400 transition-colors duration-200 cursor-pointer"
+                        className={`${getClass("textSecondary")} ${getClass(
+                          "accentPrimary"
+                        ).replace(
+                          "text-",
+                          "hover:text-"
+                        )} transition-colors duration-200 cursor-pointer`}
                       >
                         {link}
                       </a>
@@ -175,7 +197,12 @@ const Footer = () => {
                           e.preventDefault();
                           router.push("/product/allproducts");
                         }}
-                        className="text-gray-400 hover:text-red-400 transition-colors duration-200 cursor-pointer text-sm"
+                        className={`${getClass("textSecondary")} ${getClass(
+                          "accentPrimary"
+                        ).replace(
+                          "text-",
+                          "hover:text-"
+                        )} transition-colors duration-200 cursor-pointer text-sm`}
                       >
                         View All Categories →
                       </a>
@@ -186,28 +213,36 @@ const Footer = () => {
             ))}
           </div>
         </div>
-        \{/* Bottom Footer */}
-        <div className="py-6 border-t border-gray-800">
+        {/* Bottom Footer */}
+        <div className={`py-6 ${getClass("divider")}`}>
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+            <div
+              className={`${getClass("textSecondary")} text-sm mb-4 md:mb-0`}
+            >
               © 2024 MRBIKEMODZ. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm">
               <a
                 href="#"
-                className="text-gray-400 hover:text-red-400 transition-colors"
+                className={`${getClass("textSecondary")} ${getClass(
+                  "accentPrimary"
+                ).replace("text-", "hover:text-")} transition-colors`}
               >
                 Privacy Policy
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-red-400 transition-colors"
+                className={`${getClass("textSecondary")} ${getClass(
+                  "accentPrimary"
+                ).replace("text-", "hover:text-")} transition-colors`}
               >
                 Terms of Service
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-red-400 transition-colors"
+                className={`${getClass("textSecondary")} ${getClass(
+                  "accentPrimary"
+                ).replace("text-", "hover:text-")} transition-colors`}
               >
                 Cookie Policy
               </a>

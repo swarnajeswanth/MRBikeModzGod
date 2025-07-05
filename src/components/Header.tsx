@@ -4,7 +4,6 @@ import {
   Menu,
   X,
   Phone,
-  Mail,
   LogOut,
   Heart,
   ShoppingCart,
@@ -26,339 +25,380 @@ import {
 } from "@/components/store/storeSettingsSlice";
 import { selectCartItemCount } from "@/components/store/cartSlice";
 import StoreSettingsWrapper from "@/components/StoreSettingsWrapper";
-import toast from "react-hot-toast";
-import LoadingButton from "./Loaders/LoadingButton";
+import { useTheme } from "./hooks/useTheme";
+import ThemeToggle from "./ThemeToggle";
+import gsap from "gsap";
 
-type NavigationItem =
-  | { name: string; href: string; icon: React.ReactNode; isLogout?: never }
-  | { name: string; href: string; icon: React.ReactNode; isLogout: boolean };
+type NavigationItem = {
+  name: string;
+  href: string;
+  icon: React.ReactElement;
+  isLogout?: boolean;
+};
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [logoutLoading, setLogoutLoading] = useState(false);
-  const tubelightRef = useRef<HTMLDivElement>(null);
-  const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
-  const dispatch = useDispatch();
-  const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileOverlayRef = useRef<HTMLDivElement>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement>(null);
+  const { getHeaderClasses, getClass, getClasses } = useTheme();
 
-  const { isLoggedIn, username, role, wishlist } = useSelector(
+  const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { isLoggedIn, username, role } = useSelector(
     (state: RootState) => state.user
   );
-
-  // Get actual cart items count from Redux state
-  const cartItemsCount = useSelector(selectCartItemCount);
+  const cartItemCount = useSelector(selectCartItemCount);
   const features = useSelector(selectFeatures);
   const pages = useSelector(selectPages);
-  const pathname = usePathname();
 
-  // Dynamic navigation based on authentication status and store settings
   const getNavigation = (): NavigationItem[] => {
-    const baseNav: NavigationItem[] = [];
-
-    if (pages?.home) {
-      baseNav.push({
+    const baseNav = [
+      {
         name: "Home",
         href: "/",
-        icon: <HomeIcon className="h-4 w-4 mr-2" />,
-      });
-    }
-
-    if (pathname === "/") {
-      if (pages?.allProducts) {
-        baseNav.push({
-          name: "Products",
-          href: "#products",
-          icon: <ShoppingCart className="h-4 w-4 mr-2" />,
-        });
-      }
-      if (features?.categories) {
-        baseNav.push({
-          name: "Categories",
-          href: "#categories",
-          icon: <List className="h-4 w-4 mr-2" />,
-        });
-      }
-      baseNav.push({
-        name: "Store Location",
-        href: "#store-location",
-        icon: <MapPin className="h-4 w-4 mr-2" />,
-      });
-      baseNav.push({
-        name: "About",
-        href: "#footer",
-        icon: <Info className="h-4 w-4 mr-2" />,
-      });
-    }
-
-    baseNav.push({
-      name: "Contact",
-      href: "#footer",
-      icon: <Mail className="h-4 w-4 mr-2" />,
-    });
+        icon: <HomeIcon className="h-5 w-5" />,
+      },
+      {
+        name: "All Products",
+        href: "/product/allproducts",
+        icon: <List className="h-5 w-5" />,
+      },
+      {
+        name: "Wishlist",
+        href: "/wishlist",
+        icon: <Heart className="h-5 w-5" />,
+      },
+      {
+        name: "Cart",
+        href: "/cart",
+        icon: <ShoppingCart className="h-5 w-5" />,
+      },
+    ];
 
     if (isLoggedIn) {
-      if (pages?.customerDashboard) {
-        baseNav.push({
-          name: "Dashboard",
-          href: "/dashboard",
-          icon: <User className="h-4 w-4 mr-2" />,
-        });
-      }
       baseNav.push({
-        name: `Logout (${username})`,
-        href: "#logout",
-        icon: <LogOut className="h-4 w-4 mr-2" />,
-        isLogout: true,
+        name: "Dashboard",
+        href:
+          role === "retailer" ? "/retailer-dashboard" : "/customer-dashboard",
+        icon: <User className="h-5 w-5" />,
       });
+      baseNav.push({
+        name: "Logout",
+        href: "#",
+        icon: <LogOut className="h-5 w-5" />,
+        isLogout: true,
+      } as NavigationItem);
     } else {
-      if (pages?.auth) {
-        baseNav.push({
-          name: "Login",
-          href: "/auth",
-          icon: <LogIn className="h-4 w-4 mr-2" />,
-        });
-      }
+      baseNav.push({
+        name: "Login",
+        href: "/auth",
+        icon: <LogIn className="h-5 w-5" />,
+      });
     }
 
     return baseNav;
   };
 
-  const navigation = getNavigation();
-
-  // Handle logout
   const handleLogout = async () => {
-    setLogoutLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
       dispatch(logout());
-      toast.success("Logged out successfully!");
       router.push("/");
     } catch (error) {
-      toast.error("Failed to logout");
-    } finally {
-      setLogoutLoading(false);
+      console.error("Logout error:", error);
     }
   };
 
-  // Match current path with nav
-  useEffect(() => {
-    const index = navigation.findIndex((item) =>
-      pathname === "/" ? item.href === "/" : pathname.includes(item.href)
-    );
-    if (index !== -1) setActiveIndex(index);
-  }, [pathname, navigation]);
-
-  useEffect(() => {
-    const activeLink = navRefs.current[activeIndex];
-    const tubelight = tubelightRef.current;
-
-    if (activeLink && tubelight) {
-      const { offsetLeft, offsetWidth } = activeLink;
-
-      tubelight.style.left = `${offsetLeft + offsetWidth / 2}px`;
-      tubelight.style.width = `${offsetWidth}px`;
-      tubelight.style.transform = "translateX(-50%)";
+  const handleNavigationClick = (item: NavigationItem) => {
+    if (item.isLogout) {
+      handleLogout();
+    } else {
+      router.push(item.href);
     }
-  }, [activeIndex, isMenuOpen]);
+    setIsMobileMenuOpen(false);
+  };
+
+  // Enhanced mobile menu animation with circular reveal
+  const openMobileMenu = () => {
+    if (!mobileButtonRef.current) return;
+
+    const button = mobileButtonRef.current;
+
+    // First, set the menu to open so the overlay renders
+    setIsMobileMenuOpen(true);
+
+    // Use setTimeout to ensure the overlay is rendered before animating
+    setTimeout(() => {
+      if (!mobileMenuRef.current || !mobileOverlayRef.current) return;
+
+      const menu = mobileMenuRef.current;
+      const overlay = mobileOverlayRef.current;
+
+      // Get button position for circular reveal
+      const buttonRect = button.getBoundingClientRect();
+      const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+      const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+
+      // Calculate the maximum distance to any corner
+      const maxDistance = Math.max(
+        Math.sqrt(buttonCenterX ** 2 + buttonCenterY ** 2),
+        Math.sqrt(
+          (window.innerWidth - buttonCenterX) ** 2 + buttonCenterY ** 2
+        ),
+        Math.sqrt(
+          buttonCenterX ** 2 + (window.innerHeight - buttonCenterY) ** 2
+        ),
+        Math.sqrt(
+          (window.innerWidth - buttonCenterX) ** 2 +
+            (window.innerHeight - buttonCenterY) ** 2
+        )
+      );
+
+      // Set initial state
+      gsap.set(overlay, {
+        clipPath: `circle(0px at ${buttonCenterX}px ${buttonCenterY}px)`,
+        opacity: 0,
+      });
+      gsap.set(menu, {
+        opacity: 0,
+        scale: 0.8,
+        rotationX: 15,
+      });
+
+      // Animate overlay with circular reveal
+      gsap.to(overlay, {
+        clipPath: `circle(${maxDistance}px at ${buttonCenterX}px ${buttonCenterY}px)`,
+        opacity: 1,
+        duration: 0.6,
+        ease: "power2.out",
+      });
+
+      // Animate menu content
+      gsap.to(menu, {
+        opacity: 1,
+        scale: 1,
+        rotationX: 0,
+        duration: 0.5,
+        delay: 0.2,
+        ease: "back.out(1.7)",
+      });
+
+      // Animate menu items with stagger
+      const menuItems = menu.querySelectorAll("button");
+      gsap.fromTo(
+        menuItems,
+        {
+          opacity: 0,
+          y: 20,
+          scale: 0.8,
+          rotationX: 15,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotationX: 0,
+          stagger: 0.08,
+          duration: 0.4,
+          delay: 0.3,
+          ease: "back.out(1.7)",
+        }
+      );
+    }, 10); // Small delay to ensure DOM is updated
+  };
+
+  const closeMobileMenu = () => {
+    if (
+      !mobileMenuRef.current ||
+      !mobileOverlayRef.current ||
+      !mobileButtonRef.current
+    )
+      return;
+
+    const button = mobileButtonRef.current;
+    const menu = mobileMenuRef.current;
+    const overlay = mobileOverlayRef.current;
+
+    const buttonRect = button.getBoundingClientRect();
+    const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+    const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+
+    // Animate menu items out
+    const menuItems = menu.querySelectorAll("button");
+    gsap.to(menuItems, {
+      opacity: 0,
+      y: -20,
+      scale: 0.8,
+      rotationX: -15,
+      stagger: 0.05,
+      duration: 0.3,
+      ease: "power2.in",
+    });
+
+    // Animate menu out
+    gsap.to(menu, {
+      opacity: 0,
+      scale: 0.8,
+      rotationX: -15,
+      duration: 0.4,
+      delay: 0.1,
+      ease: "power2.in",
+    });
+
+    // Animate overlay with circular collapse
+    gsap.to(overlay, {
+      clipPath: `circle(0px at ${buttonCenterX}px ${buttonCenterY}px)`,
+      opacity: 0,
+      duration: 0.5,
+      delay: 0.2,
+      ease: "power2.in",
+      onComplete: () => {
+        setIsMobileMenuOpen(false);
+      },
+    });
+  };
+
+  const handleMobileMenuToggle = () => {
+    if (isMobileMenuOpen) {
+      closeMobileMenu();
+    } else {
+      openMobileMenu();
+    }
+  };
+
+  const handleOverlayClick = () => {
+    closeMobileMenu();
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
 
   return (
-    <header className="relative bg-black/90 backdrop-blur-sm border-b border-red-600/20 z-50">
-      {/* Top Bar */}
-      {/* <div className="bg-red-600 text-white py-2">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-sm">
-          <div className="flex gap-4">
-            <span className="flex items-center">
-              <Phone className="h-4 w-4 mr-1" /> +1 (555) 123-4567
-            </span>
-            <span className="flex items-center">
-              <Mail className="h-4 w-4 mr-1" /> info@mrbikemodz.com
-            </span>
-          </div>
-          <span className="hidden md:block">
-            Free Shipping on Orders Over $99!
-          </span>
-        </div>
-      </div> */}
-
-      {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-        {/* Logo */}
-        <div className="text-2xl font-bold text-white">
-          MR<span className="text-red-600">BIKEMODZ</span>
-          <div className="text-xs text-gray-400 hidden sm:block">
-            AUTO SPARE & ACCESSORIES
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="relative hidden md:flex items-center space-x-8">
-          {navigation.map((item, index) => (
-            <div key={item.name}>
-              {item.isLogout ? (
-                <LoadingButton
-                  onClick={handleLogout}
-                  loading={logoutLoading}
-                  loadingText="Logging out..."
-                  variant="secondary"
-                  size="sm"
-                  className="flex items-center text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none p-0"
-                  icon={item.icon}
-                >
-                  Logout
-                </LoadingButton>
-              ) : (
-                <Link
-                  href={item.href}
-                  ref={(el) => {
-                    navRefs.current[index] = el;
-                  }}
-                  onClick={() => setActiveIndex(index)}
-                  className={`relative flex items-center text-sm font-medium transition-colors duration-200 ${
-                    index === activeIndex
-                      ? "text-red-400"
-                      : "text-gray-300 hover:text-red-400"
-                  }`}
-                >
-                  {item.icon}
-                  {item.name}
-                </Link>
-              )}
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-black/80 backdrop-blur-md border-b border-gray-800"
+          : "bg-gradient-to-r from-red-900/90 to-red-800/90 backdrop-blur-sm"
+      } ${getHeaderClasses()}`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="text-2xl font-bold text-white">
+              MR<span className="text-red-400">BIKEMODZ</span>
             </div>
-          ))}
+          </Link>
 
-          {/* Cart Icon - Only show if add to cart feature is enabled */}
-          <StoreSettingsWrapper feature="addToCart">
-            <Link
-              href="/cart"
-              className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
-              )}
-            </Link>
-          </StoreSettingsWrapper>
-
-          {/* Wishlist Icon - Only show if wishlist feature is enabled */}
-          <StoreSettingsWrapper feature="wishlist">
-            {isLoggedIn && (
-              <Link
-                href="/dashboard"
-                className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {getNavigation().map((item) => (
+              <button
+                key={item.name}
+                onClick={() => handleNavigationClick(item)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                  pathname === item.href
+                    ? "text-red-400 bg-red-900/20"
+                    : "text-gray-300 hover:text-white hover:bg-gray-700/50"
+                }`}
               >
-                <Heart className="h-5 w-5" />
-                {wishlist.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {wishlist.length}
+                {item.icon}
+                <span>{item.name}</span>
+                {item.name === "Cart" && cartItemCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemCount}
                   </span>
                 )}
-              </Link>
-            )}
-          </StoreSettingsWrapper>
+              </button>
+            ))}
+          </nav>
 
-          {/* Tubelight */}
-          <div
-            ref={tubelightRef}
-            className="absolute bottom-0 h-[3px] bg-white transition-all duration-300 ease-out rounded-full"
-          />
-        </nav>
+          {/* Right side - Theme toggle and mobile menu */}
+          <div className="flex items-center space-x-4">
+            <ThemeToggle className="hidden md:block" />
 
-        {/* Mobile menu icon */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white"
-          >
-            {isMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
+            {/* Mobile menu button */}
+            <button
+              ref={mobileButtonRef}
+              onClick={handleMobileMenuToggle}
+              className="md:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors duration-200"
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Nav */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-black/95 px-4 pb-4">
-          {navigation.map((item, index) => (
-            <div key={item.name}>
-              {item.isLogout ? (
-                <LoadingButton
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  loading={logoutLoading}
-                  loadingText="Logging out..."
-                  variant="secondary"
-                  size="sm"
-                  className="flex items-center w-full py-2 pl-0 font-medium transition-colors text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none justify-start"
-                  icon={item.icon}
-                >
-                  Logout
-                </LoadingButton>
-              ) : (
-                <Link
-                  href={item.href}
-                  onClick={() => {
-                    setActiveIndex(index);
-                    setIsMenuOpen(false);
-                  }}
-                  className={`block flex items-center py-2 font-medium transition-colors ${
-                    index === activeIndex
-                      ? "text-red-400"
-                      : "text-gray-300 hover:text-red-400"
-                  }`}
-                >
-                  {item.icon}
-                  {item.name}
-                </Link>
-              )}
-            </div>
-          ))}
-
-          {/* Mobile Cart */}
-          <StoreSettingsWrapper feature="addToCart">
-            <Link
-              href="/cart"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center py-2 font-medium transition-colors text-gray-300 hover:text-red-400"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Cart
-              {cartItemsCount > 0 && (
-                <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
-              )}
-            </Link>
-          </StoreSettingsWrapper>
-
-          {/* Mobile Wishlist */}
-          <StoreSettingsWrapper feature="wishlist">
-            {isLoggedIn && (
-              <Link
-                href="/dashboard"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center py-2 font-medium transition-colors text-gray-300 hover:text-red-400"
+      {/* Mobile Menu Overlay */}
+      <div
+        ref={mobileOverlayRef}
+        className={`fixed inset-0 bg-black/90 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+          isMobileMenuOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={handleOverlayClick}
+      >
+        <div
+          ref={mobileMenuRef}
+          className="absolute top-20 left-4 right-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="space-y-4">
+            {getNavigation().map((item) => (
+              <button
+                key={item.name}
+                onClick={() => handleNavigationClick(item)}
+                className={`
+                  w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:scale-105 ${
+                    pathname === item.href
+                      ? "text-red-400 bg-red-900/20"
+                      : "text-gray-300 hover:text-white hover:bg-gray-700/50"
+                  }
+                `}
               >
-                <Heart className="h-4 w-4 mr-2" />
-                Wishlist
-                {wishlist.length > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {wishlist.length}
+                {item.icon}
+                <span className="font-medium">{item.name}</span>
+                {item.name === "Cart" && cartItemCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemCount}
                   </span>
                 )}
-              </Link>
-            )}
-          </StoreSettingsWrapper>
+              </button>
+            ))}
+          </div>
+
+          {/* Theme toggle in mobile menu */}
+          <div className="mt-6 pt-6 border-t border-gray-700">
+            <ThemeToggle className="w-full" showLabels />
+          </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };

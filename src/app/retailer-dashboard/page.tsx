@@ -13,6 +13,7 @@ import AddProductModal, {
   ProductForm,
 } from "@/components/Profile/AddProductModal"; // adjust path if needed
 import SeedDataManager from "@/components/Profile/SeedDataManager";
+import WishlistGrid from "@/components/Dashboard/WishlistGrid";
 import { useSelector } from "react-redux";
 import { selectAllProducts } from "@/components/store/productSlice"; // adjust path if needed
 import { useDispatch } from "react-redux";
@@ -305,6 +306,18 @@ const RetailerDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Wishlist Container */}
+      <div className="bg-[#1D2939] p-6 rounded-lg">
+        <WishlistGrid
+          title="My Wishlist"
+          description="Products you've saved for later reference"
+          maxItems={8}
+          showEmptyState={true}
+          className=""
+        />
+      </div>
+
       <AddProductModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

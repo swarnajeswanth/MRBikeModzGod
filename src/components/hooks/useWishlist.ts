@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store";
 import {
@@ -8,12 +8,14 @@ import {
   WishlistItem,
 } from "../store/UserSlice";
 import { toast } from "react-hot-toast";
+import { selectAllProducts } from "../store/productSlice";
 
 export const useWishlist = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { wishlist, isLoggedIn } = useSelector(
     (state: RootState) => state.user
   );
+  const products = useSelector(selectAllProducts);
 
   // Get token from localStorage
   const getToken = () => {
@@ -22,6 +24,38 @@ export const useWishlist = () => {
     }
     return null;
   };
+
+  // Populate wishlist items with product details
+  const populateWishlistWithProductDetails = useCallback(() => {
+    if (products.length === 0 || wishlist.length === 0) return;
+
+    const populatedWishlist = wishlist.map((wishlistItem) => {
+      const product = products.find((p) => p.id === wishlistItem.id);
+      if (product) {
+        return {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image:
+            product.images && product.images.length > 0
+              ? product.images[0]
+              : "",
+          category: product.category,
+        };
+      }
+      return wishlistItem;
+    });
+
+    // Only update if there are changes
+    const hasChanges = populatedWishlist.some((item, index) => {
+      const original = wishlist[index];
+      return item.name !== original.name || item.price !== original.price;
+    });
+
+    if (hasChanges) {
+      dispatch(syncWishlistWithBackend(populatedWishlist));
+    }
+  }, [products, wishlist, dispatch]);
 
   // Load wishlist from backend
   const loadWishlist = useCallback(async () => {
@@ -82,14 +116,16 @@ export const useWishlist = () => {
   // Toggle wishlist item with backend sync
   const toggleWishlistItem = useCallback(
     async (item: WishlistItem) => {
+      // Check if item is currently in wishlist BEFORE updating state
+      const isCurrentlyInWishlist = wishlist.some(
+        (wishlistItem) => wishlistItem.id === item.id
+      );
+
       // Update local state immediately for better UX
       dispatch(toggleWishlist(item));
 
-      // Check if item is now in wishlist
-      const isInWishlist = wishlist.some(
-        (wishlistItem) => wishlistItem.id === item.id
-      );
-      const newWishlistState = isInWishlist
+      // Calculate new wishlist state based on the toggle action
+      const newWishlistState = isCurrentlyInWishlist
         ? wishlist.filter((wishlistItem) => wishlistItem.id !== item.id)
         : [...wishlist, item];
 
@@ -97,7 +133,7 @@ export const useWishlist = () => {
       await syncWishlist(newWishlistState);
 
       // Show toast message
-      if (isInWishlist) {
+      if (isCurrentlyInWishlist) {
         toast.success("Removed from wishlist");
       } else {
         toast.success("Added to wishlist");
@@ -118,6 +154,18 @@ export const useWishlist = () => {
   const getWishlistCount = useCallback(() => {
     return wishlist.length;
   }, [wishlist]);
+
+  // Load wishlist on mount if user is logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadWishlist();
+    }
+  }, [isLoggedIn, loadWishlist]);
+
+  // Populate wishlist with product details when products are loaded
+  useEffect(() => {
+    populateWishlistWithProductDetails();
+  }, [populateWishlistWithProductDetails]);
 
   return {
     wishlist,

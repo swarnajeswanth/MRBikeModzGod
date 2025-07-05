@@ -17,6 +17,21 @@ export interface StoreSettings {
     discountDisplay: boolean;
     relatedProducts: boolean;
     shareProducts: boolean;
+    // New bike-specific features
+    bikeCompatibility: boolean;
+    installationGuides: boolean;
+    warrantyInfo: boolean;
+    returnPolicy: boolean;
+    bulkOrdering: boolean;
+    customModifications: boolean;
+    performanceMetrics: boolean;
+    brandFiltering: boolean;
+    priceAlerts: boolean;
+    stockNotifications: boolean;
+    comparisonTool: boolean;
+    fitmentGuides: boolean;
+    maintenanceSchedules: boolean;
+    partCompatibility: boolean;
   };
 
   // Page Access Controls
@@ -29,6 +44,22 @@ export interface StoreSettings {
     cart: boolean;
     customerDashboard: boolean;
     auth: boolean;
+    // New bike-specific pages
+    installationGuides: boolean;
+    warrantyInfo: boolean;
+    returnPolicy: boolean;
+    bulkOrdering: boolean;
+    customModifications: boolean;
+    performanceMetrics: boolean;
+    comparisonTool: boolean;
+    fitmentGuides: boolean;
+    maintenanceSchedules: boolean;
+    partCompatibility: boolean;
+    dealerLocator: boolean;
+    serviceCenters: boolean;
+    trainingVideos: boolean;
+    blog: boolean;
+    support: boolean;
   };
 
   // Store Information
@@ -39,6 +70,25 @@ export interface StoreSettings {
     theme: "dark" | "light" | "auto";
     maintenanceMode: boolean;
     maintenanceMessage: string;
+    // New bike-specific store info
+    phoneNumber: string;
+    email: string;
+    address: string;
+    businessHours: string;
+    emergencyContact: string;
+    warrantyPolicy: string;
+    returnPolicy: string;
+    shippingPolicy: string;
+    paymentMethods: string[];
+    acceptedBrands: string[];
+    serviceAreas: string[];
+    certifications: string[];
+    socialMedia: {
+      facebook: string;
+      instagram: string;
+      youtube: string;
+      whatsapp: string;
+    };
   };
 
   // Customer Experience
@@ -51,6 +101,28 @@ export interface StoreSettings {
     allowProductSharing: boolean;
     enableNotifications: boolean;
     enableWhatsAppChat: boolean;
+    // New bike-specific customer experience
+    showInstallationGuides: boolean;
+    showWarrantyInfo: boolean;
+    showReturnPolicy: boolean;
+    allowBulkOrdering: boolean;
+    allowCustomModifications: boolean;
+    showPerformanceMetrics: boolean;
+    enableBrandFiltering: boolean;
+    enablePriceAlerts: boolean;
+    enableStockNotifications: boolean;
+    enableComparisonTool: boolean;
+    showFitmentGuides: boolean;
+    showMaintenanceSchedules: boolean;
+    showPartCompatibility: boolean;
+    enableDealerLocator: boolean;
+    enableServiceCenters: boolean;
+    showTrainingVideos: boolean;
+    enableBlog: boolean;
+    enableSupport: boolean;
+    requireVINVerification: boolean;
+    showBikeCompatibility: boolean;
+    enableExpertConsultation: boolean;
   };
 }
 
@@ -79,6 +151,21 @@ export const initialState: StoreSettings = {
     discountDisplay: true,
     relatedProducts: true,
     shareProducts: true,
+    // New bike-specific features
+    bikeCompatibility: true,
+    installationGuides: true,
+    warrantyInfo: true,
+    returnPolicy: true,
+    bulkOrdering: true,
+    customModifications: true,
+    performanceMetrics: true,
+    brandFiltering: true,
+    priceAlerts: true,
+    stockNotifications: true,
+    comparisonTool: true,
+    fitmentGuides: true,
+    maintenanceSchedules: true,
+    partCompatibility: true,
   },
   pages: {
     home: true,
@@ -89,6 +176,22 @@ export const initialState: StoreSettings = {
     cart: true,
     customerDashboard: true,
     auth: true,
+    // New bike-specific pages
+    installationGuides: true,
+    warrantyInfo: true,
+    returnPolicy: true,
+    bulkOrdering: true,
+    customModifications: true,
+    performanceMetrics: true,
+    comparisonTool: true,
+    fitmentGuides: true,
+    maintenanceSchedules: true,
+    partCompatibility: true,
+    dealerLocator: true,
+    serviceCenters: true,
+    trainingVideos: true,
+    blog: true,
+    support: true,
   },
   storeInfo: {
     name: "MrBikeModzGod",
@@ -97,6 +200,34 @@ export const initialState: StoreSettings = {
     theme: "dark",
     maintenanceMode: false,
     maintenanceMessage: "Store is under maintenance. Please check back later.",
+    // New bike-specific store info
+    phoneNumber: "+91 6304187805",
+    email: "mrbikemodz@gmail.com",
+    address:
+      "Anitha, Uma, Maheswari tample, VRC Centre, Nellore, Andhra Pradesh 524001",
+    businessHours: "Mon-Sat: 9:00 AM - 8:00 PM, Sun: 10:00 AM - 6:00 PM",
+    emergencyContact: "+91 6304187805",
+    warrantyPolicy: "1 year manufacturer warranty on all parts",
+    returnPolicy: "30-day return policy for unused items",
+    shippingPolicy: "Free shipping on orders above ₹1000",
+    paymentMethods: ["Cash", "UPI", "Credit Card", "Debit Card", "Net Banking"],
+    acceptedBrands: [
+      "Honda",
+      "Yamaha",
+      "Bajaj",
+      "TVS",
+      "Royal Enfield",
+      "KTM",
+      "Suzuki",
+    ],
+    serviceAreas: ["Nellore", "Gudur", "Kavali", "Ongole", "Vijayawada"],
+    certifications: ["ISO 9001", "Authorized Dealer", "Certified Mechanic"],
+    socialMedia: {
+      facebook: "https://www.facebook.com/share/1HUtQoEnwq/",
+      instagram: "https://www.instagram.com/mrbikemodz?igsh=d250Ym1tb3NtcDZw",
+      youtube: "#",
+      whatsapp: "https://wa.me/916304187805",
+    },
   },
   customerExperience: {
     allowGuestBrowsing: true,
@@ -107,6 +238,28 @@ export const initialState: StoreSettings = {
     allowProductSharing: true,
     enableNotifications: true,
     enableWhatsAppChat: true,
+    // New bike-specific customer experience
+    showInstallationGuides: true,
+    showWarrantyInfo: true,
+    showReturnPolicy: true,
+    allowBulkOrdering: true,
+    allowCustomModifications: true,
+    showPerformanceMetrics: true,
+    enableBrandFiltering: true,
+    enablePriceAlerts: true,
+    enableStockNotifications: true,
+    enableComparisonTool: true,
+    showFitmentGuides: true,
+    showMaintenanceSchedules: true,
+    showPartCompatibility: true,
+    enableDealerLocator: true,
+    enableServiceCenters: true,
+    showTrainingVideos: true,
+    enableBlog: true,
+    enableSupport: true,
+    requireVINVerification: true,
+    showBikeCompatibility: true,
+    enableExpertConsultation: true,
   },
 };
 

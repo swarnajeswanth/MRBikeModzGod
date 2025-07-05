@@ -22,6 +22,7 @@ import {
 import { toast } from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
 import { useState } from "react";
+import { useWishlist } from "./hooks/useWishlist";
 
 const featureIcons = {
   wishlist: {
@@ -49,6 +50,7 @@ const Wishlist: React.FC = () => {
   const requireLoginForWishlist = useSelector(
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
+  const { toggleWishlistItem, loadWishlist } = useWishlist();
 
   // Loading states
   const [removingItem, setRemovingItem] = useState<string | null>(null);
@@ -66,9 +68,10 @@ const Wishlist: React.FC = () => {
     if (productId === "all") {
       setClearingWishlist(true);
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        dispatch(clearWishlist());
+        // Clear all wishlist items
+        for (const item of wishlist) {
+          await toggleWishlistItem(item);
+        }
         toast.success("Wishlist cleared");
       } catch (error) {
         toast.error("Failed to clear wishlist");
@@ -78,10 +81,10 @@ const Wishlist: React.FC = () => {
     } else {
       setRemovingItem(productId);
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        dispatch(removeFromWishlist(productId));
-        toast.success("Removed from wishlist");
+        const itemToRemove = wishlist.find((item) => item.id === productId);
+        if (itemToRemove) {
+          await toggleWishlistItem(itemToRemove);
+        }
       } catch (error) {
         toast.error("Failed to remove item");
       } finally {
@@ -181,8 +184,7 @@ const Wishlist: React.FC = () => {
       {wishlist.map((item) => (
         <div
           key={item.id}
-          className="flex justify-between items-center bg-[#1D2939] p-4 rounded-lg mb-3 cursor-pointer hover:bg-[#2A3A4A] transition-colors"
-          onClick={() => router.push(`/product/${item.id}`)}
+          className="flex justify-between items-center bg-[#1D2939] p-4 rounded-lg mb-3 hover:bg-[#2A3A4A] transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="bg-[#344054] p-3 rounded-lg">
@@ -197,7 +199,12 @@ const Wishlist: React.FC = () => {
               )}
             </div>
             <div>
-              <p className="font-semibold">{item.name}</p>
+              <p
+                className="font-semibold cursor-pointer hover:text-red-400 transition-colors duration-200"
+                onClick={() => router.push(`/product/${item.id}`)}
+              >
+                {item.name}
+              </p>
               <p className="text-red-400">${item.price}</p>
               <p className="text-gray-400 text-sm">{item.category}</p>
             </div>

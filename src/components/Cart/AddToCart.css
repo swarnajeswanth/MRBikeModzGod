@@ -36,6 +36,17 @@
   transform: none;
 }
 
+/* Loading state */
+.add-to-cart.loading {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.add-to-cart.loading:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 /* Animation states */
 .add-to-cart .shirt-animation {
   position: absolute;
@@ -84,11 +95,47 @@
   pointer-events: auto;
 }
 
+/* Loading spinner */
+.add-to-cart .loading-spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: inherit;
+  border-radius: inherit;
+  z-index: 30;
+}
+
+.add-to-cart .loading-spinner .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .add-to-cart {
     width: 100%;
     padding: 10px 12px;
     font-size: 12px;
+  }
+
+  .add-to-cart .loading-spinner .spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 1.5px;
   }
 }

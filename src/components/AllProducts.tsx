@@ -19,12 +19,14 @@ import { AppDispatch } from "@/components/store";
 import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
 import { ProductRatingShimmer } from "./Loaders/RatingShimmer";
 import { useWishlist } from "./hooks/useWishlist";
+import { useTheme } from "./hooks/useTheme";
 
 const AllProductsPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const products = useSelector(selectAllProducts);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
+  const { getPageClasses, getClass, getClasses, getCardClasses } = useTheme();
 
   const router = useRouter();
   const { isLoggedIn } = useSelector((state: RootState) => state.user);
@@ -139,40 +141,56 @@ const AllProductsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading products...</div>
+      <div
+        className={`min-h-screen ${getPageClasses()} flex items-center justify-center`}
+      >
+        <div className={`text-xl ${getClass("textPrimary")}`}>
+          Loading products...
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-red-400 text-xl">Error: {error}</div>
+      <div
+        className={`min-h-screen ${getPageClasses()} flex items-center justify-center`}
+      >
+        <div className={`text-xl ${getClass("accentError")}`}>
+          Error: {error}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className={`min-h-screen ${getPageClasses()}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">All Products</h1>
-          <p className="text-gray-400">
+          <h1 className={`text-4xl font-bold ${getClass("textPrimary")} mb-4`}>
+            All Products
+          </h1>
+          <p className={getClass("textSecondary")}>
             Showing {filteredProducts.length} of {products.length} products
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 mb-8">
+        <div className={`${getCardClasses()} p-6 mb-8`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white flex items-center">
+            <h2
+              className={`text-xl font-semibold ${getClass(
+                "textPrimary"
+              )} flex items-center`}
+            >
               <Filter className="h-5 w-5 mr-2" /> Filters
             </h2>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-red-400 hover:text-red-300 flex items-center"
+                className={`${getClass("accentError")} ${getClass(
+                  "accentError"
+                ).replace("text-", "hover:text-")} flex items-center`}
               >
                 <X className="h-4 w-4 mr-2" /> Clear All
               </button>
@@ -207,7 +225,11 @@ const AllProductsPage = () => {
               },
             ].map((filter) => (
               <div key={filter.key}>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label
+                  className={`block text-sm font-medium ${getClass(
+                    "textSecondary"
+                  )} mb-2`}
+                >
                   {filter.label}
                 </label>
                 <select
@@ -215,7 +237,13 @@ const AllProductsPage = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, [filter.key]: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded"
+                  className={`w-full px-3 py-2 ${getClasses(
+                    "bgSecondary",
+                    "textPrimary",
+                    "borderPrimary"
+                  )} rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${getClass(
+                    "borderAccent"
+                  ).replace("border-", "focus:ring-")}`}
                 >
                   {filter.options.map((opt) => (
                     <option key={opt} value={opt}>
@@ -237,15 +265,23 @@ const AllProductsPage = () => {
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-gray-800/50 border border-gray-700 hover:border-red-500/30 transition-all duration-300 rounded-lg overflow-hidden cursor-pointer"
+              className={`${getCardClasses()} hover:${getClass(
+                "borderAccent"
+              ).replace(
+                "border-",
+                "border-"
+              )} transition-all duration-300 overflow-hidden`}
             >
               <div
-                className="h-48 relative flex items-center justify-center cursor-pointer bg-gray-700"
-                onClick={() => router.push(`/product/${product.id}`)}
+                className={`h-48 relative flex items-center justify-center ${getClass(
+                  "bgTertiary"
+                )}`}
               >
                 {product.label && (
                   <span
-                    className={`absolute top-4 left-4 px-2 py-1 text-sm text-white rounded`}
+                    className={`absolute top-4 left-4 px-2 py-1 text-sm ${getClass(
+                      "textInverse"
+                    )} rounded`}
                     style={{ backgroundColor: product.backgroundColor }}
                   >
                     {product.label}
@@ -253,13 +289,17 @@ const AllProductsPage = () => {
                 )}
 
                 <button
-                  className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                  className={`absolute top-4 right-4 p-1 rounded-full ${getClass(
+                    "bgOverlay"
+                  )} hover:bg-gray-100 dark:hover:bg-gray-700 transition-all`}
                   onClick={() => handleToggleWishlist(product)}
                 >
                   {isInWishlist(product.id) ? (
                     <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
                   ) : (
-                    <FaRegHeart className="w-5 h-5 text-white" />
+                    <FaRegHeart
+                      className={`w-5 h-5 ${getClass("textPrimary")}`}
+                    />
                   )}
                 </button>
 
@@ -270,7 +310,11 @@ const AllProductsPage = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="text-white text-6xl font-bold opacity-20">
+                  <div
+                    className={`text-6xl font-bold opacity-20 ${getClass(
+                      "textPrimary"
+                    )}`}
+                  >
                     {product.name.charAt(0)}
                   </div>
                 )}
@@ -278,7 +322,14 @@ const AllProductsPage = () => {
 
               <div className="p-4">
                 <h3
-                  className="text-lg font-semibold text-white mb-2 line-clamp-2"
+                  className={`text-lg font-semibold ${getClass(
+                    "textPrimary"
+                  )} mb-2 line-clamp-2 cursor-pointer ${getClass(
+                    "accentPrimary"
+                  ).replace(
+                    "text-",
+                    "hover:text-"
+                  )} transition-colors duration-200`}
                   onClick={() => router.push(`/product/${product.id}`)}
                 >
                   {product.name}
@@ -295,11 +346,13 @@ const AllProductsPage = () => {
                         className={`h-4 w-4 ${
                           i < Math.floor(product.rating)
                             ? "text-yellow-400"
-                            : "text-gray-600"
+                            : getClass("textMuted")
                         }`}
                       />
                     ))}
-                    <span className="text-gray-400 text-sm ml-2">
+                    <span
+                      className={`${getClass("textSecondary")} text-sm ml-2`}
+                    >
                       {product.rating} ({product.reviews})
                     </span>
                   </div>
@@ -307,17 +360,28 @@ const AllProductsPage = () => {
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xl font-bold text-white">
+                    <span
+                      className={`text-xl font-bold ${getClass("textPrimary")}`}
+                    >
                       ₹{product.price}
                     </span>
                     {product.originalPrice && (
-                      <span className="text-sm text-gray-500 line-through">
+                      <span
+                        className={`text-sm ${getClass(
+                          "textMuted"
+                        )} line-through`}
+                      >
                         ₹{product.originalPrice}
                       </span>
                     )}
                   </div>
                   {product.originalPrice && (
-                    <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">
+                    <span
+                      className={`${getClass("accentSuccess").replace(
+                        "text-",
+                        "bg-"
+                      )} ${getClass("textInverse")} text-xs px-2 py-1 rounded`}
+                    >
                       {Math.round(
                         ((product.originalPrice - product.price) /
                           product.originalPrice) *
@@ -328,7 +392,7 @@ const AllProductsPage = () => {
                   )}
                 </div>
 
-                <AddToCartButton />
+                <AddToCartButton product={product} />
               </div>
             </div>
           ))}
@@ -336,16 +400,22 @@ const AllProductsPage = () => {
 
         {filteredProducts.length === 0 && (
           <div className="text-center py-16">
-            <div className="text-6xl text-gray-600 mb-4">🔍</div>
-            <h3 className="text-2xl font-semibold text-white mb-2">
+            <div className={`text-6xl ${getClass("textMuted")} mb-4`}>🔍</div>
+            <h3
+              className={`text-2xl font-semibold ${getClass(
+                "textPrimary"
+              )} mb-2`}
+            >
               No products found
             </h3>
-            <p className="text-gray-400 mb-6">
+            <p className={`${getClass("textSecondary")} mb-6`}>
               Try adjusting your filters to see more results
             </p>
             <button
               onClick={clearFilters}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
+              className={`${getClass("interactivePrimary")} ${getClass(
+                "interactiveHover"
+              )} ${getClass("textInverse")} py-2 px-4 rounded`}
             >
               Clear All Filters
             </button>

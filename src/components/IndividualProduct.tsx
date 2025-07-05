@@ -9,7 +9,6 @@ import AddToCartButton from "@/components/Cart/AddToCart"; // Adjust path if nee
 import { useDispatch, useSelector } from "react-redux";
 import { startLoading, stopLoading } from "@/components/store/LoadingSlice";
 import { useTransition } from "react";
-import { toggleWishlist } from "@/components/store/UserSlice";
 import { RootState } from "@/components/store";
 import {
   selectFeatures,
@@ -17,6 +16,7 @@ import {
 } from "@/components/store/storeSettingsSlice";
 import { toast } from "react-hot-toast";
 import { ProductRatingShimmer } from "./Loaders/RatingShimmer";
+import { useWishlist } from "./hooks/useWishlist";
 
 interface ProductCardProps {
   id?: string; // Add product ID
@@ -57,6 +57,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const requireLoginForWishlist = useSelector(
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
+  const { isInWishlist, toggleWishlistItem } = useWishlist();
 
   const handleProductClick = (productId: string) => {
     if (!productId) {
@@ -85,21 +86,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     const wishlistItem = {
-      id: id || title, // Use product ID if available, fallback to title
+      id: id || "",
       name: title,
       price: price,
       image: images && images.length > 0 ? images[0] : "",
       category: category,
     };
 
-    dispatch(toggleWishlist(wishlistItem));
-
-    const isInWishlist = wishlist.some((item) => item.id === (id || title));
-    if (isInWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    toggleWishlistItem(wishlistItem);
   };
 
   const router = useRouter();
@@ -120,11 +114,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   }
 
   return (
-    <div
-      className="product-card"
-      onClick={() => handleProductClick(id || title)}
-      style={{ cursor: "pointer" }}
-    >
+    <div className="product-card">
       <div className="product-image" style={{ backgroundColor }}>
         {features?.discountDisplay && label && (
           <div className={`label ${labelType}`}>{label}</div>
@@ -133,10 +123,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Wishlist Button - Only show if wishlist feature is enabled */}
         {features?.wishlist && (
           <button
-            className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
             onClick={handleToggleWishlist}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
           >
-            {wishlist.some((item) => item.id === (id || title)) ? (
+            {isInWishlist(id || "") ? (
               <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
             ) : (
               <FaRegHeart className="w-5 h-5 text-white" />
@@ -159,7 +149,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="product-info">
         <span className="category-tag">{category}</span>
         <h3
-          style={{ cursor: "pointer" }}
+          className="cursor-pointer hover:text-red-400 transition-colors duration-200"
           onClick={() => handleProductClick(id || title)}
         >
           {title}
@@ -197,7 +187,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {/* Add to Cart Button - Only show if add to cart feature is enabled */}
-        {features?.addToCart && <AddToCartButton />}
+        {features?.addToCart && (
+          <AddToCartButton
+            product={{
+              id: id || "",
+              name: title,
+              price: price,
+              image: images && images.length > 0 ? images[0] : "",
+              category: category,
+              originalPrice: originalPrice,
+              discount: discount,
+            }}
+          />
+        )}
       </div>
     </div>
   );

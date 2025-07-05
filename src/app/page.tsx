@@ -12,14 +12,21 @@ import GSAPScrollWrapper from "@/components/GSAPScrollWrapper";
 import { useSelector } from "react-redux";
 import { selectIsPageAccessible } from "@/components/store/storeSettingsSlice";
 import GuestAccessGuard from "@/components/GuestAccessGuard";
+import { useTheme } from "@/components/hooks/useTheme";
 
 const Index = () => {
   const isHomeAccessible = useSelector(selectIsPageAccessible("home"));
+  const { getPageClasses, getClass } = useTheme();
+
   if (!isHomeAccessible) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-white bg-black/80">
-        <h2 className="text-2xl font-bold mb-2">Access Restricted</h2>
-        <p className="text-gray-400 mb-4">
+      <div
+        className={`flex flex-col items-center justify-center min-h-screen ${getPageClasses()}`}
+      >
+        <h2 className={`text-2xl font-bold mb-2 ${getClass("textPrimary")}`}>
+          Access Restricted
+        </h2>
+        <p className={`${getClass("textSecondary")} mb-4`}>
           This page is currently not accessible.
         </p>
       </div>
@@ -29,7 +36,7 @@ const Index = () => {
   return (
     <GuestAccessGuard>
       <GSAPScrollWrapper>
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-gray-900 to-black">
+        <div className={`min-h-screen flex flex-col ${getPageClasses()}`}>
           <Header />
 
           {/* Hero Section - Full Viewport Height */}

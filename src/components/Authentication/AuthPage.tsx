@@ -19,8 +19,8 @@ gsap.registerPlugin(ScrambleTextPlugin, MorphSVGPlugin);
 const chars =
   'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~,.<>?/;":][}{+_)(*&^%$#@!±=-§';
 const BLINK_SPEED = 0.075;
-const TOGGLE_SPEED = 0.2;
-const ENCRYPT_SPEED = 0.6;
+const TOGGLE_SPEED = 0.125;
+const ENCRYPT_SPEED = 1;
 const FLIP_DURATION = 0.6;
 
 const AuthPage = () => {
@@ -50,6 +50,10 @@ const AuthPage = () => {
   const shouldBlink = useRef(true);
   const cardRef = useRef<HTMLDivElement>(null);
   const [rehydrated, setRehydrated] = useState(false);
+
+  // Enhanced eye animation refs
+  const blinkTlRef = useRef<gsap.core.Timeline | null>(null);
+  const resetRef = useRef<any>(null);
 
   const handleSendOTP = async () => {
     if (!email || otpLoading) return;
@@ -261,7 +265,56 @@ const AuthPage = () => {
     }
   }, [isLoggedIn, router]);
 
-  const blinkTlRef = useRef<gsap.core.Timeline | null>(null);
+  // Enhanced blinking function with random delays and repeats
+  const startBlink = () => {
+    if (!shouldBlink.current) return;
+
+    const delay = gsap.utils.random(2, 8);
+    const duration = BLINK_SPEED;
+    const repeat = Math.random() > 0.5 ? 3 : 1;
+
+    blinkTlRef.current = gsap.timeline({
+      delay,
+      onComplete: () => startBlink(),
+      repeat,
+      yoyo: true,
+    });
+
+    blinkTlRef.current
+      .to(".lid--upper", {
+        morphSVG: ".lid--lower",
+        duration,
+      })
+      .to(
+        "#eye-open path",
+        {
+          morphSVG: "#eye-closed path",
+          duration,
+        },
+        0
+      );
+  };
+
+  // Enhanced eye movement tracking
+  const moveEye = (e: PointerEvent) => {
+    const eye = eyeRef.current;
+    if (!eye) return;
+
+    if (resetRef.current) resetRef.current.kill();
+
+    resetRef.current = gsap.delayedCall(2, () => {
+      gsap.to(".eye", { xPercent: 0, yPercent: 0, duration: 0.2 });
+    });
+
+    const posMapper = gsap.utils.mapRange(-100, 100, 30, -30);
+    const bounds = eye.getBoundingClientRect();
+
+    gsap.set(".eye", {
+      xPercent: gsap.utils.clamp(-30, 30, posMapper(bounds.x - e.clientX)),
+      yPercent: gsap.utils.clamp(-30, 30, posMapper(bounds.y - e.clientY)),
+    });
+  };
+
   useLayoutEffect(() => {
     // Eye starts open
     gsap.set(".eye", { opacity: 1 });
@@ -271,110 +324,126 @@ const AuthPage = () => {
     shouldBlink.current = true;
   }, []);
 
-  const startBlink = () => {
-    if (!shouldBlink.current) return;
-
-    const duration = BLINK_SPEED;
-    const delay = gsap.utils.random(2, 6);
-
-    blinkTlRef.current = gsap.timeline({
-      delay,
-      onComplete: () => {
-        gsap.set(".lid--upper", {
-          morphSVG: "M1 12C1 12 5 4 12 4C19 4 23 12 23 12", // reset
-        });
-        startBlink(); // recursive if allowed
-      },
-    });
-
-    blinkTlRef.current
-      .to(".lid--upper", { morphSVG: ".lid--lower", duration })
-      .to(".eye", { opacity: 0, duration }, 0)
-      .to(".eye", { opacity: 1, duration }, duration);
-  };
-
   useEffect(() => {
     startBlink();
-
-    const moveEye = (e: PointerEvent) => {
-      const eye = eyeRef.current;
-      if (!eye) return;
-
-      const posMapper = gsap.utils.mapRange(-100, 100, 30, -30);
-      const bounds = eye.getBoundingClientRect();
-      const xPercent = gsap.utils.clamp(
-        -30,
-        30,
-        posMapper(bounds.x - e.clientX)
-      );
-      const yPercent = gsap.utils.clamp(
-        -30,
-        30,
-        posMapper(bounds.y - e.clientY)
-      );
-
-      gsap.set(eye, { xPercent, yPercent });
-      gsap.delayedCall(2, () =>
-        gsap.to(eye, { xPercent: 0, yPercent: 0, duration: 0.2 })
-      );
-    };
-
     window.addEventListener("pointermove", moveEye);
+
     return () => {
       window.removeEventListener("pointermove", moveEye);
       blinkTlRef.current?.kill();
+      resetRef.current?.kill();
     };
   }, []);
 
   const handleToggle = () => {
-    if (!inputRef.current || !proxyRef.current) return;
+    if (!inputRef.current || !proxyRef.current || busy) return;
 
     const input = inputRef.current;
     const proxy = proxyRef.current;
-    const isRevealing = !isPasswordVisible;
+    const isText = input.type === "password";
+    const val = input.value;
 
-    // Toggle blinking
-    shouldBlink.current = isRevealing;
-    if (!isRevealing) {
-      blinkTlRef.current?.pause();
+    setBusy(true);
+    const duration = TOGGLE_SPEED;
+
+    if (isText) {
+      // Revealing password
+      if (blinkTlRef.current) blinkTlRef.current.kill();
+
+      gsap
+        .timeline({
+          onComplete: () => {
+            setBusy(false);
+          },
+        })
+        .to(".lid--upper", {
+          morphSVG: ".lid--lower",
+          duration,
+        })
+        .to(
+          "#eye-open path",
+          {
+            morphSVG: "#eye-closed path",
+            duration,
+          },
+          0
+        )
+        .to(
+          proxy,
+          {
+            duration: ENCRYPT_SPEED,
+            onStart: () => {
+              input.type = "text";
+            },
+            onComplete: () => {
+              proxy.innerHTML = "";
+              input.value = val;
+              setIsPasswordVisible(true);
+            },
+            scrambleText: {
+              chars,
+              text:
+                input.value.charAt(input.value.length - 1) === " "
+                  ? `${input.value.slice(
+                      0,
+                      input.value.length - 1
+                    )}${chars.charAt(Math.floor(Math.random() * chars.length))}`
+                  : input.value,
+            },
+            onUpdate: () => {
+              const len = val.length - proxy.innerText.length;
+              input.value = `${proxy.innerText}${new Array(len)
+                .fill("•")
+                .join("")}`;
+            },
+          },
+          0
+        );
     } else {
-      startBlink();
+      // Hiding password
+      gsap
+        .timeline({
+          onComplete: () => {
+            startBlink();
+            setBusy(false);
+          },
+        })
+        .to(".lid--upper", {
+          morphSVG: ".lid--upper",
+          duration,
+        })
+        .to(
+          "#eye-open path",
+          {
+            morphSVG: "#eye-open path",
+            duration,
+          },
+          0
+        )
+        .to(
+          proxy,
+          {
+            duration: ENCRYPT_SPEED,
+            onComplete: () => {
+              input.type = "password";
+              input.value = val;
+              proxy.innerHTML = "";
+              setIsPasswordVisible(false);
+            },
+            scrambleText: {
+              chars,
+              text: new Array(input.value.length).fill("•").join(""),
+            },
+            onUpdate: () => {
+              input.value = `${proxy.innerText}${val.slice(
+                proxy.innerText.length,
+                val.length
+              )}`;
+            },
+          },
+          0
+        );
     }
-
-    // Animate eyelid and eye
-    gsap.to(".lid--upper", {
-      morphSVG: isRevealing ? ".lid--upper" : ".lid--lower",
-      duration: TOGGLE_SPEED,
-    });
-
-    gsap.to(".eye", {
-      opacity: isRevealing ? 1 : 0,
-      duration: TOGGLE_SPEED,
-    });
-
-    const fromText = input.value;
-    const toText = isRevealing ? password : "•".repeat(password.length);
-
-    proxy.innerHTML = fromText;
-
-    gsap.to(proxy, {
-      duration: ENCRYPT_SPEED,
-      scrambleText: {
-        text: toText,
-        chars,
-      },
-      onUpdate: () => {
-        if (inputRef.current) {
-          inputRef.current.value = proxy.innerText;
-        }
-      },
-      onComplete: () => {
-        if (inputRef.current) {
-          inputRef.current.value = toText;
-        }
-        setIsPasswordVisible(isRevealing);
-      },
-    });
   };
 
   const handleCardFlip = () => {
@@ -483,23 +552,6 @@ const AuthPage = () => {
                   We've sent a 6-digit verification code to{" "}
                   <strong>{email}</strong>
                 </p>
-
-                {/* Development OTP Display
-                {(process.env.NODE_ENV === "development" ||
-                  !process.env.GMAIL_USER) && (
-                  <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3 mb-4">
-                    <p className="text-yellow-400 text-sm font-semibold mb-2">
-                      🔧 Development Mode - OTP Code:
-                    </p>
-                    <p className="text-yellow-300 text-lg font-mono text-center">
-                      {otpCode || "Check console for OTP"}
-                    </p>
-                    <p className="text-yellow-500 text-xs mt-2">
-                      This appears because email is not configured. Check
-                      browser console for the actual OTP.
-                    </p>
-                  </div>
-                )} */}
 
                 <div className="space-y-4">
                   <div>
@@ -610,14 +662,14 @@ const AuthPage = () => {
               )}
             </div>
 
-            {/* Password Field */}
+            {/* Enhanced Password Field with Advanced Eye Animation */}
             <div>
               <label className="text-sm text-gray-300">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3.5 text-gray-500 w-5 h-5" />
                 <input
                   ref={inputRef}
-                  type="text"
+                  type="password"
                   defaultValue=""
                   onChange={(e) => {
                     const newValue = e.target.value;
@@ -634,7 +686,28 @@ const AuthPage = () => {
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 text-white"
                   onClick={handleToggle}
                 >
-                  <svg viewBox="0 0 24 24" fill="none">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <mask id="eye-open">
+                        <path
+                          d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12V20H12H1V12Z"
+                          fill="#D9D9D9"
+                          stroke="black"
+                          strokeWidth="1.5"
+                          strokeLinejoin="round"
+                        />
+                      </mask>
+                      <mask id="eye-closed">
+                        <path
+                          d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12V20H12H1V12Z"
+                          fill="#D9D9D9"
+                        />
+                      </mask>
+                    </defs>
                     <path
                       className="lid lid--upper"
                       d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
@@ -651,9 +724,11 @@ const AuthPage = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <g className="eye" ref={eyeRef}>
-                      <circle cx="12" cy="12" r="4" fill="currentColor" />
-                      <circle cx="13" cy="11" r="1" fill="black" />
+                    <g mask="url(#eye-open)">
+                      <g className="eye" ref={eyeRef}>
+                        <circle cy="12" cx="12" r="4" fill="currentColor" />
+                        <circle cy="11" cx="13" r="1" fill="black" />
+                      </g>
                     </g>
                   </svg>
                 </button>

@@ -20,6 +20,7 @@ import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
 import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
 import FeaturedProductsShimmer from "../Loaders/FeaturedProductsShimmer";
+import { useWishlist } from "../hooks/useWishlist";
 
 const FeaturedProducts = () => {
   // const products = [
@@ -101,6 +102,7 @@ const FeaturedProducts = () => {
   const requireLoginForWishlist = useSelector(
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
+  const { isInWishlist, toggleWishlistItem } = useWishlist();
 
   useEffect(() => {
     console.log(
@@ -144,14 +146,7 @@ const FeaturedProducts = () => {
       category: product.category,
     };
 
-    dispatch(toggleWishlist(wishlistItem));
-
-    const isInWishlist = wishlist.some((item) => item.id === product.id);
-    if (isInWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    toggleWishlistItem(wishlistItem);
   };
 
   // Show shimmer while loading
