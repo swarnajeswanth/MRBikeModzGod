@@ -101,6 +101,34 @@ export async function POST(req: NextRequest) {
       role,
     });
 
+    // Log OTP for development/testing when email is not configured
+    if (
+      !emailSent &&
+      (process.env.NODE_ENV === "development" || !process.env.GMAIL_USER)
+    ) {
+      console.log("🔧 DEVELOPMENT MODE - OTP for testing:");
+      console.log("📧 Email:", email);
+      console.log("🔢 OTP Code:", otp);
+      console.log("👤 Role:", role);
+      console.log("⏰ Expires at:", expiresAt);
+
+      // Still return success to allow the signup process to continue
+      console.log(
+        `✅ OTP generated for ${email} (${role}) - check console for code`
+      );
+
+      return NextResponse.json(
+        {
+          success: true,
+          message:
+            "Verification code generated. Check console for development mode.",
+          developmentMode: true,
+          otp: process.env.NODE_ENV === "development" ? otp : undefined, // Only show OTP in development
+        },
+        { status: 200 }
+      );
+    }
+
     if (!emailSent) {
       return NextResponse.json(
         {

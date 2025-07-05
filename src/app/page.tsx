@@ -48,7 +48,7 @@ const Index = () => {
           </section>
           <Footer />
           <WhatsAppChat
-            phoneNumber="6304187805"
+            phoneNumber="+91 6304187805"
             message="Hi! I saw your auto parts reviews and I'm interested. Can you help me find the right parts for my car?"
           />
         </div>

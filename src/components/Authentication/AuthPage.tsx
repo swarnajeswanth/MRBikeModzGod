@@ -69,6 +69,13 @@ const AuthPage = () => {
       if (result.success) {
         dispatch(stopLoading());
         setOtpSent(true);
+
+        // Show OTP in console for development/testing
+        if (process.env.NODE_ENV === "development" || !process.env.GMAIL_USER) {
+          console.log("🔧 DEVELOPMENT MODE - OTP will be logged to console");
+          console.log("📧 Check the browser console for the OTP code");
+        }
+
         toast.success(
           result.message || "Verification code sent to your email!"
         );
@@ -476,6 +483,23 @@ const AuthPage = () => {
                   We've sent a 6-digit verification code to{" "}
                   <strong>{email}</strong>
                 </p>
+
+                {/* Development OTP Display */}
+                {(process.env.NODE_ENV === "development" ||
+                  !process.env.GMAIL_USER) && (
+                  <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3 mb-4">
+                    <p className="text-yellow-400 text-sm font-semibold mb-2">
+                      🔧 Development Mode - OTP Code:
+                    </p>
+                    <p className="text-yellow-300 text-lg font-mono text-center">
+                      {otpCode || "Check console for OTP"}
+                    </p>
+                    <p className="text-yellow-500 text-xs mt-2">
+                      This appears because email is not configured. Check
+                      browser console for the actual OTP.
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <div>

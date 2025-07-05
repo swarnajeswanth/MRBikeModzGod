@@ -141,8 +141,19 @@ export function useAuth() {
       });
 
       const data = await response.json();
-      if (!data.success) {
-        toast.error(data.message || "Failed to send OTP");
+
+      if (data.success) {
+        // Handle development mode
+        if (data.developmentMode) {
+          console.log("🔧 DEVELOPMENT MODE - OTP Code:", data.otp);
+          if (data.otp) {
+            toast.success(`Development OTP: ${data.otp}`);
+          }
+        }
+
+        if (!data.success) {
+          toast.error(data.message || "Failed to send OTP");
+        }
       }
       return data;
     } catch (error) {
