@@ -50,6 +50,7 @@ export interface StoreSettings {
     showStock: boolean;
     allowProductSharing: boolean;
     enableNotifications: boolean;
+    enableWhatsAppChat: boolean;
   };
 }
 
@@ -105,6 +106,7 @@ export const initialState: StoreSettings = {
     showStock: true,
     allowProductSharing: true,
     enableNotifications: true,
+    enableWhatsAppChat: true,
   },
 };
 

@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryClient from "@/components/Category/CategoryClient";
@@ -8,13 +9,16 @@ import GuestAccessGuard from "@/components/GuestAccessGuard";
 
 // Define the props type for the main page function
 interface PageProps {
-  params: {
+  params: Promise<{
     categoryName: string;
-  };
+  }>;
 }
 
-// ✅ Page component — standard sync usage of params is fine
-export default function CategoryPage({ params }: any) {
+// ✅ Page component — using React.use() to unwrap params Promise
+export default function CategoryPage({ params }: PageProps) {
+  // Unwrap the params Promise using React.use()
+  const resolvedParams = React.use(params);
+
   const isCategoryAccessible = useSelector(selectIsPageAccessible("category"));
   if (!isCategoryAccessible) {
     return (
@@ -28,7 +32,7 @@ export default function CategoryPage({ params }: any) {
   }
   return (
     <GuestAccessGuard>
-      <CategoryClient categoryName={params.categoryName} />
+      <CategoryClient categoryName={resolvedParams.categoryName} />
     </GuestAccessGuard>
   );
 }

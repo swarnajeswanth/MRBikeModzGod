@@ -5,6 +5,7 @@ import {
   logout,
   setLoginLoading,
   setSignupLoading,
+  syncWishlistWithBackend,
 } from "../store/UserSlice";
 import { toast } from "react-hot-toast";
 
@@ -64,6 +65,32 @@ export function useAuth() {
 
         // Store token in localStorage
         localStorage.setItem("token", data.data.token);
+
+        // Load user's wishlist from backend
+        try {
+          const wishlistResponse = await fetch("/api/user/wishlist", {
+            headers: {
+              Authorization: `Bearer ${data.data.token}`,
+            },
+          });
+
+          if (wishlistResponse.ok) {
+            const wishlistData = await wishlistResponse.json();
+            if (wishlistData.success) {
+              // Convert product IDs to wishlist items
+              const wishlistItems = wishlistData.wishlist.map((id: string) => ({
+                id,
+                name: "", // Will be populated when products are loaded
+                price: 0,
+                category: "",
+              }));
+              dispatch(syncWishlistWithBackend(wishlistItems));
+            }
+          }
+        } catch (wishlistError) {
+          console.error("Error loading wishlist:", wishlistError);
+        }
+
         toast.success("Login successful!");
         return {
           success: true,

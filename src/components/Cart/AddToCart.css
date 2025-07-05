@@ -1,0 +1,94 @@
+.add-to-cart {
+  position: relative;
+  /* w-44 = 11rem = 176px */
+  padding: 12px 16px; /* py-3 px-4 */
+  border-radius: 8px;
+
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-to-cart:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.add-to-cart:active {
+  transform: translateY(0);
+}
+
+.add-to-cart.active {
+  pointer-events: none;
+}
+
+.add-to-cart:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Animation states */
+.add-to-cart .shirt-animation {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.add-to-cart .cart-animation {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.add-to-cart .tick {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 20px;
+  height: 20px;
+  color: white;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.add-to-cart .cross {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 20px;
+  height: 20px;
+  z-index: 20;
+  cursor: pointer;
+}
+
+.add-to-cart .cross svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+  pointer-events: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .add-to-cart {
+    width: 140px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}

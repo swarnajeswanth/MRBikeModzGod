@@ -19,6 +19,7 @@ import { toast } from "react-hot-toast";
 import { ProductRatingShimmer } from "./Loaders/RatingShimmer";
 
 interface ProductCardProps {
+  id?: string; // Add product ID
   label?: string;
   labelType?: string;
   backgroundColor: string;
@@ -34,6 +35,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
+  id,
   label,
   labelType,
   backgroundColor,
@@ -79,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     const wishlistItem = {
-      id: title, // Using title as ID for now
+      id: id || title, // Use product ID if available, fallback to title
       name: title,
       price: price,
       image: images && images.length > 0 ? images[0] : "",
@@ -88,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     dispatch(toggleWishlist(wishlistItem));
 
-    const isInWishlist = wishlist.some((item) => item.id === title);
+    const isInWishlist = wishlist.some((item) => item.id === (id || title));
     if (isInWishlist) {
       toast.success("Removed from wishlist");
     } else {
@@ -126,7 +128,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
             onClick={handleToggleWishlist}
           >
-            {wishlist.some((item) => item.id === title) ? (
+            {wishlist.some((item) => item.id === (id || title)) ? (
               <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
             ) : (
               <FaRegHeart className="w-5 h-5 text-white" />

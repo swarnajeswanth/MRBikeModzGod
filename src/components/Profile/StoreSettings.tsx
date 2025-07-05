@@ -139,6 +139,8 @@ import {
   Pause,
   Zap,
   ZapOff,
+  MessageCircle,
+  MessageSquare,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -440,6 +442,7 @@ const StoreSettings = () => {
       showStock: { enabled: Package, disabled: X },
       allowProductSharing: { enabled: Share, disabled: Share2 },
       enableNotifications: { enabled: Bell, disabled: BellOff },
+      enableWhatsAppChat: { enabled: MessageCircle, disabled: MessageSquare },
     };
 
     const icons = iconMap[setting];
@@ -492,6 +495,7 @@ const StoreSettings = () => {
       showStock: "Show stock availability to customers",
       allowProductSharing: "Allow sharing products on social media",
       enableNotifications: "Send notifications to customers",
+      enableWhatsAppChat: "Show WhatsApp chat button for customer support",
     };
     return descriptions[setting] || setting;
   };

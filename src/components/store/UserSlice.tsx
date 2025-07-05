@@ -76,6 +76,18 @@ const userSlice = createSlice({
         state.wishlist.push(action.payload);
       }
     },
+    syncWishlistWithBackend: (state, action: PayloadAction<WishlistItem[]>) => {
+      state.wishlist = action.payload;
+    },
+    loadWishlistFromBackend: (state, action: PayloadAction<string[]>) => {
+      // Convert product IDs to wishlist items (this will be populated with product details later)
+      state.wishlist = action.payload.map((id) => ({
+        id,
+        name: "", // Will be populated when products are loaded
+        price: 0,
+        category: "",
+      }));
+    },
     removeFromWishlist: (state, action: PayloadAction<string>) => {
       const existingIndex = state.wishlist.findIndex(
         (item) => item.id === action.payload
@@ -105,6 +117,8 @@ export const {
   toggleWishlist,
   removeFromWishlist,
   clearWishlist,
+  syncWishlistWithBackend,
+  loadWishlistFromBackend,
   setLoginLoading,
   setSignupLoading,
   setLogoutLoading,

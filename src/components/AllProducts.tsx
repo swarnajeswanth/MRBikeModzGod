@@ -14,11 +14,11 @@ import {
   fetchProducts,
 } from "@/components/store/productSlice";
 import { RootState } from "@/components/store";
-import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
 import { AppDispatch } from "@/components/store";
 import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
 import { ProductRatingShimmer } from "./Loaders/RatingShimmer";
+import { useWishlist } from "./hooks/useWishlist";
 
 const AllProductsPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -27,12 +27,11 @@ const AllProductsPage = () => {
   const error = useSelector(selectError);
 
   const router = useRouter();
-  const { wishlist, isLoggedIn } = useSelector(
-    (state: RootState) => state.user
-  );
+  const { isLoggedIn } = useSelector((state: RootState) => state.user);
   const requireLoginForWishlist = useSelector(
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
+  const { isInWishlist, toggleWishlistItem } = useWishlist();
 
   // Get unique categories from products
   const uniqueCategories = [
@@ -69,14 +68,7 @@ const AllProductsPage = () => {
       category: product.category,
     };
 
-    dispatch(toggleWishlist(wishlistItem));
-
-    const isInWishlist = wishlist.some((item) => item.id === product.id);
-    if (isInWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    toggleWishlistItem(wishlistItem);
   };
 
   const filterProducts = () => {
@@ -264,7 +256,7 @@ const AllProductsPage = () => {
                   className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
                   onClick={() => handleToggleWishlist(product)}
                 >
-                  {wishlist.some((item) => item.id === product.id) ? (
+                  {isInWishlist(product.id) ? (
                     <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
                   ) : (
                     <FaRegHeart className="w-5 h-5 text-white" />

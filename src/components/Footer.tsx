@@ -1,3 +1,4 @@
+"use client";
 import {
   Phone,
   Mail,
@@ -6,19 +7,45 @@ import {
   Instagram,
   Youtube,
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import {
+  selectUniqueCategories,
+  selectLoading,
+} from "@/components/store/productSlice";
+import { useRouter } from "next/navigation";
 
 const Footer = () => {
+  const router = useRouter();
+  const uniqueCategories = useSelector(selectUniqueCategories);
+  const loading = useSelector(selectLoading);
+
+  // Format categories for display (capitalize first letter)
+  const formattedCategories = uniqueCategories.map(
+    (category) => category.charAt(0).toUpperCase() + category.slice(1)
+  );
+
+  // Limit to 6 categories for footer display
+  const displayCategories = formattedCategories.slice(0, 6);
+
+  // Add a note if there are more categories than shown
+  const hasMoreCategories = formattedCategories.length > 6;
+
   const footerSections = [
     {
       title: "Products",
-      links: [
-        "Engine Parts",
-        "Exhaust Systems",
-        "Suspension",
-        "Brakes",
-        "Electronics",
-        "Body Parts",
-      ],
+      links:
+        displayCategories.length > 0
+          ? displayCategories
+          : loading
+          ? ["Loading...", "Loading...", "Loading..."]
+          : [
+              "Engine Parts",
+              "Exhaust Systems",
+              "Suspension",
+              "Brakes",
+              "Electronics",
+              "Body Parts",
+            ],
     },
     {
       title: "Support",
@@ -123,12 +150,34 @@ const Footer = () => {
                     <li key={link}>
                       <a
                         href="#"
-                        className="text-gray-400 hover:text-red-400 transition-colors duration-200"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (section.title === "Products") {
+                            // Navigate to category page for product links
+                            const categorySlug = link.toLowerCase();
+                            router.push(`/category/${categorySlug}`);
+                          }
+                        }}
+                        className="text-gray-400 hover:text-red-400 transition-colors duration-200 cursor-pointer"
                       >
                         {link}
                       </a>
                     </li>
                   ))}
+                  {section.title === "Products" && hasMoreCategories && (
+                    <li>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          router.push("/product/allproducts");
+                        }}
+                        className="text-gray-400 hover:text-red-400 transition-colors duration-200 cursor-pointer text-sm"
+                      >
+                        View All Categories →
+                      </a>
+                    </li>
+                  )}
                 </ul>
               </div>
             ))}

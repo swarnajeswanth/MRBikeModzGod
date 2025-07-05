@@ -385,6 +385,22 @@ export const selectProductsByCategory = (
   category: string
 ) => state.product.products.filter((p) => p.category === category);
 
+export const selectUniqueCategories = (state: { product: ProductState }) => {
+  const categories = state.product.products.map((p) => p.category);
+  return [...new Set(categories)].sort();
+};
+
+export const selectCategoriesWithCount = (state: { product: ProductState }) => {
+  const categoryCounts = state.product.products.reduce((acc, product) => {
+    acc[product.category] = (acc[product.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return Object.entries(categoryCounts)
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count); // Sort by count descending
+};
+
 export const selectLoading = (state: { product: ProductState }) =>
   state.product.loading;
 

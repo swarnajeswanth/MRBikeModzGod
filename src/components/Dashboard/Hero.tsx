@@ -123,7 +123,7 @@ const Hero = () => {
             <div className="w-full  mx-auto ">
               <ImageSlider
                 images={sliderImages}
-                className="h-[60vh] min-h-[400px] "
+                className="h-[60vh] lg:h-[80vh] min-h-[400px] "
               />
             </div>
           )}

@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Dashboard/Hero";
 import HeroSlider from "@/components/Dashboard/HeroSlider";
 import FeaturedProducts from "@/components/Dashboard/FeaturedProducts";
+import ProductCategories from "@/components/Dashboard/ProductCategories";
 import StoreLocation from "@/components/Dashboard/StoreLocation";
 import Footer from "@/components/Footer";
 import ReviewPage from "@/components/Reviews/ReviewPage";
@@ -38,6 +39,9 @@ const Index = () => {
 
           {/* Other Sections */}
           <section className="fade-up">
+            <ProductCategories />
+          </section>
+          <section className="fade-up">
             <FeaturedProducts />
           </section>
           <section className="fade-up">
@@ -48,7 +52,7 @@ const Index = () => {
           </section>
           <Footer />
           <WhatsAppChat
-            phoneNumber=" 6304187805"
+            phoneNumber="6304187805"
             message="Hi! I saw your auto parts reviews and I'm interested. Can you help me find the right parts for my car?"
           />
         </div>

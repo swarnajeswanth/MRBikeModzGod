@@ -1,6 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, Phone, Mail, LogOut, Heart } from "lucide-react";
+import {
+  Menu,
+  X,
+  Phone,
+  Mail,
+  LogOut,
+  Heart,
+  ShoppingCart,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
@@ -30,6 +38,9 @@ const Header = () => {
   const { isLoggedIn, username, role, wishlist } = useSelector(
     (state: RootState) => state.user
   );
+
+  // Mock cart items count - you can replace this with actual cart state
+  const cartItemsCount = 0; // This should come from your cart state
   const features = useSelector(selectFeatures);
   const pages = useSelector(selectPages);
   const pathname = usePathname();
@@ -42,12 +53,17 @@ const Header = () => {
     if (pages?.home) {
       baseNav.push({ name: "Home", href: "/" });
     }
-    if (pages?.allProducts) {
-      baseNav.push({ name: "Products", href: "#products" });
+
+    // Only show Products and Categories on the home route
+    if (pathname === "/") {
+      if (pages?.allProducts) {
+        baseNav.push({ name: "Products", href: "#products" });
+      }
+      if (features?.categories) {
+        baseNav.push({ name: "Categories", href: "#categories" });
+      }
     }
-    if (features?.categories) {
-      baseNav.push({ name: "Categories", href: "#categories" });
-    }
+
     baseNav.push({ name: "Store Location", href: "#store-location" });
     baseNav.push({ name: "About", href: "#footer" });
     baseNav.push({ name: "Contact", href: "#footer" });
@@ -173,6 +189,21 @@ const Header = () => {
             </div>
           ))}
 
+          {/* Cart Icon - Only show if add to cart feature is enabled */}
+          <StoreSettingsWrapper feature="addToCart">
+            <Link
+              href="/cart"
+              className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItemsCount}
+                </span>
+              )}
+            </Link>
+          </StoreSettingsWrapper>
+
           {/* Wishlist Icon - Only show if wishlist feature is enabled */}
           <StoreSettingsWrapper feature="wishlist">
             {isLoggedIn && (
@@ -250,6 +281,23 @@ const Header = () => {
               )}
             </div>
           ))}
+
+          {/* Mobile Cart */}
+          <StoreSettingsWrapper feature="addToCart">
+            <Link
+              href="/cart"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center py-2 font-medium transition-colors text-gray-300 hover:text-red-400"
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Cart
+              {cartItemsCount > 0 && (
+                <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItemsCount}
+                </span>
+              )}
+            </Link>
+          </StoreSettingsWrapper>
 
           {/* Mobile Wishlist */}
           <StoreSettingsWrapper feature="wishlist">

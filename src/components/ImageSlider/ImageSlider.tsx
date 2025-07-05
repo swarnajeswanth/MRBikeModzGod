@@ -113,7 +113,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
             {/* Overlay with content */}
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
               <div className="text-center text-white px-6 max-w-4xl">
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-3 leading-tight">
                   {image.title || image.alt}
                 </h2>
                 {image.description && (

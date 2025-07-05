@@ -20,17 +20,33 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { startLoading, stopLoading } from "@/components/store/LoadingSlice"; // Adjust path if needed
-import { useTransition } from "react";
-import { RootState } from "@/components/store";
-import { selectAllProducts } from "@/components/store/productSlice";
+import { useTransition, useEffect } from "react";
+import { RootState, AppDispatch } from "@/components/store";
+import {
+  selectAllProducts,
+  selectUniqueCategories,
+  selectCategoriesWithCount,
+  selectLoading,
+  fetchProducts,
+} from "@/components/store/productSlice";
 import { selectFeatures } from "@/components/store/storeSettingsSlice";
 
 const ProductCategories = () => {
   const [isPending, startTransition] = useTransition();
   const products = useSelector(selectAllProducts);
+  const uniqueCategories = useSelector(selectUniqueCategories);
+  const categoriesWithCount = useSelector(selectCategoriesWithCount);
+  const loading = useSelector(selectLoading);
   const features = useSelector(selectFeatures);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+
+  // Fetch products if not already loaded
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
 
   // Dynamic category mapping with icons and colors
   const categoryConfig = {
@@ -118,12 +134,7 @@ const ProductCategories = () => {
     },
   };
 
-  // Get unique categories from products
-  const uniqueCategories = [
-    ...new Set(products.map((product) => product.category)),
-  ];
-
-  // Create categories array with configuration
+  // Create categories array with configuration using Redux data
   const categories = uniqueCategories.map((category) => {
     const config =
       categoryConfig[category as keyof typeof categoryConfig] ||
@@ -157,6 +168,56 @@ const ProductCategories = () => {
       }, 800); // adjust if your route loads slowly
     });
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <section id="categories" className="py-6 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+              Shop by Category
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              Loading categories...
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            {[...Array(5)].map((_, index) => (
+              <div
+                key={index}
+                className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 animate-pulse"
+              >
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-700"></div>
+                  <div className="h-6 bg-gray-700 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-700 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show message if no categories found
+  if (uniqueCategories.length === 0 && !loading) {
+    return (
+      <section id="categories" className="py-6 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+              Shop by Category
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              No categories found. Add some products to see categories here.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   // Show disabled state if categories feature is disabled
   if (!features?.categories) {
@@ -228,6 +289,12 @@ const ProductCategories = () => {
 
                   <p className="text-gray-400 text-sm">
                     {category.description}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {categoriesWithCount.find(
+                      (c) => c.category === category.slug
+                    )?.count || 0}{" "}
+                    products
                   </p>
                 </div>
               </div>

@@ -484,7 +484,7 @@ const AuthPage = () => {
                   <strong>{email}</strong>
                 </p>
 
-                {/* Development OTP Display */}
+                {/* Development OTP Display
                 {(process.env.NODE_ENV === "development" ||
                   !process.env.GMAIL_USER) && (
                   <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3 mb-4">
@@ -499,7 +499,7 @@ const AuthPage = () => {
                       browser console for the actual OTP.
                     </p>
                   </div>
-                )}
+                )} */}
 
                 <div className="space-y-4">
                   <div>
