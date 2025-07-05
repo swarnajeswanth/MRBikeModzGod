@@ -9,6 +9,7 @@ import userReducer from "./UserSlice";
 import reviewsReducer from "./ReviewSlice";
 import storeSettingsReducer from "./storeSettingsSlice";
 import sliderReducer from "./sliderSlice";
+import cartReducer from "./cartSlice";
 import { useSelector } from "react-redux";
 import { selectIsPageAccessible } from "@/components/store/storeSettingsSlice";
 
@@ -133,9 +134,9 @@ const migration = (state: any): Promise<any> => {
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["user", "product", "storeSettings"], // persist user, product, and store settings slices
+  whitelist: ["user", "product", "storeSettings", "cart"], // persist user, product, store settings, and cart slices
   migrate: migration,
-  version: 4, // Increment version to trigger migration and fix user state issues
+  version: 5, // Increment version to trigger migration and include cart state
 };
 
 const rootReducer = combineReducers({
@@ -145,6 +146,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   storeSettings: storeSettingsReducer,
   slider: sliderReducer,
+  cart: cartReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -172,6 +174,7 @@ try {
     "reviews",
     "storeSettings",
     "slider",
+    "cart",
   ];
   const missingKeys = expectedKeys.filter((key) => !(key in initialState));
 

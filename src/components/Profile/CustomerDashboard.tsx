@@ -1,7 +1,7 @@
 import DashboardStats from "@/components/Profile/DashboardStats";
 import QuickActions from "@/components/Profile/QuickActions";
 import RecentOrders from "@/components/Profile/RecentOrders";
-import Wishlist from "@/components/Wishlist";
+import WishlistGrid from "@/components/Dashboard/WishlistGrid";
 
 const CustomerDashboard = () => {
   return (
@@ -16,7 +16,12 @@ const CustomerDashboard = () => {
           <RecentOrders />
         </div>
         <div className="flex-1 flex flex-col">
-          <Wishlist />
+          <WishlistGrid
+            title="My Wishlist"
+            description="Your saved items for later"
+            maxItems={4}
+            showEmptyState={true}
+          />
         </div>
       </div>
 

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       id: uniqueId,
       name: body.name,
       title: body.title,
-      category: body.category,
+      category: body.category.toLowerCase(), // Ensure consistent lowercase category
       price: parseFloat(body.price),
       originalPrice: body.originalPrice
         ? parseFloat(body.originalPrice)

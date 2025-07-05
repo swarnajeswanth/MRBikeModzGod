@@ -10,12 +10,14 @@ import {
   FaTrash,
   FaCog,
   FaImages,
+  FaHeart,
 } from "react-icons/fa";
 import AddProductModal, {
   ProductForm,
 } from "@/components/Profile/AddProductModal";
 import StoreSettings from "@/components/Profile/StoreSettings";
 import SliderManager from "./SliderManager";
+import WishlistGrid from "@/components/Dashboard/WishlistGrid";
 import { useSelector } from "react-redux";
 import {
   selectAllProducts,
@@ -53,7 +55,7 @@ const summaryCards = [
   },
   {
     label: "Revenue",
-    value: "$45,670",
+    value: "₹45,670",
     icon: <FaDollarSign className="text-yellow-400 text-2xl" />,
   },
   {
@@ -222,6 +224,7 @@ const RetailerDashboard = () => {
   // Tab configuration
   const tabs = [
     { id: "products", label: "Product Management", icon: FaBox },
+    { id: "wishlist", label: "My Wishlist", icon: FaHeart },
     { id: "slider", label: "Hero Slider", icon: FaImages },
     { id: "settings", label: "Store Settings", icon: FaCog },
   ];
@@ -355,7 +358,7 @@ const RetailerDashboard = () => {
                           {product.category}
                         </td>
                         <td className="px-6 py-4 text-white">
-                          ${product.price}
+                          ₹{product.price}
                         </td>
                         <td className="px-6 py-4 text-gray-300">
                           {product.stockCount}
@@ -419,7 +422,7 @@ const RetailerDashboard = () => {
                         </p>
                         <div className="flex items-center justify-between mt-2">
                           <span className="text-white font-bold">
-                            ${product.price}
+                            ₹{product.price}
                           </span>
                           <span className="text-gray-400 text-xs">
                             Stock: {product.stockCount}
@@ -475,6 +478,18 @@ const RetailerDashboard = () => {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === "wishlist" && (
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-6 rounded-lg">
+          <WishlistGrid
+            title="My Wishlist"
+            description="Your saved items for later"
+            maxItems={8}
+            showEmptyState={true}
+            className=""
+          />
         </div>
       )}
 

@@ -174,11 +174,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Price - Only show if price display feature is enabled */}
         {features?.priceDisplay && (
           <div className="price-row">
-            <span className="price">${price.toFixed(2)}</span>
+            <span className="price">₹{price.toFixed(2)}</span>
             {originalPrice && (
               <>
                 <span className="original-price">
-                  ${originalPrice.toFixed(2)}
+                  ₹{originalPrice.toFixed(2)}
                 </span>
                 {features?.discountDisplay && discount && (
                   <span className="discount-badge">SAVE {discount}</span>

@@ -140,7 +140,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
           <input
             name="price"
             type="number"
-            placeholder="Price ($)"
+            placeholder="Price (₹)"
             className="input"
             value={form.price}
             onChange={handleInput}
@@ -150,7 +150,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
           <input
             name="originalPrice"
             type="number"
-            placeholder="Original Price ($)"
+            placeholder="Original Price (₹)"
             className="input"
             value={form.originalPrice}
             onChange={handleInput}

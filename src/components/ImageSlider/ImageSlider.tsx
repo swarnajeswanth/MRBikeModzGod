@@ -97,18 +97,18 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
       {/* Main Slider Container */}
       <div
         ref={scrollRef}
-        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {images.map((image, index) => (
           <div
             key={image.id}
-            className="flex-shrink-0 w-full snap-start relative"
+            className="flex-shrink-0 w-full h-full snap-start relative"
           >
             <img
               src={image.url}
               alt={image.alt}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover absolute inset-0"
             />
             {/* Overlay with content */}
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

@@ -9,6 +9,7 @@ import {
   selectIsFeatureEnabled,
   selectIsCustomerExperienceEnabled,
 } from "@/components/store/storeSettingsSlice";
+import { useCart } from "@/components/hooks/useCart";
 import { useRouter } from "next/navigation";
 import "./AddToCart.css";
 
@@ -20,6 +21,7 @@ interface AddToCartButtonProps {
 }
 
 const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
+  const { addItem, removeItem, isItemInCart } = useCart();
   const [buttonText, setButtonText] = useState("Add to cart");
   const [hasAdded, setHasAdded] = useState(false);
   const [showCross, setShowCross] = useState(false);
@@ -41,10 +43,12 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   );
   const { isLoggedIn } = useSelector((state: RootState) => state.user);
 
-  // Initialize state from localStorage
+  // Check if product is already in cart
+  const isInCart = product ? isItemInCart(product.id) : false;
+
+  // Initialize state based on cart state
   useEffect(() => {
-    const storedState = localStorage.getItem("added-to-cart");
-    if (storedState === "true") {
+    if (isInCart) {
       setButtonText("Added");
       setHasAdded(true);
       setShowCross(true);
@@ -54,12 +58,9 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       gsap.set(addTextRef.current, { opacity: 1 });
       gsap.set([shirtRef.current, cartRef.current], { opacity: 0 });
     }
-  }, []);
+  }, [isInCart]);
 
-  // Save state to localStorage
-  useEffect(() => {
-    localStorage.setItem("added-to-cart", String(hasAdded));
-  }, [hasAdded]);
+  // Remove localStorage dependency since we're using Redux state now
 
   const handleAddToCart = async () => {
     if (!isAddToCartEnabled) {
@@ -74,7 +75,7 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       return;
     }
 
-    if (hasAdded) return; // prevent re-animation
+    if (hasAdded || isInCart) return; // prevent re-animation if already added
     if (buttonText !== "Add to cart") return; // allow only if untouched
 
     setIsLoading(true);
@@ -189,8 +190,21 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       }
     );
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Add product to cart via Redux
+    if (product) {
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image:
+          product.images && product.images.length > 0 ? product.images[0] : "",
+        category: product.category,
+        originalPrice: product.originalPrice,
+        discount: product.discount,
+      };
+
+      await addItem(cartItem);
+    }
 
     toast.success(
       product ? `${product.name} added to cart!` : "Product added to cart!"
@@ -199,7 +213,12 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
     setIsLoading(false);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    // Remove item from cart if it exists
+    if (product && isInCart) {
+      await removeItem(product.id);
+    }
+
     setButtonText("Add to cart");
     setHasAdded(false);
     setShowCross(false);
@@ -266,7 +285,7 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       ref={buttonRef}
       onClick={handleAddToCart}
       disabled={isLoading}
-      className={`add-to-cart relative w-full py-3 rounded bg-[#8e0005] text-black font-semibold text-sm overflow-hidden flex items-center justify-center gap-2 ${className}`}
+      className={`add-to-cart relative w-full  py-3 rounded bg-[#8e0005] text-black font-semibold text-sm overflow-hidden flex items-center justify-center gap-2 ${className}`}
     >
       {/* Static Cart Icon */}
       <svg

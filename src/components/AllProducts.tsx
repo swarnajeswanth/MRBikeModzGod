@@ -308,11 +308,11 @@ const AllProductsPage = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
                     <span className="text-xl font-bold text-white">
-                      ${product.price}
+                      ₹{product.price}
                     </span>
                     {product.originalPrice && (
                       <span className="text-sm text-gray-500 line-through">
-                        ${product.originalPrice}
+                        ₹{product.originalPrice}
                       </span>
                     )}
                   </div>

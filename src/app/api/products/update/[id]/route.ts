@@ -9,14 +9,32 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, description, price, category, image, stock, brand } = body;
+    const {
+      name,
+      title,
+      category,
+      price,
+      originalPrice,
+      discount,
+      stockCount,
+      inStock,
+      rating,
+      reviews,
+      description,
+      features,
+      specifications,
+      label,
+      labelType,
+      backgroundColor,
+      images,
+    } = body;
 
     // Validate required fields
-    if (!name || !description || !price || !category) {
+    if (!name || !title || !category || !price) {
       return NextResponse.json(
         {
           success: false,
-          message: "Name, description, price, and category are required.",
+          message: "Name, title, category, and price are required.",
         },
         { status: 400 }
       );
@@ -24,8 +42,8 @@ export async function PUT(
 
     await connectToDB();
 
-    // Check if product exists
-    const existingProduct = await Product.findById(id);
+    // Check if product exists using the custom 'id' field
+    const existingProduct = await Product.findOne({ id });
     if (!existingProduct) {
       return NextResponse.json(
         {
@@ -36,17 +54,32 @@ export async function PUT(
       );
     }
 
-    // Update product
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
+    // Update product using the custom 'id' field
+    const updatedProduct = await Product.findOneAndUpdate(
+      { id },
       {
         name,
-        description,
+        title,
+        category: category.toLowerCase(), // Ensure consistent lowercase category
         price: parseFloat(price),
-        category,
-        image: image || existingProduct.image,
-        stock: stock || existingProduct.stock,
-        brand: brand || existingProduct.brand,
+        originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
+        discount: discount || "",
+        stockCount: stockCount ? parseInt(stockCount) : 0,
+        inStock: inStock !== undefined ? inStock : true,
+        rating: rating ? parseFloat(rating) : 0,
+        reviews: reviews ? parseInt(reviews) : 0,
+        description: description || "",
+        features: features || [],
+        specifications: specifications || {
+          Material: "",
+          "Temperature Range": "",
+          Compatibility: "",
+          Warranty: "",
+        },
+        label: label || "",
+        labelType: labelType || "",
+        backgroundColor: backgroundColor || "#1f2937",
+        images: images || [],
         updatedAt: new Date(),
       },
       { new: true, runValidators: true }
@@ -71,16 +104,6 @@ export async function PUT(
           message: "A product with this name already exists.",
         },
         { status: 409 }
-      );
-    }
-
-    if (error.name === "CastError") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid product ID format.",
-        },
-        { status: 400 }
       );
     }
 

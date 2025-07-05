@@ -11,8 +11,8 @@ export async function DELETE(
 
     await connectToDB();
 
-    // Check if product exists
-    const existingProduct = await Product.findById(id);
+    // Check if product exists using the custom 'id' field
+    const existingProduct = await Product.findOne({ id });
     if (!existingProduct) {
       return NextResponse.json(
         {
@@ -23,8 +23,8 @@ export async function DELETE(
       );
     }
 
-    // Delete product
-    await Product.findByIdAndDelete(id);
+    // Delete product using the custom 'id' field
+    await Product.findOneAndDelete({ id });
 
     return NextResponse.json(
       {

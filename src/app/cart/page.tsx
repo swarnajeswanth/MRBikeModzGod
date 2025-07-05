@@ -9,12 +9,22 @@ import {
   Tag,
   ArrowRight,
 } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectIsPageAccessible } from "@/components/store/storeSettingsSlice";
 import GuestAccessGuard from "@/components/GuestAccessGuard";
+import { RootState, AppDispatch } from "@/components/store";
+import {
+  selectCartItems,
+  selectCartTotal,
+  selectCartItemCount,
+  updateCartItemQuantity,
+  removeFromCart,
+} from "@/components/store/cartSlice";
 
 export default function CartPage() {
+  const dispatch = useDispatch<AppDispatch>();
   const isCartAccessible = useSelector(selectIsPageAccessible("cart"));
+
   if (!isCartAccessible) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-white bg-black/80">
@@ -26,49 +36,23 @@ export default function CartPage() {
     );
   }
 
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Performance Air Filter",
-      category: "Engine Parts",
-      price: 89.99,
-      quantity: 3,
-    },
-    {
-      id: 2,
-      name: "Sport Exhaust System",
-      category: "Exhaust",
-      price: 299.99,
-      quantity: 1,
-    },
-    {
-      id: 3,
-      name: "LED Headlights",
-      category: "Electronics",
-      price: 159.99,
-      quantity: 1,
-    },
-  ]);
+  // Get cart data from Redux
+  const cartItems = useSelector(selectCartItems);
+  const cartTotal = useSelector(selectCartTotal);
+  const cartItemCount = useSelector(selectCartItemCount);
 
   const [promoCode, setPromoCode] = useState("");
 
-  const updateQuantity = (id: number, newQty: number) => {
+  const updateQuantity = async (id: string, newQty: number) => {
     if (newQty < 1) return;
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQty } : item
-      )
-    );
+    await dispatch(updateCartItemQuantity({ productId: id, quantity: newQty }));
   };
 
-  const removeItem = (id: number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const removeItem = async (id: string) => {
+    await dispatch(removeFromCart(id));
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const subtotal = cartTotal;
   const shipping = cartItems.length ? 25 : 0;
   const tax = +(subtotal * 0.1).toFixed(2);
   const total = subtotal + shipping + tax;
@@ -115,7 +99,7 @@ export default function CartPage() {
                       </h3>
                       <p className="text-gray-400 text-sm">{item.category}</p>
                       <p className="text-red-400 font-bold text-lg">
-                        ${item.price.toFixed(2)}
+                        ₹{item.price.toFixed(2)}
                       </p>
                     </div>
 
@@ -182,19 +166,19 @@ export default function CartPage() {
                 <div className="space-y-3 text-gray-300">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>₹{shipping.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>₹{tax.toFixed(2)}</span>
                   </div>
                   <div className="border-t border-gray-600 pt-3 flex justify-between text-white font-bold text-lg">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₹{total.toFixed(2)}</span>
                   </div>
                 </div>
                 <button className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white text-lg py-3 rounded flex items-center justify-center">

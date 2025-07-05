@@ -5,14 +5,32 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, description, price, category, image, stock, brand } = body;
+    const {
+      name,
+      title,
+      category,
+      price,
+      originalPrice,
+      discount,
+      stockCount,
+      inStock,
+      rating,
+      reviews,
+      description,
+      features,
+      specifications,
+      label,
+      labelType,
+      backgroundColor,
+      images,
+    } = body;
 
     // Validate required fields
-    if (!name || !description || !price || !category) {
+    if (!name || !title || !category || !price) {
       return NextResponse.json(
         {
           success: false,
-          message: "Name, description, price, and category are required.",
+          message: "Name, title, category, and price are required.",
         },
         { status: 400 }
       );
@@ -20,16 +38,35 @@ export async function POST(req: Request) {
 
     await connectToDB();
 
+    // Generate a unique ID
+    const uniqueId = `product_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
     const newProduct = await Product.create({
+      id: uniqueId,
       name,
-      description,
+      title,
+      category: category.toLowerCase(), // Ensure consistent lowercase category
       price: parseFloat(price),
-      category,
-      image: image || "",
-      stock: stock || 0,
-      brand: brand || "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
+      discount: discount || "",
+      stockCount: stockCount ? parseInt(stockCount) : 0,
+      inStock: inStock !== undefined ? inStock : true,
+      rating: rating ? parseFloat(rating) : 0,
+      reviews: reviews ? parseInt(reviews) : 0,
+      description: description || "",
+      features: features || [],
+      specifications: specifications || {
+        Material: "",
+        "Temperature Range": "",
+        Compatibility: "",
+        Warranty: "",
+      },
+      label: label || "",
+      labelType: labelType || "",
+      backgroundColor: backgroundColor || "#1f2937",
+      images: images || [],
     });
 
     return NextResponse.json(

@@ -73,7 +73,7 @@ export default function CartItem({
           <h3 className="text-white font-semibold text-lg">{name}</h3>
           <p className="text-gray-400 text-sm">{category}</p>
           <p className="text-red-400 font-bold text-md mt-1">
-            ${price.toFixed(2)}
+            ₹{price.toFixed(2)}
           </p>
         </div>
       </div>

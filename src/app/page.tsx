@@ -38,11 +38,12 @@ const Index = () => {
           </section>
 
           {/* Other Sections */}
-          <section className="fade-up">
-            <ProductCategories />
-          </section>
+
           <section className="fade-up">
             <FeaturedProducts />
+          </section>
+          <section className="fade-up">
+            <ProductCategories />
           </section>
           <section className="fade-up">
             <StoreLocation />

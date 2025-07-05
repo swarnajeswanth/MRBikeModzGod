@@ -56,9 +56,19 @@ export const fetchProducts = createAsyncThunk(
 
       const data = await response.json();
       console.log("API response data:", data);
-      console.log("Products array length:", data.products?.length || 0);
 
-      return data.products || [];
+      // Handle different response formats
+      let products = [];
+      if (Array.isArray(data)) {
+        products = data;
+      } else if (data.products && Array.isArray(data.products)) {
+        products = data.products;
+      } else if (data.data && Array.isArray(data.data)) {
+        products = data.data;
+      }
+
+      console.log("Products array length:", products.length);
+      return products;
     } catch (error) {
       console.error("Error in fetchProducts:", error);
       throw error;
@@ -270,11 +280,22 @@ const productSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
         console.log("fetchProducts.fulfilled - payload:", action.payload);
-        console.log(
-          "Setting products array length:",
-          action.payload?.length || 0
-        );
-        state.products = action.payload || [];
+
+        // Handle different response formats
+        let products = [];
+        if (Array.isArray(action.payload)) {
+          products = action.payload;
+        } else if (
+          action.payload?.products &&
+          Array.isArray(action.payload.products)
+        ) {
+          products = action.payload.products;
+        } else if (action.payload?.data && Array.isArray(action.payload.data)) {
+          products = action.payload.data;
+        }
+
+        console.log("Setting products array length:", products.length);
+        state.products = products;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
@@ -291,9 +312,14 @@ const productSlice = createSlice({
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
         // Handle both direct product object and wrapped response
-        const product = action.payload.product || action.payload;
-        if (product) {
+        const product = action.payload?.product || action.payload;
+        if (product && (product.id || product._id)) {
           state.products.push(product);
+        } else {
+          console.warn(
+            "CreateProduct: Invalid product data received",
+            action.payload
+          );
         }
       })
       .addCase(createProduct.rejected, (state, action) => {
@@ -309,12 +335,21 @@ const productSlice = createSlice({
       })
       .addCase(updateProductById.fulfilled, (state, action) => {
         state.loading = false;
-        const updatedProduct = action.payload.product;
-        const index = state.products.findIndex(
-          (p) => p.id === updatedProduct.id || p._id === updatedProduct._id
-        );
-        if (index !== -1) {
-          state.products[index] = updatedProduct;
+        const updatedProduct = action.payload?.product || action.payload;
+
+        // Check if updatedProduct exists and has required properties
+        if (updatedProduct && (updatedProduct.id || updatedProduct._id)) {
+          const index = state.products.findIndex(
+            (p) => p.id === updatedProduct.id || p._id === updatedProduct._id
+          );
+          if (index !== -1) {
+            state.products[index] = updatedProduct;
+          }
+        } else {
+          console.warn(
+            "UpdateProductById: Invalid product data received",
+            action.payload
+          );
         }
       })
       .addCase(updateProductById.rejected, (state, action) => {
@@ -378,21 +413,34 @@ export const selectProductById = (
   state: { product: ProductState },
   productId: string
 ) =>
-  state.product.products.find((p) => p.id === productId || p._id === productId);
+  state.product.products.find(
+    (p) =>
+      p.id === productId ||
+      p._id === productId ||
+      p.id?.toLowerCase() === productId.toLowerCase() ||
+      p._id?.toLowerCase() === productId.toLowerCase()
+  );
 
 export const selectProductsByCategory = (
   state: { product: ProductState },
   category: string
-) => state.product.products.filter((p) => p.category === category);
+) =>
+  state.product.products.filter(
+    (p) => p.category?.toLowerCase() === category.toLowerCase()
+  );
 
 export const selectUniqueCategories = (state: { product: ProductState }) => {
-  const categories = state.product.products.map((p) => p.category);
+  const categories = state.product.products
+    .map((p) => p.category)
+    .filter(Boolean); // Filter out undefined/null categories
   return [...new Set(categories)].sort();
 };
 
 export const selectCategoriesWithCount = (state: { product: ProductState }) => {
   const categoryCounts = state.product.products.reduce((acc, product) => {
-    acc[product.category] = (acc[product.category] || 0) + 1;
+    if (product.category) {
+      acc[product.category] = (acc[product.category] || 0) + 1;
+    }
     return acc;
   }, {} as Record<string, number>);
 

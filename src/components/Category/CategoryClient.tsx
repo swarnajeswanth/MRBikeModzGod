@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Shield,
   Bike,
@@ -14,13 +14,17 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import AddToCartButton from "../Cart/AddToCart";
-import { RootState } from "@/components/store";
-import { selectProductsByCategory } from "@/components/store/productSlice";
+import { RootState, AppDispatch } from "@/components/store";
+import {
+  selectProductsByCategory,
+  fetchProducts,
+  selectAllProducts,
+} from "@/components/store/productSlice";
 import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
 import { toggleWishlist } from "@/components/store/UserSlice";
-import { useDispatch } from "react-redux";
 import { toast } from "react-hot-toast";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
+import { useEffect } from "react";
 
 interface Props {
   categoryName: string;
@@ -67,13 +71,34 @@ const categoryConfig = {
 
 export default function CategoryClient({ categoryName }: Props) {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Get products from Redux store
   const products = useSelector((state: RootState) =>
     selectProductsByCategory(state, categoryName)
   );
+
+  // Get all products to check if they're loaded
+  const allProducts = useSelector(selectAllProducts);
+
+  // Load products if not already loaded
+  useEffect(() => {
+    if (allProducts.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, allProducts.length]);
+
+  // If no products found in category but products are loaded, try refreshing
+  useEffect(() => {
+    if (products.length === 0 && allProducts.length > 0) {
+      // Try to refresh products after a short delay
+      const timer = setTimeout(() => {
+        dispatch(fetchProducts());
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [products.length, allProducts.length, dispatch]);
 
   const { wishlist, isLoggedIn } = useSelector(
     (state: RootState) => state.user
@@ -83,7 +108,7 @@ export default function CategoryClient({ categoryName }: Props) {
   );
 
   const currentCategory =
-    categoryConfig[categoryName as keyof typeof categoryConfig];
+    categoryConfig[categoryName.toLowerCase() as keyof typeof categoryConfig];
 
   if (!currentCategory) {
     return (
@@ -223,7 +248,7 @@ export default function CategoryClient({ categoryName }: Props) {
                   </h3>
                   <div className="flex flex-col items-left justify-between">
                     <span className="text-2xl font-bold text-green-400">
-                      ${product.price}
+                      ₹{product.price}
                     </span>
                     <AddToCartButton product={product} />
                   </div>
@@ -237,6 +262,12 @@ export default function CategoryClient({ categoryName }: Props) {
               <p className="text-gray-400 text-lg">
                 No products found matching your search.
               </p>
+              {products.length === 0 && (
+                <p className="text-gray-500 text-sm mt-2">
+                  No products found in category "{categoryName}". Total products
+                  loaded: {allProducts.length}
+                </p>
+              )}
             </div>
           )}
         </div>

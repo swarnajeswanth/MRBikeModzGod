@@ -117,10 +117,10 @@ const ProductCard = ({ product }: { product: any }) => {
         {/* Price - Hidden if disabled */}
         {isPriceDisplayEnabled && (
           <div className="mt-2">
-            <span className="text-xl font-bold">${product.price}</span>
+            <span className="text-xl font-bold">₹{product.price}</span>
             {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-gray-500 line-through ml-2">
-                ${product.originalPrice}
+                ₹{product.originalPrice}
               </span>
             )}
             {isDiscountDisplayEnabled && product.discount && (

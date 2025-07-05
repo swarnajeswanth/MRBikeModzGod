@@ -14,11 +14,12 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { RootState } from "@/components/store";
+import { RootState, AppDispatch } from "@/components/store";
 import {
   selectProductById,
   selectProductsByCategory,
   selectAllProducts,
+  fetchProducts,
 } from "@/components/store/productSlice";
 import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
@@ -27,7 +28,7 @@ import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSetti
 const ProductPage = () => {
   const router = useRouter();
   const params = useParams();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const productId = params.productId as string;
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedImage, setSelectedImage] = useState<number>(0);
@@ -37,13 +38,16 @@ const ProductPage = () => {
     const productById = selectProductById(state, productId);
     if (productById) return productById;
 
-    // If not found by ID, try to find by title
+    // If not found by ID, try to find by title or name
     const allProducts = state.product.products;
+    const decodedProductId = decodeURIComponent(productId).toLowerCase();
+
     return allProducts.find(
       (p: any) =>
-        p.title?.toLowerCase() ===
-          decodeURIComponent(productId).toLowerCase() ||
-        p.name?.toLowerCase() === decodeURIComponent(productId).toLowerCase()
+        p.title?.toLowerCase() === decodedProductId ||
+        p.name?.toLowerCase() === decodedProductId ||
+        p.id?.toLowerCase() === decodedProductId ||
+        p._id?.toLowerCase() === decodedProductId
     );
   });
 
@@ -65,6 +69,24 @@ const ProductPage = () => {
   const isInWishlist = product
     ? wishlist.some((item) => item.id === product.id)
     : false;
+
+  // Load products if not already loaded
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
+
+  // If product not found but products are loaded, try refreshing
+  useEffect(() => {
+    if (!product && products.length > 0) {
+      // Try to find the product again after a short delay
+      const timer = setTimeout(() => {
+        dispatch(fetchProducts());
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [product, products.length, dispatch]);
 
   // Handle wishlist toggle
   const handleToggleWishlist = () => {
@@ -148,6 +170,12 @@ const ProductPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-16">
             <div className="text-white text-xl">Product not found</div>
+            <div className="text-gray-400 text-sm mt-2">
+              Looking for product ID: {productId}
+            </div>
+            <div className="text-gray-500 text-xs mt-1">
+              Total products loaded: {products.length}
+            </div>
             <button
               onClick={() => router.back()}
               className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
@@ -299,13 +327,13 @@ const ProductPage = () => {
             {/* Price */}
             <div className="flex items-center space-x-4">
               <span className="text-3xl font-bold text-white">
-                ${product.price}
+                ₹{product.price}
               </span>
               {product.originalPrice &&
                 product.originalPrice > product.price && (
                   <>
                     <span className="text-xl text-gray-500 line-through">
-                      ${product.originalPrice}
+                      ₹{product.originalPrice}
                     </span>
                     <span className="bg-green-600 text-white px-2 py-1 rounded text-sm">
                       {product.discount}
@@ -469,7 +497,7 @@ const ProductPage = () => {
                     </h3>
                     <div className="flex items-center justify-between">
                       <span className="text-xl font-bold text-white">
-                        ${relatedProduct.price}
+                        ₹{relatedProduct.price}
                       </span>
                       <div className="flex items-center">
                         <Star className="h-4 w-4 text-yellow-400 fill-current" />

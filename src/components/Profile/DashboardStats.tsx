@@ -33,7 +33,7 @@ const DashboardStats: React.FC = () => {
     },
     {
       label: "Total Spent",
-      value: "$2,450", // Placeholder
+      value: "₹2,450", // Placeholder
       icon: <FaCreditCard className="text-purple-400 text-3xl" />,
     },
   ];

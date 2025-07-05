@@ -18,6 +18,7 @@ import {
   selectFeatures,
   selectPages,
 } from "@/components/store/storeSettingsSlice";
+import { selectCartItemCount } from "@/components/store/cartSlice";
 import StoreSettingsWrapper from "@/components/StoreSettingsWrapper";
 import toast from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
@@ -39,8 +40,8 @@ const Header = () => {
     (state: RootState) => state.user
   );
 
-  // Mock cart items count - you can replace this with actual cart state
-  const cartItemsCount = 0; // This should come from your cart state
+  // Get actual cart items count from Redux state
+  const cartItemsCount = useSelector(selectCartItemCount);
   const features = useSelector(selectFeatures);
   const pages = useSelector(selectPages);
   const pathname = usePathname();
