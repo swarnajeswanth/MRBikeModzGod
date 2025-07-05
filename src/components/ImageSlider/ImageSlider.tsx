@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Dot, ChevronLeft, ChevronRight } from "lucide-react";
+import { Dot, ChevronLeft, ChevronRight, Image } from "lucide-react";
 
 interface SlideImage {
   id: string;
   url: string;
   alt: string;
+  title?: string;
+  description?: string;
 }
 
 interface ImageSliderProps {
@@ -29,6 +31,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
         left: child.offsetLeft,
         behavior: "smooth",
       });
+      setCurrentSlide(index);
     }
   };
 
@@ -36,51 +39,90 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
     const container = scrollRef.current;
     if (!container) return;
 
-    const children = Array.from(container.children) as HTMLElement[];
     const scrollLeft = container.scrollLeft;
-    const widths = children.map((child) => child.offsetLeft);
-
-    const index = widths.findIndex((offset, i) => {
-      const nextOffset = widths[i + 1] ?? Infinity;
-      return scrollLeft >= offset && scrollLeft < nextOffset;
-    });
-
-    if (index !== -1) {
-      setCurrentSlide(index);
-    }
+    const itemWidth = container.scrollWidth / images.length;
+    const currentIndex = Math.round(scrollLeft / itemWidth);
+    setCurrentSlide(currentIndex);
   };
 
   useEffect(() => {
     const container = scrollRef.current;
     if (container) {
-      container.addEventListener("scroll", handleScroll, { passive: true });
+      container.addEventListener("scroll", handleScroll);
       return () => container.removeEventListener("scroll", handleScroll);
     }
-  }, []);
+  }, [images.length]);
 
+  // Auto-advance slides
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % images.length);
+      scrollTo((currentSlide + 1) % images.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [currentSlide, images.length]);
+
+  const nextSlide = () => {
+    const next = (currentSlide + 1) % images.length;
+    scrollTo(next);
+  };
+
+  const prevSlide = () => {
+    const prev = (currentSlide - 1 + images.length) % images.length;
+    scrollTo(prev);
+  };
+
+  // Show placeholder when no images
   if (images.length === 0) {
     return (
-      <div className={`bg-gray-800 rounded-xl p-8 text-center ${className}`}>
-        <div className="text-4xl mb-4">📷</div>
-        <p className="text-gray-400">No images to display</p>
+      <div
+        className={`bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-8 text-center flex items-center justify-center ${className}`}
+      >
+        <div className="text-center">
+          <Image className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-400 text-lg">No slider images available</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Add images through the retailer dashboard
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={`relative ${className}`}>
-      {/* Image container */}
+    <div className={`relative overflow-hidden rounded-xl ${className}`}>
+      {/* Main Slider Container */}
       <div
         ref={scrollRef}
-        className="flex overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-xl"
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {images.map((image) => (
-          <div key={image.id} className="flex-shrink-0 snap-center w-full">
+        {images.map((image, index) => (
+          <div
+            key={image.id}
+            className="flex-shrink-0 w-full snap-start relative"
+          >
             <img
-              src={`https://images.unsplash.com/${image.url}?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80`}
+              src={image.url}
               alt={image.alt}
-              className="w-full h-auto object-cover rounded-xl"
+              className="w-full h-full object-cover"
             />
+            {/* Overlay with content */}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <div className="text-center text-white px-6 max-w-4xl">
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                  {image.title || image.alt}
+                </h2>
+                {image.description && (
+                  <p className="text-lg md:text-xl lg:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+                    {image.description}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -89,43 +131,48 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
       {images.length > 1 && (
         <>
           <button
-            onClick={() => scrollTo(Math.max(currentSlide - 1, 0))}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white hover:bg-white/30 z-10"
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 backdrop-blur-sm"
+            aria-label="Previous slide"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="h-6 w-6" />
           </button>
           <button
-            onClick={() =>
-              scrollTo(Math.min(currentSlide + 1, images.length - 1))
-            }
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white hover:bg-white/30 z-10"
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 backdrop-blur-sm"
+            aria-label="Next slide"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="h-6 w-6" />
           </button>
         </>
       )}
 
-      {/* Dots */}
+      {/* Dots Navigation */}
       {images.length > 1 && (
-        <div className="flex justify-center space-x-2 mt-4">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-3 z-10">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => scrollTo(index)}
-              className="group"
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                index === currentSlide
+                  ? "bg-red-500 scale-125"
+                  : "bg-white/50 hover:bg-white/75"
+              }`}
               aria-label={`Go to slide ${index + 1}`}
-            >
-              <Dot
-                className={`w-3 h-3 transition-colors duration-200 ${
-                  index === currentSlide
-                    ? "text-red-500"
-                    : "text-gray-400 group-hover:text-gray-300"
-                }`}
-              />
-            </button>
+            />
           ))}
         </div>
       )}
+
+      {/* Mobile swipe indicator */}
+      <div className="absolute bottom-4 left-4 text-white/70 text-sm hidden md:block">
+        <span className="flex items-center gap-2">
+          <ChevronLeft className="h-4 w-4" />
+          Swipe to navigate
+          <ChevronRight className="h-4 w-4" />
+        </span>
+      </div>
     </div>
   );
 };

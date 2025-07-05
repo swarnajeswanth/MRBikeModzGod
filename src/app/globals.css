@@ -18,3 +18,31 @@
 .card-flip.flipped {
   transform: rotateY(180deg);
 }
+
+/* Hide scrollbars for slider */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Ensure proper viewport height on mobile */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Smooth transitions for hero section */
+.hero-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Enhanced backdrop blur for slider overlays */
+.backdrop-blur-enhanced {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}

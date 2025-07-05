@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/components/lib/mongodb";
 import SliderImage from "@/components/models/SliderImage";
-import ImageKit from "imagekit";
+import { deleteImageFromImageKit } from "@/components/lib/imagekitUtils";
 
 export const runtime = "nodejs";
-
-// Initialize ImageKit
-const imagekit = new ImageKit({
-  publicKey: process.env.PUBLIC_API_KEY!,
-  privateKey: process.env.PRIVATE_API_KEY!,
-  urlEndpoint: process.env.URL_ENDPOINT!,
-});
 
 // PUT update slider image
 export async function PUT(
@@ -76,13 +69,13 @@ export async function DELETE(
     }
 
     // Delete from ImageKit if imageKitId exists
+    let imageKitDeletionSuccess = true;
     if (image.imageKitId) {
-      try {
-        await imagekit.deleteFile(image.imageKitId);
-        console.log("Image deleted from ImageKit:", image.imageKitId);
-      } catch (imageKitError) {
-        console.warn("Failed to delete from ImageKit:", imageKitError);
-        // Continue with database deletion even if ImageKit deletion fails
+      imageKitDeletionSuccess = await deleteImageFromImageKit(image.imageKitId);
+      if (!imageKitDeletionSuccess) {
+        console.warn(
+          "Failed to delete image from ImageKit, but continuing with database deletion"
+        );
       }
     }
 
@@ -95,6 +88,7 @@ export async function DELETE(
       success: true,
       message: "Slider image deleted successfully",
       id: id,
+      imageKitDeleted: imageKitDeletionSuccess,
     });
   } catch (error) {
     console.error("Error deleting slider image:", error);

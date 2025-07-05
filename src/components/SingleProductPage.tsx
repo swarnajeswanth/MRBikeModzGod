@@ -22,6 +22,7 @@ import {
 } from "@/components/store/productSlice";
 import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
+import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
 
 const ProductPage = () => {
   const router = useRouter();
@@ -55,25 +56,43 @@ const ProductPage = () => {
 
   // Get all products and wishlist state
   const products = useSelector(selectAllProducts);
-  const { wishlist } = useSelector((state: RootState) => state.user);
+  const { wishlist, isLoggedIn } = useSelector(
+    (state: RootState) => state.user
+  );
+  const requireLoginForWishlist = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
+  );
   const isInWishlist = product
     ? wishlist.some((item) => item.id === product.id)
     : false;
 
   // Handle wishlist toggle
   const handleToggleWishlist = () => {
-    if (!product) return;
+    // Check if product exists
+    if (!product) {
+      toast.error("Product not found");
+      return;
+    }
+
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to use the wishlist.");
+      router.push("/auth");
+      return;
+    }
 
     const wishlistItem = {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image:
+        product.images && product.images.length > 0 ? product.images[0] : "",
       category: product.category,
     };
 
     dispatch(toggleWishlist(wishlistItem));
 
+    const isInWishlist = wishlist.some((item) => item.id === product.id);
     if (isInWishlist) {
       toast.success("Removed from wishlist");
     } else {

@@ -53,6 +53,15 @@ export interface StoreSettings {
   };
 }
 
+interface StoreSettingsState extends StoreSettings {
+  loading: boolean;
+  error: string | null;
+  // Individual operation loading states
+  fetchLoading: boolean;
+  updateLoading: boolean;
+  resetLoading: boolean;
+}
+
 export const initialState: StoreSettings = {
   features: {
     addToCart: true,
@@ -99,31 +108,37 @@ export const initialState: StoreSettings = {
   },
 };
 
+const initialStateWithLoading: StoreSettingsState = {
+  ...initialState,
+  loading: false,
+  error: null,
+  fetchLoading: false,
+  updateLoading: false,
+  resetLoading: false,
+};
+
 // Async thunks for API operations
 export const fetchStoreSettings = createAsyncThunk(
-  "storeSettings/fetchSettings",
-  async (_, { rejectWithValue }) => {
+  "storeSettings/fetchStoreSettings",
+  async (_, { dispatch }) => {
+    dispatch(setFetchLoading(true));
     try {
       const response = await fetch("/api/store-settings");
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error("Failed to fetch store settings");
       }
       const data = await response.json();
-      return data;
-    } catch (error) {
-      console.warn(
-        "Failed to fetch store settings from API, using defaults:",
-        error
-      );
-      // Return default settings instead of rejecting
-      return initialState;
+      return data.settings;
+    } finally {
+      dispatch(setFetchLoading(false));
     }
   }
 );
 
 export const updateStoreSettings = createAsyncThunk(
-  "storeSettings/updateSettings",
-  async (settings: Partial<StoreSettings>, { rejectWithValue }) => {
+  "storeSettings/updateStoreSettings",
+  async (settings: Partial<StoreSettings>, { dispatch }) => {
+    dispatch(setUpdateLoading(true));
     try {
       const response = await fetch("/api/store-settings", {
         method: "PUT",
@@ -132,22 +147,22 @@ export const updateStoreSettings = createAsyncThunk(
         },
         body: JSON.stringify(settings),
       });
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error("Failed to update store settings");
       }
-      return response.json();
-    } catch (error) {
-      console.error("Failed to update store settings:", error);
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to update settings"
-      );
+
+      const data = await response.json();
+      return data.settings;
+    } finally {
+      dispatch(setUpdateLoading(false));
     }
   }
 );
 
 const storeSettingsSlice = createSlice({
   name: "storeSettings",
-  initialState,
+  initialState: initialStateWithLoading,
   reducers: {
     // Feature toggles
     toggleFeature: (
@@ -211,7 +226,23 @@ const storeSettingsSlice = createSlice({
 
     // Reset to defaults
     resetToDefaults: (state) => {
-      return initialState;
+      return initialStateWithLoading;
+    },
+
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action) => {
+      state.error = action.payload;
+    },
+    setFetchLoading: (state, action) => {
+      state.fetchLoading = action.payload;
+    },
+    setUpdateLoading: (state, action) => {
+      state.updateLoading = action.payload;
+    },
+    setResetLoading: (state, action) => {
+      state.resetLoading = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -250,11 +281,38 @@ export const {
   updatePages,
   updateCustomerExperience,
   resetToDefaults,
+  setLoading,
+  setError,
+  setFetchLoading,
+  setUpdateLoading,
+  setResetLoading,
 } = storeSettingsSlice.actions;
 
 // Selectors
-export const selectStoreSettings = (state: { storeSettings: StoreSettings }) =>
-  state.storeSettings;
+export const selectStoreSettings = (state: {
+  storeSettings: StoreSettingsState;
+}) => state.storeSettings;
+
+export const selectStoreSettingsLoading = (state: {
+  storeSettings: StoreSettingsState;
+}) => state.storeSettings.loading;
+
+export const selectStoreSettingsError = (state: {
+  storeSettings: StoreSettingsState;
+}) => state.storeSettings.error;
+
+export const selectFetchStoreSettingsLoading = (state: {
+  storeSettings: StoreSettingsState;
+}) => state.storeSettings.fetchLoading;
+
+export const selectUpdateStoreSettingsLoading = (state: {
+  storeSettings: StoreSettingsState;
+}) => state.storeSettings.updateLoading;
+
+export const selectResetStoreSettingsLoading = (state: {
+  storeSettings: StoreSettingsState;
+}) => state.storeSettings.resetLoading;
+
 export const selectFeatures = (state: { storeSettings: StoreSettings }) =>
   state.storeSettings?.features || initialState.features;
 export const selectPages = (state: { storeSettings: StoreSettings }) =>

@@ -19,10 +19,13 @@ export interface UserState {
   isLoggedIn: boolean;
   dateOfBirth: string;
   phoneNumber: string;
+  // Loading states
+  loginLoading: boolean;
+  signupLoading: boolean;
+  logoutLoading: boolean;
 }
 
 const initialState: UserState = {
-  id: "",
   username: "",
   image: "",
   role: "customer",
@@ -30,51 +33,39 @@ const initialState: UserState = {
   isLoggedIn: false,
   dateOfBirth: "",
   phoneNumber: "",
+  loginLoading: false,
+  signupLoading: false,
+  logoutLoading: false,
 };
 
-// Payload from login/signup (excluding isLoggedIn and wishlist)
-type AuthPayload = Omit<UserState, "isLoggedIn" | "wishlist">;
+type AuthPayload = Omit<
+  UserState,
+  "isLoggedIn" | "wishlist" | "loginLoading" | "signupLoading" | "logoutLoading"
+>;
 
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<AuthPayload>) => {
-      return {
-        ...state,
-        ...action.payload,
-        isLoggedIn: true,
-      };
+    setUser: (state, action: PayloadAction<AuthPayload>) => {
+      state.id = action.payload.id;
+      state.username = action.payload.username;
+      state.image = action.payload.image;
+      state.role = action.payload.role;
+      state.dateOfBirth = action.payload.dateOfBirth;
+      state.phoneNumber = action.payload.phoneNumber;
+      state.isLoggedIn = true;
     },
-
-    logout: () => initialState,
-
-    updateProfile: (
-      state,
-      action: PayloadAction<Partial<Omit<UserState, "wishlist" | "isLoggedIn">>>
-    ) => {
-      Object.assign(state, action.payload);
-    },
-
-    addToWishlist: (state, action: PayloadAction<WishlistItem>) => {
-      const existingItem = state.wishlist.find(
-        (item) => item.id === action.payload.id
-      );
-      if (!existingItem) {
-        state.wishlist.push(action.payload);
-      }
-    },
-
-    removeFromWishlist: (state, action: PayloadAction<string>) => {
-      state.wishlist = state.wishlist.filter(
-        (item) => item.id !== action.payload
-      );
-    },
-
-    clearWishlist: (state) => {
+    logout: (state) => {
+      state.id = undefined;
+      state.username = "";
+      state.image = "";
+      state.role = "customer";
       state.wishlist = [];
+      state.isLoggedIn = false;
+      state.dateOfBirth = "";
+      state.phoneNumber = "";
     },
-
     toggleWishlist: (state, action: PayloadAction<WishlistItem>) => {
       const existingIndex = state.wishlist.findIndex(
         (item) => item.id === action.payload.id
@@ -85,17 +76,38 @@ const userSlice = createSlice({
         state.wishlist.push(action.payload);
       }
     },
+    removeFromWishlist: (state, action: PayloadAction<string>) => {
+      const existingIndex = state.wishlist.findIndex(
+        (item) => item.id === action.payload
+      );
+      if (existingIndex >= 0) {
+        state.wishlist.splice(existingIndex, 1);
+      }
+    },
+    clearWishlist: (state) => {
+      state.wishlist = [];
+    },
+    setLoginLoading: (state, action: PayloadAction<boolean>) => {
+      state.loginLoading = action.payload;
+    },
+    setSignupLoading: (state, action: PayloadAction<boolean>) => {
+      state.signupLoading = action.payload;
+    },
+    setLogoutLoading: (state, action: PayloadAction<boolean>) => {
+      state.logoutLoading = action.payload;
+    },
   },
 });
 
 export const {
-  login,
+  setUser,
   logout,
-  updateProfile,
-  addToWishlist,
+  toggleWishlist,
   removeFromWishlist,
   clearWishlist,
-  toggleWishlist,
+  setLoginLoading,
+  setSignupLoading,
+  setLogoutLoading,
 } = userSlice.actions;
 
 export default userSlice.reducer;

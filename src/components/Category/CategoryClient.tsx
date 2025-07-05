@@ -16,6 +16,11 @@ import {
 import AddToCartButton from "../Cart/AddToCart";
 import { RootState } from "@/components/store";
 import { selectProductsByCategory } from "@/components/store/productSlice";
+import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
+import { toggleWishlist } from "@/components/store/UserSlice";
+import { useDispatch } from "react-redux";
+import { toast } from "react-hot-toast";
+import { FaRegHeart, FaHeart } from "react-icons/fa";
 
 interface Props {
   categoryName: string;
@@ -62,11 +67,19 @@ const categoryConfig = {
 
 export default function CategoryClient({ categoryName }: Props) {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Get products from Redux store
   const products = useSelector((state: RootState) =>
     selectProductsByCategory(state, categoryName)
+  );
+
+  const { wishlist, isLoggedIn } = useSelector(
+    (state: RootState) => state.user
+  );
+  const requireLoginForWishlist = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
 
   const currentCategory =
@@ -94,6 +107,34 @@ export default function CategoryClient({ categoryName }: Props) {
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleToggleWishlist = (product: any, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to product page
+
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to use the wishlist.");
+      router.push("/auth");
+      return;
+    }
+
+    const wishlistItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+    };
+
+    dispatch(toggleWishlist(wishlistItem));
+
+    const isInWishlist = wishlist.some((item) => item.id === product.id);
+    if (isInWishlist) {
+      toast.success("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black">
@@ -144,7 +185,7 @@ export default function CategoryClient({ categoryName }: Props) {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-gray-800/50 backdrop-blur-sm border-gray-700 hover:bg-gray-700/50 transition-all duration-300 group cursor-pointer"
+                className="bg-gray-800/50 backdrop-blur-sm border-gray-700 hover:bg-gray-700/50 transition-all duration-300 group cursor-pointer relative"
                 onClick={() => router.push(`/product/${product.id}`)}
               >
                 <div className="aspect-video overflow-hidden rounded-t-lg">
@@ -163,6 +204,19 @@ export default function CategoryClient({ categoryName }: Props) {
                     </div>
                   )}
                 </div>
+
+                {/* Wishlist Button */}
+                <button
+                  className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
+                  onClick={(e) => handleToggleWishlist(product, e)}
+                >
+                  {wishlist.some((item) => item.id === product.id) ? (
+                    <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
+                  ) : (
+                    <FaRegHeart className="w-5 h-5 text-white" />
+                  )}
+                </button>
+
                 <div className="p-6">
                   <h3 className="text-xl font-semibold text-white mb-2">
                     {product.name}
@@ -171,7 +225,7 @@ export default function CategoryClient({ categoryName }: Props) {
                     <span className="text-2xl font-bold text-green-400">
                       ${product.price}
                     </span>
-                    <AddToCartButton />
+                    <AddToCartButton product={product} />
                   </div>
                 </div>
               </div>

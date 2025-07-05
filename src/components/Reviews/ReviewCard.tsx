@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch, voteReview } from "../store";
 import { IReview } from "../models/Review";
@@ -11,6 +11,12 @@ import {
   User,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { selectVoteReviewLoading } from "@/components/store/ReviewSlice";
+import { selectAllProducts } from "../store/productSlice";
+import { fetchProducts } from "../store/productSlice";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
 
 interface ReviewCardProps {
   review: IReview;
@@ -25,11 +31,28 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.user);
-  const { loading } = useSelector((state: RootState) => state.reviews);
+  const voteLoading = useSelector(selectVoteReviewLoading);
+  const requireLoginForPurchase = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForPurchase")
+  );
+  const products = useSelector(selectAllProducts) || [];
+
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
 
   const handleVote = async (voteType: "helpful" | "notHelpful") => {
+    if (requireLoginForPurchase && !user?.isLoggedIn) {
+      toast.error("Please log in to vote on reviews.");
+      router.push("/auth");
+      return;
+    }
+
     try {
       await dispatch(voteReview({ id: review._id, voteType })).unwrap();
     } catch (error) {
@@ -103,7 +126,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
           {/* Helpful Vote */}
           <button
             onClick={() => handleVote("helpful")}
-            disabled={loading}
+            disabled={voteLoading}
             className="flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors disabled:opacity-50"
           >
             <ThumbsUp className="h-4 w-4" />
@@ -113,7 +136,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
           {/* Not Helpful Vote */}
           <button
             onClick={() => handleVote("notHelpful")}
-            disabled={loading}
+            disabled={voteLoading}
             className="flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
           >
             <ThumbsDown className="h-4 w-4" />

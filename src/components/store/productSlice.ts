@@ -33,94 +33,138 @@ type ProductState = {
   products: Product[];
   loading: boolean;
   error: string | null;
+  // Individual operation loading states
+  createLoading: boolean;
+  updateLoading: boolean;
+  deleteLoading: boolean;
+  fetchLoading: boolean;
 };
 
 // Async thunks for database operations
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
-  async () => {
-    const response = await fetch("/api/products");
-    if (!response.ok) {
-      throw new Error("Failed to fetch products");
+  async (_, { dispatch }) => {
+    dispatch(setFetchLoading(true));
+    try {
+      console.log("Fetching products from API...");
+      const response = await fetch("/api/products");
+      console.log("API response status:", response.status);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+
+      const data = await response.json();
+      console.log("API response data:", data);
+      console.log("Products array length:", data.products?.length || 0);
+
+      return data.products || [];
+    } catch (error) {
+      console.error("Error in fetchProducts:", error);
+      throw error;
+    } finally {
+      dispatch(setFetchLoading(false));
     }
-    return response.json();
   }
 );
 
 export const createProduct = createAsyncThunk(
   "products/createProduct",
-  async (productData: Omit<Product, "id" | "_id">) => {
-    console.log("Creating product with data:", productData);
+  async (productData: Omit<Product, "id" | "_id">, { dispatch }) => {
+    dispatch(setCreateLoading(true));
+    try {
+      console.log("Creating product with data:", productData);
 
-    const response = await fetch("/api/products", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(productData),
-    });
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      });
 
-    console.log("API response status:", response.status);
+      console.log("API response status:", response.status);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("API error response:", errorData);
-      throw new Error(
-        errorData.message || `Failed to create product: ${response.status}`
-      );
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API error response:", errorData);
+        throw new Error(
+          errorData.message || `Failed to create product: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("API success response:", result);
+      return result.product;
+    } finally {
+      dispatch(setCreateLoading(false));
     }
-
-    const result = await response.json();
-    console.log("API success response:", result);
-    return result;
   }
 );
 
 export const updateProductById = createAsyncThunk(
   "products/updateProduct",
-  async ({
-    id,
-    productData,
-  }: {
-    id: string;
-    productData: Partial<Product>;
-  }) => {
-    console.log("Updating product with ID:", id, "Data:", productData);
+  async (
+    {
+      id,
+      productData,
+    }: {
+      id: string;
+      productData: Partial<Product>;
+    },
+    { dispatch }
+  ) => {
+    dispatch(setUpdateLoading(true));
+    try {
+      console.log("Updating product with ID:", id, "Data:", productData);
 
-    const response = await fetch(`/api/products/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(productData),
-    });
+      const response = await fetch(`/api/products/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      });
 
-    console.log("Update API response status:", response.status);
+      console.log("Update API response status:", response.status);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("Update API error response:", errorData);
-      throw new Error(
-        errorData.message || `Failed to update product: ${response.status}`
-      );
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Update API error response:", errorData);
+        throw new Error(
+          errorData.message || `Failed to update product: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("Update API success response:", result);
+      return result.product;
+    } finally {
+      dispatch(setUpdateLoading(false));
     }
-
-    const result = await response.json();
-    console.log("Update API success response:", result);
-    return result;
   }
 );
 
 export const deleteProductById = createAsyncThunk(
   "products/deleteProduct",
-  async (id: string) => {
-    const response = await fetch(`/api/products/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete product");
+  async (id: string, { dispatch }) => {
+    dispatch(setDeleteLoading(true));
+    try {
+      const response = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Failed to delete product: ${response.status}`
+        );
+      }
+
+      return { id };
+    } finally {
+      dispatch(setDeleteLoading(false));
     }
-    return { id };
   }
 );
 
@@ -153,22 +197,35 @@ const initialState: ProductState = {
   products: [],
   loading: false,
   error: null,
+  // Individual operation loading states
+  createLoading: false,
+  updateLoading: false,
+  deleteLoading: false,
+  fetchLoading: false,
 };
 
 const productSlice = createSlice({
   name: "product",
   initialState,
   reducers: {
-    // Set loading state
-    setLoading: (state, action: PayloadAction<boolean>) => {
+    setLoading: (state, action) => {
       state.loading = action.payload;
     },
-
-    // Set error state
-    setError: (state, action: PayloadAction<string | null>) => {
+    setError: (state, action) => {
       state.error = action.payload;
     },
-
+    setCreateLoading: (state, action) => {
+      state.createLoading = action.payload;
+    },
+    setUpdateLoading: (state, action) => {
+      state.updateLoading = action.payload;
+    },
+    setDeleteLoading: (state, action) => {
+      state.deleteLoading = action.payload;
+    },
+    setFetchLoading: (state, action) => {
+      state.fetchLoading = action.payload;
+    },
     // Add new product
     addProduct: (state, action: PayloadAction<Product>) => {
       state.products.push(action.payload);
@@ -212,11 +269,17 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+        console.log("fetchProducts.fulfilled - payload:", action.payload);
+        console.log(
+          "Setting products array length:",
+          action.payload?.length || 0
+        );
+        state.products = action.payload || [];
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch products";
+        console.error("fetchProducts.rejected - error:", action.error);
       });
 
     // Create product
@@ -297,6 +360,10 @@ export default productSlice.reducer;
 export const {
   setLoading,
   setError,
+  setCreateLoading,
+  setUpdateLoading,
+  setDeleteLoading,
+  setFetchLoading,
   addProduct,
   updateProduct,
   deleteProduct,
@@ -305,7 +372,7 @@ export const {
 } = productSlice.actions;
 
 export const selectAllProducts = (state: { product: ProductState }) =>
-  state.product.products;
+  state.product.products || [];
 
 export const selectProductById = (
   state: { product: ProductState },
@@ -323,3 +390,15 @@ export const selectLoading = (state: { product: ProductState }) =>
 
 export const selectError = (state: { product: ProductState }) =>
   state.product.error;
+
+export const selectCreateLoading = (state: { product: ProductState }) =>
+  state.product.createLoading;
+
+export const selectUpdateLoading = (state: { product: ProductState }) =>
+  state.product.updateLoading;
+
+export const selectDeleteLoading = (state: { product: ProductState }) =>
+  state.product.deleteLoading;
+
+export const selectFetchLoading = (state: { product: ProductState }) =>
+  state.product.fetchLoading;

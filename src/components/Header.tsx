@@ -12,6 +12,7 @@ import {
 } from "@/components/store/storeSettingsSlice";
 import StoreSettingsWrapper from "@/components/StoreSettingsWrapper";
 import toast from "react-hot-toast";
+import LoadingButton from "./Loaders/LoadingButton";
 
 type NavigationItem =
   | { name: string; href: string; isLogout?: never }
@@ -20,6 +21,7 @@ type NavigationItem =
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const tubelightRef = useRef<HTMLDivElement>(null);
   const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const dispatch = useDispatch();
@@ -71,10 +73,19 @@ const Header = () => {
   const navigation = getNavigation();
 
   // Handle logout
-  const handleLogout = () => {
-    dispatch(logout());
-    toast.success("Logged out successfully!");
-    router.push("/");
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      dispatch(logout());
+      toast.success("Logged out successfully!");
+      router.push("/");
+    } catch (error) {
+      toast.error("Failed to logout");
+    } finally {
+      setLogoutLoading(false);
+    }
   };
 
   // Match current path with nav
@@ -101,7 +112,7 @@ const Header = () => {
   return (
     <header className="relative bg-black/90 backdrop-blur-sm border-b border-red-600/20 z-50">
       {/* Top Bar */}
-      <div className="bg-red-600 text-white py-2">
+      {/* <div className="bg-red-600 text-white py-2">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-sm">
           <div className="flex gap-4">
             <span className="flex items-center">
@@ -115,7 +126,7 @@ const Header = () => {
             Free Shipping on Orders Over $99!
           </span>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
@@ -132,13 +143,17 @@ const Header = () => {
           {navigation.map((item, index) => (
             <div key={item.name}>
               {item.isLogout ? (
-                <button
+                <LoadingButton
                   onClick={handleLogout}
-                  className="flex items-center text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
+                  loading={logoutLoading}
+                  loadingText="Logging out..."
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none"
+                  icon={<LogOut className="h-4 w-4 mr-1" />}
                 >
-                  <LogOut className="h-4 w-4 mr-1" />
                   Logout
-                </button>
+                </LoadingButton>
               ) : (
                 <Link
                   href={item.href}
@@ -203,16 +218,20 @@ const Header = () => {
           {navigation.map((item, index) => (
             <div key={item.name}>
               {item.isLogout ? (
-                <button
+                <LoadingButton
                   onClick={() => {
                     handleLogout();
                     setIsMenuOpen(false);
                   }}
-                  className="flex items-center w-full py-2 font-medium transition-colors text-gray-300 hover:text-red-400"
+                  loading={logoutLoading}
+                  loadingText="Logging out..."
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center w-full py-2 font-medium transition-colors text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none"
+                  icon={<LogOut className="h-4 w-4 mr-2" />}
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
                   Logout
-                </button>
+                </LoadingButton>
               ) : (
                 <Link
                   href={item.href}

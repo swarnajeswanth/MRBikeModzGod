@@ -21,6 +21,9 @@ export async function POST() {
 
     const defaultImages = [
       {
+        id: `slider_seed_1_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         url: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
         alt: "Premium Auto Parts Display",
         title: "Premium Auto Parts",
@@ -28,6 +31,9 @@ export async function POST() {
         order: 1,
       },
       {
+        id: `slider_seed_2_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         url: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
         alt: "Car Electronics",
         title: "Latest Car Electronics",
@@ -35,6 +41,9 @@ export async function POST() {
         order: 2,
       },
       {
+        id: `slider_seed_3_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         url: "https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
         alt: "Performance Components",
         title: "Performance Components",
@@ -42,6 +51,9 @@ export async function POST() {
         order: 3,
       },
       {
+        id: `slider_seed_4_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         url: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
         alt: "Professional Installation",
         title: "Professional Installation",
@@ -49,6 +61,9 @@ export async function POST() {
         order: 4,
       },
       {
+        id: `slider_seed_5_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
         alt: "Customer Service",
         title: "Expert Customer Service",

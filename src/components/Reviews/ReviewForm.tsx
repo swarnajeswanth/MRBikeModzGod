@@ -4,6 +4,13 @@ import { RootState, AppDispatch, createReview, updateReview } from "../store";
 import { IReview } from "../models/Review";
 import { Star, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import LoadingButton from "@/components/Loaders/LoadingButton";
+import {
+  selectCreateReviewLoading,
+  selectUpdateReviewLoading,
+} from "@/components/store/ReviewSlice";
+import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
+import { useRouter } from "next/navigation";
 
 interface ReviewFormProps {
   productId: string;
@@ -18,13 +25,25 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.user);
-  const { loading } = useSelector((state: RootState) => state.reviews);
+  const createLoading = useSelector(selectCreateReviewLoading);
+  const updateLoading = useSelector(selectUpdateReviewLoading);
+  const loading = createLoading || updateLoading;
+  const requireLoginForPurchase = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForPurchase")
+  );
 
   // Helper function to check if user is actually logged in
   const isUserLoggedIn = () => {
-    return user?.isLoggedIn || (user?.id && user?.username);
+    // Check if login is required for purchase and user is not logged in
+    if (requireLoginForPurchase && !user?.isLoggedIn) {
+      toast.error("Please log in to submit a review.");
+      router.push("/auth");
+      return false;
+    }
+    return user?.isLoggedIn;
   };
 
   // Debug: Log user state to see what's happening
@@ -97,6 +116,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!isUserLoggedIn()) {
+      return;
+    }
+
     // Enhanced validation
     if (!formData.userName.trim()) {
       toast.error("Please enter your name");
@@ -130,12 +153,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     }
     if (formData.comment.trim().length < 10) {
       toast.error("Review comment must be at least 10 characters long");
-      return;
-    }
-
-    // Check if user is logged in and has an ID
-    if (!isUserLoggedIn()) {
-      toast.error("Please log in to submit a review");
       return;
     }
 
@@ -364,7 +381,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               >
                 Cancel
               </button>
-              <button
+              <LoadingButton
                 type="submit"
                 disabled={loading || !isUserLoggedIn()}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
@@ -379,7 +396,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                 ) : (
                   <span>{review ? "Update Review" : "Submit Review"}</span>
                 )}
-              </button>
+              </LoadingButton>
             </div>
           </form>
         </div>

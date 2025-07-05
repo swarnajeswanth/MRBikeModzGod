@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/components/lib/mongodb";
 import SliderImage from "@/components/models/SliderImage";
-import ImageKit from "imagekit";
+import { uploadImageToImageKit } from "@/components/lib/imagekitUtils";
 
 export const runtime = "nodejs";
-
-// Initialize ImageKit
-const imagekit = new ImageKit({
-  publicKey: process.env.PUBLIC_API_KEY!,
-  privateKey: process.env.PRIVATE_API_KEY!,
-  urlEndpoint: process.env.URL_ENDPOINT!,
-});
 
 // POST new slider image
 export async function POST(request: NextRequest) {
@@ -42,19 +35,25 @@ export async function POST(request: NextRequest) {
     // Convert File to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload to ImageKit
-    const imageKitResult = await imagekit.upload({
-      file: buffer,
-      fileName: `slider_${Date.now()}_${file.name}`,
-      folder: "/slider-images",
-    });
+    // Upload to ImageKit using utility function
+    const imageKitResult = await uploadImageToImageKit(
+      buffer,
+      `slider_${Date.now()}_${file.name}`,
+      "/slider-images"
+    );
 
     // Get the highest order number
     const lastImage = await SliderImage.findOne().sort({ order: -1 });
     const nextOrder = (lastImage?.order || 0) + 1;
 
+    // Generate unique ID
+    const uniqueId = `slider_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
     // Create new slider image
     const newSliderImage = new SliderImage({
+      id: uniqueId,
       url: imageKitResult.url,
       alt: alt,
       title: title || "",

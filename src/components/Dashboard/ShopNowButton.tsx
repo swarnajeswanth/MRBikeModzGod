@@ -40,7 +40,7 @@ const ShopNowButton = () => {
   return (
     <button
       onClick={handleAllClick}
-      className="bg-red-600 hover:bg-red-700 flex items-center text-white px-8 py-3 text-lg font-semibold"
+      className="bg-red-600 hover:bg-red-700 flex items-center text-white px-5 w-full lg:w-[50%] rounded-lg lg:py-3 not-only-of-type text-xl font-semibold"
     >
       <span ref={textRef}>Shop Now</span>
       <span className="p-5">

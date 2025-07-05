@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Mail, Lock, User } from "lucide-react";
+import { Mail, Lock, User, Shield, ArrowLeft } from "lucide-react";
 import gsap from "gsap";
 import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/Authentication/useAuth";
 import toast from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
+import LoadingButton from "@/components/Loaders/LoadingButton";
+import { RootState } from "@/components/store";
+import { startLoading, stopLoading } from "@/components/store/LoadingSlice";
 
 gsap.registerPlugin(ScrambleTextPlugin, MorphSVGPlugin);
 
@@ -21,14 +24,10 @@ const ENCRYPT_SPEED = 0.6;
 const FLIP_DURATION = 0.6;
 
 const AuthPage = () => {
-  const {
-    isAuthenticated,
-    login,
-    signup,
-    allowGuestBrowsing,
-    requireLoginForPurchase,
-  } = useAuth();
+  const { login, signup, sendOTP, verifyOTP } = useAuth();
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { isLoggedIn } = useSelector((state: RootState) => state.user);
 
   const [isLogin, setIsLogin] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -38,6 +37,13 @@ const AuthPage = () => {
     "customer"
   );
 
+  // OTP states
+  const [showOTPForm, setShowOTPForm] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [email, setEmail] = useState("");
+
   const inputRef = useRef<HTMLInputElement>(null);
   const eyeRef = useRef<SVGGElement>(null);
   const proxyRef = useRef<HTMLDivElement | null>(null);
@@ -45,54 +51,208 @@ const AuthPage = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rehydrated, setRehydrated] = useState(false);
 
+  const handleSendOTP = async () => {
+    if (!email || otpLoading) return;
+
+    // Ensure password is set from the form
+    const passwordValue = inputRef.current?.value || "";
+    if (!passwordValue) {
+      toast.error("Please enter your password");
+      return;
+    }
+    setPassword(passwordValue);
+
+    dispatch(startLoading());
+    setOtpLoading(true);
+    try {
+      const result = await sendOTP(email, selectedRole);
+      if (result.success) {
+        dispatch(stopLoading());
+        setOtpSent(true);
+        toast.success(
+          result.message || "Verification code sent to your email!"
+        );
+        setShowOTPForm(true);
+      } else {
+        dispatch(stopLoading());
+        toast.error(
+          result.message ||
+            "Failed to send verification code. Please try again."
+        );
+      }
+    } catch (error) {
+      dispatch(stopLoading());
+      toast.error("Failed to send verification code.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!otpCode || otpLoading) return;
+
+    dispatch(startLoading());
+    setOtpLoading(true);
+    try {
+      const result = await verifyOTP(email, otpCode, selectedRole);
+      if (result.success) {
+        dispatch(stopLoading());
+        toast.success(result.message || "Email verified successfully!");
+        setShowOTPForm(false);
+        setOtpSent(false);
+        // Continue with signup - don't clear otpCode yet
+        await handleSignup();
+        // Clear OTP code after successful signup
+        setOtpCode("");
+      } else {
+        dispatch(stopLoading());
+        toast.error(
+          result.message || "Invalid verification code. Please try again."
+        );
+      }
+    } catch (error) {
+      dispatch(stopLoading());
+      toast.error("Failed to verify code.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleSignup = async () => {
+    if (!email || !password) {
+      console.error("Missing email or password for signup:", {
+        email: !!email,
+        password: !!password,
+      });
+      toast.error("Please provide both email and password");
+      return;
+    }
+
+    dispatch(startLoading());
+    setBusy(true);
+    try {
+      const signupData = {
+        username: email,
+        password,
+        role: selectedRole,
+        requireOTP: selectedRole === "retailer",
+        otp: selectedRole === "retailer" ? otpCode : undefined,
+      };
+
+      console.log("Attempting signup with data:", {
+        username: signupData.username,
+        password: signupData.password ? "***" : "MISSING",
+        role: signupData.role,
+        requireOTP: signupData.requireOTP,
+        hasOTP: !!signupData.otp,
+        otpLength: signupData.otp?.length,
+      });
+
+      const result = await signup(signupData);
+      if (result && result.success) {
+        dispatch(stopLoading());
+        toast.success("Signup successful! Logging you in...");
+        const loginResult = await login(email, password, selectedRole);
+        if (loginResult && loginResult.success) {
+          router.push("/dashboard");
+        }
+      } else {
+        dispatch(stopLoading());
+        toast.error(result.message || "Signup failed. Please try again.");
+      }
+    } catch (error) {
+      dispatch(stopLoading());
+      toast.error("Something went wrong.");
+      console.error("Signup Error", error);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    setBusy(true);
 
-    const email = (
+    const emailValue = (
       (e.currentTarget as HTMLFormElement).querySelector(
         'input[type="email"]'
       ) as HTMLInputElement
     ).value;
-    const password = inputRef.current?.value || "";
+    const passwordValue = inputRef.current?.value || "";
+
+    setEmail(emailValue);
+    setPassword(passwordValue);
 
     let success = false;
     try {
       if (isLogin) {
-        success = await login(email, password, selectedRole);
-        if (success) toast.success("Logged in successfully!");
+        // Start full-page loading spinner
+        dispatch(startLoading());
+        setBusy(true);
+
+        const loginResult = await login(
+          emailValue,
+          passwordValue,
+          selectedRole
+        );
+        if (loginResult && loginResult.success) {
+          // Stop loading and show success notification
+          dispatch(stopLoading());
+          toast.success("Logged in successfully!");
+          router.push("/dashboard");
+        } else {
+          // Stop loading and show error notification
+          dispatch(stopLoading());
+          toast.error("Authentication failed. Please check your credentials.");
+        }
+        setBusy(false);
       } else {
-        success = await signup({
-          username: email,
-          password,
-          role: selectedRole,
-          // add other fields here if needed
-        });
-        if (success) {
-          toast.success("Signup successful! Logging you in...");
-          success = await login(email, password, selectedRole);
+        // For signup, check if OTP is required
+        if (selectedRole === "retailer") {
+          // Send OTP first for retailer signup
+          await handleSendOTP();
+        } else {
+          // Direct signup for customers
+          dispatch(startLoading());
+          setBusy(true);
+          const signupData = {
+            username: emailValue,
+            password: passwordValue,
+            role: selectedRole,
+            requireOTP: false,
+          };
+          const result = await signup(signupData);
+          if (result && result.success) {
+            dispatch(stopLoading());
+            toast.success("Signup successful! Logging you in...");
+            const loginResult = await login(
+              emailValue,
+              passwordValue,
+              selectedRole
+            );
+            if (loginResult && loginResult.success) {
+              router.push("/dashboard");
+            }
+          } else {
+            dispatch(stopLoading());
+            toast.error(result.message || "Signup failed. Please try again.");
+          }
+          setBusy(false);
         }
       }
-
-      if (success) {
-        router.push("/dashboard");
-      } else {
-        toast.error("Authentication failed. Please check your credentials.");
-      }
     } catch (error) {
+      dispatch(stopLoading());
       toast.error("Something went wrong.");
       console.error("Auth Error", error);
+      setBusy(false);
     }
-
-    setBusy(false);
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isLoggedIn) {
       router.replace("/"); // Redirect to home or dashboard
     }
-  }, [isAuthenticated, router]);
+  }, [isLoggedIn, router]);
 
   const blinkTlRef = useRef<gsap.core.Timeline | null>(null);
   useLayoutEffect(() => {
@@ -278,147 +438,225 @@ const AuthPage = () => {
     return <LoadingSpinner />;
   }
 
-  if (isAuthenticated) {
+  if (isLoggedIn) {
     return null; // Prevent render flicker
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-red-600/20 to-transparent text-white px-4 z-90 perspective-1000">
-      <div
-        ref={cardRef}
-        className="w-full max-w-md bg-[#1a1a1a] p-8 rounded-2xl shadow-2xl border border-red-600/20 transform-style-preserve-3d transition-transform duration-300"
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        <h2 className="text-3xl font-bold mb-6 text-center">
-          {isLogin ? "Welcome Back" : "Create an Account"}
-        </h2>
+    <>
+      <LoadingSpinner />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-red-600/20 to-transparent text-white px-4 z-90 perspective-1000">
+        <div
+          ref={cardRef}
+          className="w-full max-w-md bg-[#1a1a1a] p-8 rounded-2xl shadow-2xl border border-red-600/20 transform-style-preserve-3d transition-transform duration-300"
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          {/* OTP Form Overlay */}
+          {showOTPForm && (
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-50">
+              <div className="bg-[#1a1a1a] p-6 rounded-xl border border-red-600/20 w-full max-w-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white flex items-center">
+                    <Shield className="h-5 w-5 mr-2 text-red-400" />
+                    Email Verification
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setShowOTPForm(false);
+                      setOtpSent(false);
+                      setOtpCode("");
+                    }}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+                </div>
 
-        <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
-          {!isLogin && (
-            <div>
-              <label className="text-sm text-gray-300">Full Name</label>
-              <input
-                type="text"
-                placeholder="Your Name"
-                className="w-full mt-1 px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600"
-              />
+                <p className="text-gray-300 text-sm mb-4">
+                  We've sent a 6-digit verification code to{" "}
+                  <strong>{email}</strong>
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-gray-300 mb-2">
+                      Verification Code
+                    </label>
+                    <input
+                      type="text"
+                      value={otpCode}
+                      onChange={(e) =>
+                        setOtpCode(
+                          e.target.value.replace(/\D/g, "").slice(0, 6)
+                        )
+                      }
+                      placeholder="Enter 6-digit code"
+                      className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white text-center text-lg tracking-widest focus:outline-none focus:border-red-600"
+                      maxLength={6}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleVerifyOTP}
+                    disabled={otpCode.length !== 6 || otpLoading}
+                    className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed transition duration-200 text-white py-3 rounded-lg font-semibold"
+                  >
+                    {otpLoading ? "Verifying..." : "Verify & Complete Signup"}
+                  </button>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={handleSendOTP}
+                      disabled={otpLoading}
+                      className="text-sm text-red-400 hover:text-red-300 disabled:opacity-50"
+                    >
+                      {otpLoading ? "Sending..." : "Resend Code"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          <div>
-            <label className="text-sm text-gray-300">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3.5 text-gray-500 w-5 h-5" />
-              <input
-                type="email"
-                placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-3 mt-1 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600"
-              />
-            </div>
-          </div>
+          <h2 className="text-3xl font-bold mb-6 text-center">
+            {isLogin ? "Welcome Back" : "Create an Account"}
+          </h2>
 
-          <div>
-            <label className="text-sm text-gray-300">Account Type</label>
-            <div className="relative">
-              <User className="absolute left-3 top-3.5 text-gray-500 w-5 h-5" />
-              <select
-                value={selectedRole}
-                onChange={(e) =>
-                  setSelectedRole(e.target.value as "customer" | "retailer")
-                }
-                className="w-full pl-10 pr-4 py-3 mt-1 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600 appearance-none cursor-pointer"
-              >
-                <option value="customer">Customer</option>
-                <option value="retailer">Retailer</option>
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+          <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
+            {!isLogin && (
+              <div>
+                <label className="text-sm text-gray-300">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="Your Name"
+                  className="w-full mt-1 px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="text-sm text-gray-300">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3.5 text-gray-500 w-5 h-5" />
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-4 py-3 mt-1 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600"
+                />
               </div>
             </div>
-          </div>
 
-          {/* Password Field */}
-          <div>
-            <label className="text-sm text-gray-300">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3.5 text-gray-500 w-5 h-5" />
-              <input
-                ref={inputRef}
-                type="text"
-                defaultValue=""
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setPassword(newValue);
-                }}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-12 py-3 mt-1 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600"
-              />
-
-              <button
-                type="button"
-                title="Toggle Password"
-                aria-pressed={isPasswordVisible}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 text-white"
-                onClick={handleToggle}
-              >
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    className="lid lid--upper"
-                    d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
+            <div>
+              <label className="text-sm text-gray-300">Account Type</label>
+              <div className="relative">
+                <User className="absolute left-3 top-3.5 text-gray-500 w-5 h-5" />
+                <select
+                  value={selectedRole}
+                  onChange={(e) =>
+                    setSelectedRole(e.target.value as "customer" | "retailer")
+                  }
+                  className="w-full pl-10 pr-4 py-3 mt-1 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600 appearance-none cursor-pointer"
+                >
+                  <option value="customer">Customer</option>
+                  <option value="retailer">Retailer</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-gray-500"
+                    fill="none"
                     stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    className="lid lid--lower"
-                    d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <g className="eye" ref={eyeRef}>
-                    <circle cx="12" cy="12" r="4" fill="currentColor" />
-                    <circle cx="13" cy="11" r="1" fill="black" />
-                  </g>
-                </svg>
-              </button>
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+              {!isLogin && selectedRole === "retailer" && (
+                <div className="flex items-center mt-2 text-xs text-blue-400">
+                  <Shield className="h-3 w-3 mr-1" />
+                  Email verification required for retailer accounts
+                </div>
+              )}
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed transition duration-200 text-white py-3 rounded-lg font-semibold"
-          >
-            {busy ? "Processing..." : isLogin ? "Login" : "Register"}
-          </button>
-        </form>
+            {/* Password Field */}
+            <div>
+              <label className="text-sm text-gray-300">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 text-gray-500 w-5 h-5" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  defaultValue=""
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setPassword(newValue);
+                  }}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-12 py-3 mt-1 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-red-600"
+                />
 
-        <p className="text-sm text-gray-400 text-center mt-6">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}
-          <button
-            onClick={handleCardFlip}
-            className="text-red-400 hover:underline ml-1 toggle-btn"
-          >
-            {isLogin ? "Sign Up" : "Sign In"}
-          </button>
-        </p>
+                <button
+                  type="button"
+                  title="Toggle Password"
+                  aria-pressed={isPasswordVisible}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 text-white"
+                  onClick={handleToggle}
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      className="lid lid--upper"
+                      d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      className="lid lid--lower"
+                      d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <g className="eye" ref={eyeRef}>
+                      <circle cx="12" cy="12" r="4" fill="currentColor" />
+                      <circle cx="13" cy="11" r="1" fill="black" />
+                    </g>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed transition duration-200 text-white py-3 rounded-lg font-semibold"
+            >
+              {busy ? "Processing..." : isLogin ? "Login" : "Register"}
+            </button>
+          </form>
+
+          <p className="text-sm text-gray-400 text-center mt-6">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}
+            <button
+              onClick={handleCardFlip}
+              className="text-red-400 hover:underline ml-1 toggle-btn"
+            >
+              {isLogin ? "Sign Up" : "Sign In"}
+            </button>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -21,6 +21,10 @@ import {
   selectAllProducts,
   selectLoading,
   selectError,
+  selectCreateLoading,
+  selectUpdateLoading,
+  selectDeleteLoading,
+  selectFetchLoading,
 } from "@/components/store/productSlice";
 import { useDispatch } from "react-redux";
 import {
@@ -33,6 +37,8 @@ import {
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";
 import SeedProductsButton from "./SeedProductsButton";
+import LoadingButton from "@/components/Loaders/LoadingButton";
+import { RootState } from "@/components/store";
 
 const summaryCards = [
   {
@@ -65,6 +71,10 @@ const RetailerDashboard = () => {
   const products = useSelector(selectAllProducts);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
+  const createLoading = useSelector(selectCreateLoading);
+  const updateLoading = useSelector(selectUpdateLoading);
+  const deleteLoading = useSelector(selectDeleteLoading);
+  const fetchLoading = useSelector(selectFetchLoading);
   const dispatch = useDispatch();
   const [editProductId, setEditProductId] = useState<string | null>(null);
 
@@ -162,7 +172,6 @@ const RetailerDashboard = () => {
         labelType: formData.labelType,
         backgroundColor: "#1f2937",
         images: formData.images,
-        // image: formData.images && formData.images.length > 0 ? formData.images[0] : undefined,
       };
 
       if (editProductId) {
@@ -266,7 +275,7 @@ const RetailerDashboard = () => {
             <div className="flex gap-2">
               <SeedProductsButton />
               <button
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+                className="flex items-center gap-2 px-4 py-2 rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white"
                 onClick={() => {
                   setEditProductId(null);
                   setForm({
@@ -289,8 +298,9 @@ const RetailerDashboard = () => {
                   });
                   setIsModalOpen(true);
                 }}
+                disabled={createLoading}
               >
-                <FaPlus /> Add Product
+                <FaPlus /> {createLoading ? "Adding..." : "Add Product"}
               </button>
             </div>
           </div>
@@ -355,12 +365,16 @@ const RetailerDashboard = () => {
                             <button
                               onClick={() => handleEdit(product)}
                               className="text-blue-400 hover:text-blue-300"
+                              disabled={updateLoading}
+                              title="Edit product"
                             >
                               <FaEdit />
                             </button>
                             <button
                               onClick={() => handleDelete(product.id)}
                               className="text-red-400 hover:text-red-300"
+                              disabled={deleteLoading}
+                              title="Delete product"
                             >
                               <FaTrash />
                             </button>
@@ -418,17 +432,21 @@ const RetailerDashboard = () => {
                     <div className="flex justify-end space-x-2 pt-2 border-t border-gray-600">
                       <button
                         onClick={() => handleEdit(product)}
-                        className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-xs"
+                        className="flex items-center space-x-1 text-xs text-blue-400 hover:text-blue-300"
+                        disabled={updateLoading}
+                        title="Edit product"
                       >
                         <FaEdit className="text-sm" />
-                        <span>Edit</span>
+                        <span>{updateLoading ? "Updating..." : "Edit"}</span>
                       </button>
                       <button
                         onClick={() => handleDelete(product.id)}
-                        className="flex items-center space-x-1 text-red-400 hover:text-red-300 text-xs"
+                        className="flex items-center space-x-1 text-xs text-red-400 hover:text-red-300"
+                        disabled={deleteLoading}
+                        title="Delete product"
                       >
                         <FaTrash className="text-sm" />
-                        <span>Delete</span>
+                        <span>{deleteLoading ? "Deleting..." : "Delete"}</span>
                       </button>
                     </div>
                   </div>
@@ -468,7 +486,7 @@ const RetailerDashboard = () => {
             </h2>
             <div className="flex gap-2">
               <button
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                className="flex items-center gap-2 px-4 py-2 rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={async () => {
                   try {
                     const response = await fetch("/api/slider/seed", {
@@ -490,8 +508,10 @@ const RetailerDashboard = () => {
                 <FaPlus /> Add Default Images
               </button>
               <button
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-                onClick={() => setIsSliderManagerOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => {
+                  setIsSliderManagerOpen(true);
+                }}
               >
                 <FaImages /> Manage Slider Images
               </button>
@@ -504,7 +524,11 @@ const RetailerDashboard = () => {
         </div>
       )}
 
-      {activeTab === "settings" && <StoreSettings />}
+      {activeTab === "settings" && (
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-6 rounded-lg">
+          <StoreSettings />
+        </div>
+      )}
 
       {/* Add/Edit Product Modal */}
       <AddProductModal
@@ -513,6 +537,7 @@ const RetailerDashboard = () => {
         onSubmit={handleAddProduct}
         form={form}
         setForm={setForm}
+        loading={createLoading || updateLoading}
       />
 
       {/* Slider Manager Modal */}

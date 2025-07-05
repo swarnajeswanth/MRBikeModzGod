@@ -4,12 +4,12 @@ import User from "@/components/models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
-
-const JWT_SECRET = process.env.JWT_SECRET!;
+import { isWhitelistedRetailerEmail } from "@/components/lib/retailerConfig";
 
 export async function POST(req: Request) {
   try {
-    const { username, password, role } = await req.json();
+    const body = await req.json();
+    const { username, password, role } = body;
 
     if (!username || !password) {
       return NextResponse.json(
@@ -23,71 +23,75 @@ export async function POST(req: Request) {
 
     await connectToDB();
 
-    const user = await User.findOne({ username }).select("+password");
+    const user = await User.findOne({ username: username.toLowerCase() });
+
     if (!user) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid username or password.",
+          message: "Invalid credentials.",
         },
         { status: 401 }
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid username or password.",
-        },
-        { status: 401 }
-      );
-    }
-
-    // Validate role if provided
+    // Check if user is trying to login with correct role
     if (role && user.role !== role) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid account type selected.",
+          message: `Invalid role. This account is registered as a ${user.role}.`,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid credentials.",
         },
         { status: 401 }
       );
     }
 
+    // OTP verification requirement removed - users can login directly
+
+    // Generate JWT token
     const token = jwt.sign(
       {
-        id: user._id,
+        userId: user._id,
         username: user.username,
         role: user.role,
       },
-      JWT_SECRET,
+      process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "7d" }
     );
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Login successful.",
-        token,
+    return NextResponse.json({
+      success: true,
+      message: "Login successful.",
+      data: {
         user: {
           id: user._id,
           username: user.username,
-          role: user.role,
           image: user.image,
-          phoneNumber: user.phoneNumber,
+          role: user.role,
           dateOfBirth: user.dateOfBirth,
+          phoneNumber: user.phoneNumber,
         },
+        token,
       },
-      { status: 200 }
-    );
-  } catch (err) {
-    console.error(err);
+    });
+  } catch (error) {
+    console.error("Login error:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Server error during login.",
+        message: "Login failed.",
       },
       { status: 500 }
     );

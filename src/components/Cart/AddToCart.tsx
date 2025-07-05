@@ -4,7 +4,11 @@ import { ShoppingCart, Lock, XCircle } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { RootState } from "@/components/store";
-import { selectIsFeatureEnabled } from "@/components/store/storeSettingsSlice";
+import {
+  selectIsFeatureEnabled,
+  selectIsCustomerExperienceEnabled,
+} from "@/components/store/storeSettingsSlice";
+import { useRouter } from "next/navigation";
 
 interface AddToCartButtonProps {
   product?: any;
@@ -13,11 +17,23 @@ interface AddToCartButtonProps {
 
 const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const isAddToCartEnabled = useSelector(selectIsFeatureEnabled("addToCart"));
+  const allowGuestBrowsing = useSelector(
+    selectIsCustomerExperienceEnabled("allowGuestBrowsing")
+  );
+  const { isLoggedIn } = useSelector((state: RootState) => state.user);
 
   const handleAddToCart = async () => {
     if (!isAddToCartEnabled) {
       toast.error("Add to cart feature is currently disabled");
+      return;
+    }
+
+    // Check if guest browsing is allowed or user is logged in
+    if (!allowGuestBrowsing && !isLoggedIn) {
+      toast.error("Please log in to add items to cart.");
+      router.push("/auth");
       return;
     }
 
@@ -42,6 +58,23 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       >
         <XCircle className="h-4 w-4" />
         Add to Cart (Disabled)
+      </button>
+    );
+  }
+
+  // Show login required message if guest browsing is disabled and user is not logged in
+  if (!allowGuestBrowsing && !isLoggedIn) {
+    return (
+      <button
+        onClick={() => {
+          toast.error("Please log in to add items to cart.");
+          router.push("/auth");
+        }}
+        className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${className}`}
+        title="Login required to add to cart"
+      >
+        <Lock className="h-4 w-4" />
+        Login to Add to Cart
       </button>
     );
   }

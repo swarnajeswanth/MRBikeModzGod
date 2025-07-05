@@ -15,7 +15,7 @@ export interface ISliderImage extends Document {
 
 const SliderImageSchema = new Schema<ISliderImage>(
   {
-    id: { type: String, required: true, unique: true },
+    id: { type: String, unique: true },
     url: { type: String, required: true },
     alt: { type: String, required: true },
     title: { type: String },

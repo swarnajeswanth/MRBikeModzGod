@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import ImageKit from "imagekit";
+import {
+  uploadImageToImageKit,
+  listImagesFromImageKit,
+} from "@/components/lib/imagekitUtils";
 
 export const runtime = "nodejs";
-
-// Initialize ImageKit
-const imagekit = new ImageKit({
-  publicKey: process.env.PUBLIC_API_KEY!,
-  privateKey: process.env.PRIVATE_API_KEY!,
-  urlEndpoint: process.env.URL_ENDPOINT!,
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,11 +20,8 @@ export async function POST(request: NextRequest) {
     // Convert File to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload to ImageKit
-    const result = await imagekit.upload({
-      file: buffer,
-      fileName: file.name,
-    });
+    // Upload to ImageKit using utility function
+    const result = await uploadImageToImageKit(buffer, file.name);
 
     return NextResponse.json({ url: result.url });
   } catch (error) {
@@ -45,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     if (type === "all") {
       // Get all files
-      const result = await imagekit.listFiles({ limit: 10 });
+      const result = await listImagesFromImageKit({ limit: 10 });
       return NextResponse.json(
         {
           success: true,
@@ -55,7 +48,7 @@ export async function GET(req: NextRequest) {
       );
     } else {
       // Get files from specific path
-      const result = await imagekit.listFiles({
+      const result = await listImagesFromImageKit({
         path: path,
         limit: 20,
       });

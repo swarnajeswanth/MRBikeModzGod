@@ -11,8 +11,12 @@ import { startLoading, stopLoading } from "@/components/store/LoadingSlice";
 import { useTransition } from "react";
 import { toggleWishlist } from "@/components/store/UserSlice";
 import { RootState } from "@/components/store";
-import { selectFeatures } from "@/components/store/storeSettingsSlice";
+import {
+  selectFeatures,
+  selectIsCustomerExperienceEnabled,
+} from "@/components/store/storeSettingsSlice";
 import { toast } from "react-hot-toast";
+import { ProductRatingShimmer } from "./Loaders/RatingShimmer";
 
 interface ProductCardProps {
   label?: string;
@@ -26,6 +30,7 @@ interface ProductCardProps {
   originalPrice?: number;
   discount?: string;
   images?: string[];
+  loading?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -40,10 +45,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
   originalPrice,
   discount,
   images,
+  loading = false,
 }) => {
   const [isPending, startTransition] = useTransition();
-  const { wishlist } = useSelector((state: RootState) => state.user);
+  const { wishlist, isLoggedIn } = useSelector(
+    (state: RootState) => state.user
+  );
   const features = useSelector(selectFeatures);
+  const requireLoginForWishlist = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
+  );
 
   const handleProductClick = (productId: string) => {
     dispatch(startLoading());
@@ -58,10 +69,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent navigation to product page
 
-    if (!features?.wishlist) {
-      toast.error("Wishlist feature is currently disabled");
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to use the wishlist.");
+      router.push("/auth");
       return;
     }
 
@@ -69,6 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       id: title, // Using title as ID for now
       name: title,
       price: price,
+      image: images && images.length > 0 ? images[0] : "",
       category: category,
     };
 
@@ -141,16 +155,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {title}
         </h3>
 
-        {/* Rating - Only show if ratings feature is enabled */}
-        {features?.ratings && (
-          <div className="rating">
-            <FaStar color="#FFD700" />
-            <span>{rating}</span>
-            {features?.reviews && (
-              <span className="reviews">({reviews} reviews)</span>
-            )}
-          </div>
-        )}
+        {/* Rating - Show shimmer while loading or actual rating when loaded */}
+        {features?.ratings &&
+          (loading ? (
+            <ProductRatingShimmer />
+          ) : (
+            <div className="rating">
+              <FaStar color="#FFD700" />
+              <span>{rating}</span>
+              {features?.reviews && (
+                <span className="reviews">({reviews} reviews)</span>
+              )}
+            </div>
+          ))}
 
         {/* Price - Only show if price display feature is enabled */}
         {features?.priceDisplay && (

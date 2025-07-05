@@ -1,6 +1,8 @@
 "use client";
 import React, { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { X, Upload, Plus, Trash2 } from "lucide-react";
+import LoadingButton from "@/components/Loaders/LoadingButton";
 
 export interface ProductForm {
   name: string;
@@ -27,6 +29,7 @@ interface AddProductModalProps {
   onSubmit: (form: ProductForm) => void;
   form: ProductForm;
   setForm: React.Dispatch<React.SetStateAction<ProductForm>>;
+  loading?: boolean;
 }
 
 const AddProductModal: React.FC<AddProductModalProps> = ({
@@ -35,6 +38,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   onSubmit,
   form,
   setForm,
+  loading,
 }) => {
   if (!isOpen) return null;
 
@@ -286,12 +290,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             >
               Cancel
             </button>
-            <button
+            <LoadingButton
               type="submit"
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+              loading={loading}
             >
               {form.name ? "Update Product" : "Add Product"}
-            </button>
+            </LoadingButton>
           </div>
         </form>
       </div>

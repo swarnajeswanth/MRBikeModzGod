@@ -20,6 +20,8 @@ import {
   selectIsCustomerExperienceEnabled,
 } from "./store/storeSettingsSlice";
 import { toast } from "react-hot-toast";
+import LoadingButton from "./Loaders/LoadingButton";
+import { useState } from "react";
 
 const featureIcons = {
   wishlist: {
@@ -48,24 +50,65 @@ const Wishlist: React.FC = () => {
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
 
-  const handleRemoveFromWishlist = (productId: string) => {
-    if (!isWishlistEnabled) {
-      toast.error("Wishlist feature is currently disabled");
+  // Loading states
+  const [removingItem, setRemovingItem] = useState<string | null>(null);
+  const [clearingWishlist, setClearingWishlist] = useState(false);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
+
+  const handleRemoveFromWishlist = async (productId: string) => {
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to manage your wishlist.");
+      router.push("/auth");
       return;
     }
 
     if (productId === "all") {
-      dispatch(clearWishlist());
-      toast.success("Wishlist cleared");
+      setClearingWishlist(true);
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        dispatch(clearWishlist());
+        toast.success("Wishlist cleared");
+      } catch (error) {
+        toast.error("Failed to clear wishlist");
+      } finally {
+        setClearingWishlist(false);
+      }
     } else {
-      dispatch(removeFromWishlist(productId));
-      toast.success("Removed from wishlist");
+      setRemovingItem(productId);
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        dispatch(removeFromWishlist(productId));
+        toast.success("Removed from wishlist");
+      } catch (error) {
+        toast.error("Failed to remove item");
+      } finally {
+        setRemovingItem(null);
+      }
     }
   };
 
-  const handleAddToCart = (product: any) => {
-    // TODO: Implement add to cart functionality
-    toast.success("Added to cart");
+  const handleAddToCart = async (product: any) => {
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to manage your wishlist.");
+      router.push("/auth");
+      return;
+    }
+
+    setAddingToCart(product.id);
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // TODO: Implement actual add to cart functionality
+      toast.success("Added to cart");
+    } catch (error) {
+      toast.error("Failed to add to cart");
+    } finally {
+      setAddingToCart(null);
+    }
   };
 
   // Hide wishlist if requireLoginForWishlist is true and user is not logged in
@@ -160,33 +203,44 @@ const Wishlist: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <button
+            <LoadingButton
               onClick={(e) => {
-                e.stopPropagation();
+                e?.stopPropagation();
                 handleAddToCart(item);
               }}
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+              loading={addingToCart === item.id}
+              loadingText="Adding..."
+              variant="primary"
+              size="sm"
+              className="bg-red-600 hover:bg-red-700"
             >
               Add to Cart
-            </button>
-            <button
+            </LoadingButton>
+            <LoadingButton
               onClick={(e) => {
-                e.stopPropagation();
+                e?.stopPropagation();
                 handleRemoveFromWishlist(item.id);
               }}
-              className="bg-gray-600 text-white px-3 py-2 rounded-md hover:bg-gray-700 transition"
-            >
-              <FaTrash className="text-sm" />
-            </button>
+              loading={removingItem === item.id}
+              loadingText=""
+              variant="danger"
+              size="sm"
+              className="bg-gray-600 hover:bg-gray-700"
+              icon={<FaTrash className="text-sm" />}
+            />
           </div>
         </div>
       ))}
-      <button
+      <LoadingButton
         onClick={() => handleRemoveFromWishlist("all")}
-        className="w-full mt-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition"
+        loading={clearingWishlist}
+        loadingText="Clearing..."
+        variant="danger"
+        size="lg"
+        className="w-full mt-4 bg-red-600 hover:bg-red-700"
       >
         Clear Wishlist
-      </button>
+      </LoadingButton>
     </div>
   );
 };

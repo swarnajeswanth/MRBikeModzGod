@@ -28,14 +28,15 @@ const Index = () => {
   return (
     <GuestAccessGuard>
       <GSAPScrollWrapper>
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-gray-900 to-black space-y-2">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-gray-900 to-black">
           <Header />
-          <section className="fade-up">
-            <HeroSlider />
-          </section>
-          <section className="fade-up">
+
+          {/* Hero Section - Full Viewport Height */}
+          <section className="fade-up flex-1">
             <Hero />
           </section>
+
+          {/* Other Sections */}
           <section className="fade-up">
             <FeaturedProducts />
           </section>

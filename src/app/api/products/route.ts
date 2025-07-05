@@ -10,7 +10,7 @@ export async function GET() {
     await connectToDB();
     const products = await ProductModel.find({}).sort({ createdAt: -1 });
     console.log(`Fetched ${products.length} products from database`);
-    return NextResponse.json(products);
+    return NextResponse.json({ products });
   } catch (error) {
     console.error("Error fetching products:", error);
     return NextResponse.json(

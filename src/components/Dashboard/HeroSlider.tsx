@@ -6,6 +6,7 @@ import {
   selectSliderImages,
   fetchSliderImages,
 } from "@/components/store/sliderSlice";
+import ShopNowButton from "./ShopNowButton";
 
 interface SlideImage {
   id: string;
@@ -270,89 +271,108 @@ const HeroSlider: React.FC<HeroSliderProps> = ({
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-xl ${className}`}>
+    <div>
+      {/* <div className={`relative overflow-hidden rounded-xl ${className}`}> */}
       {/* Slider Container */}
-      <div
-        ref={sliderRef}
-        className="relative w-full h-96 md:h-[500px] lg:h-[600px] select-none touch-none"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        style={{
-          cursor: isDragging ? "grabbing" : "grab",
-          userSelect: "none",
-          WebkitUserSelect: "none",
-          MozUserSelect: "none",
-          msUserSelect: "none",
-        }}
-      >
-        {/* Images */}
-        {images.map((image, index) => (
-          <div
-            key={image.id}
-            className={`absolute inset-0 transition-transform duration-500 ease-out ${
-              index === currentSlide
-                ? "translate-x-0"
-                : index < currentSlide
-                ? "-translate-x-full"
-                : "translate-x-full"
-            }`}
-            style={{
-              transform:
-                index === currentSlide && isDragging
-                  ? `translateX(${dragOffset}px)`
-                  : undefined,
-            }}
-          >
-            <img
-              src={image.url}
-              alt={image.alt}
-              className="w-full h-full object-cover"
-            />
-
-            {/* Overlay with content */}
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="text-center text-white px-6">
-                <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                  {image.title || image.alt}
-                </h2>
-                {image.description && (
-                  <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
-                    {image.description}
-                  </p>
-                )}
-                {/* Mobile drag hint */}
-                <div className="block md:hidden mt-4 text-sm text-gray-300">
-                  ← Swipe to navigate →
-                </div>
-              </div>
-            </div>
+      {/* <div
+  ref={sliderRef}
+  className="relative w-full h-96 md:h-[500px] lg:h-[600px] select-none touch-none"
+  onMouseEnter={handleMouseEnter}
+  onMouseLeave={handleMouseLeave}
+  onMouseDown={handleMouseDown}
+  onMouseMove={handleMouseMove}
+  onMouseUp={handleMouseUp}
+  onTouchStart={handleTouchStart}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
+  style={{
+    cursor: isDragging ? "grabbing" : "grab",
+    userSelect: "none",
+    WebkitUserSelect: "none",
+    MozUserSelect: "none",
+    msUserSelect: "none",
+  }}
+>
+  {images.map((image, index) => (
+    <div
+      key={image.id}
+      className={`absolute inset-0 transition-transform duration-500 ease-out ${
+        index === currentSlide
+          ? "translate-x-0"
+          : index < currentSlide
+          ? "-translate-x-full"
+          : "translate-x-full"
+      }`}
+      style={{
+        transform:
+          index === currentSlide && isDragging
+            ? `translateX(${dragOffset}px)`
+            : undefined,
+      }}
+    >
+      <img
+        src={image.url}
+        alt={image.alt}
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+        <div className="text-center text-white px-6">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+            {image.title || image.alt}
+          </h2>
+          {image.description && (
+            <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
+              {image.description}
+            </p>
+          )}
+          <div className="block md:hidden mt-4 text-sm text-gray-300">
+            ← Swipe to navigate →
           </div>
-        ))}
+        </div>
       </div>
+    </div>
+  ))}
+</div> */}
 
       {/* Dots Navigation */}
-      {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                index === currentSlide
-                  ? "bg-red-500 scale-125"
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
+      {/* {images.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  index === currentSlide
+                    ? "bg-red-500 scale-125"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div> */}
+
+      <HeroSlider />
+      <div className="flex flex-col sm:flex-row gap-4">
+        <ShopNowButton />
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-8 pt-8 border-t border-gray-800">
+        <div>
+          <div className="text-3xl font-bold text-white">10K+</div>
+          <div className="text-gray-400">Products</div>
         </div>
-      )}
+        <div>
+          <div className="text-3xl font-bold text-white">50K+</div>
+          <div className="text-gray-400">Happy Customers</div>
+        </div>
+        <div>
+          <div className="text-3xl font-bold text-white">15+</div>
+          <div className="text-gray-400">Years Experience</div>
+        </div>
+      </div>
     </div>
   );
 };

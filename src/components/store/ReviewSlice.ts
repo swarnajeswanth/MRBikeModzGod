@@ -153,6 +153,12 @@ interface ReviewState {
     pages: number;
   } | null;
   selectedReview: IReview | null;
+  // Individual operation loading states
+  createLoading: boolean;
+  updateLoading: boolean;
+  deleteLoading: boolean;
+  fetchLoading: boolean;
+  voteLoading: boolean;
 }
 
 const initialState: ReviewState = {
@@ -161,6 +167,11 @@ const initialState: ReviewState = {
   error: null,
   pagination: null,
   selectedReview: null,
+  createLoading: false,
+  updateLoading: false,
+  deleteLoading: false,
+  fetchLoading: false,
+  voteLoading: false,
 };
 
 const reviewSlice = createSlice({
@@ -184,16 +195,19 @@ const reviewSlice = createSlice({
       .addCase(fetchReviews.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.fetchLoading = true;
       })
       .addCase(fetchReviews.fulfilled, (state, action) => {
         state.loading = false;
         state.reviews = action.payload.data;
         state.pagination = action.payload.pagination;
+        state.fetchLoading = false;
       })
       .addCase(fetchReviews.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch reviews";
         toast.error("Failed to fetch reviews");
+        state.fetchLoading = false;
       });
 
     // Create review
@@ -201,16 +215,19 @@ const reviewSlice = createSlice({
       .addCase(createReview.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.createLoading = true;
       })
       .addCase(createReview.fulfilled, (state, action) => {
         state.loading = false;
         state.reviews.unshift(action.payload.data);
         toast.success("Review created successfully");
+        state.createLoading = false;
       })
       .addCase(createReview.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to create review";
         toast.error(action.error.message || "Failed to create review");
+        state.createLoading = false;
       });
 
     // Update review
@@ -218,6 +235,7 @@ const reviewSlice = createSlice({
       .addCase(updateReview.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.updateLoading = true;
       })
       .addCase(updateReview.fulfilled, (state, action) => {
         state.loading = false;
@@ -231,11 +249,13 @@ const reviewSlice = createSlice({
           state.selectedReview = action.payload.data;
         }
         toast.success("Review updated successfully");
+        state.updateLoading = false;
       })
       .addCase(updateReview.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to update review";
         toast.error(action.error.message || "Failed to update review");
+        state.updateLoading = false;
       });
 
     // Delete review
@@ -243,6 +263,7 @@ const reviewSlice = createSlice({
       .addCase(deleteReview.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.deleteLoading = true;
       })
       .addCase(deleteReview.fulfilled, (state, action) => {
         state.loading = false;
@@ -253,11 +274,13 @@ const reviewSlice = createSlice({
           state.selectedReview = null;
         }
         toast.success("Review deleted successfully");
+        state.deleteLoading = false;
       })
       .addCase(deleteReview.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete review";
         toast.error(action.error.message || "Failed to delete review");
+        state.deleteLoading = false;
       });
 
     // Vote review
@@ -265,6 +288,7 @@ const reviewSlice = createSlice({
       .addCase(voteReview.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.voteLoading = true;
       })
       .addCase(voteReview.fulfilled, (state, action) => {
         state.loading = false;
@@ -278,11 +302,13 @@ const reviewSlice = createSlice({
           state.selectedReview = action.payload.data;
         }
         toast.success("Vote recorded successfully");
+        state.voteLoading = false;
       })
       .addCase(voteReview.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to vote on review";
         toast.error(action.error.message || "Failed to vote on review");
+        state.voteLoading = false;
       });
 
     // Seed reviews
@@ -307,3 +333,27 @@ const reviewSlice = createSlice({
 export const { setSelectedReview, clearError, clearReviews } =
   reviewSlice.actions;
 export default reviewSlice.reducer;
+
+// Selectors
+export const selectReviews = (state: { reviews: ReviewState }) =>
+  state.reviews.reviews;
+export const selectReviewsLoading = (state: { reviews: ReviewState }) =>
+  state.reviews.loading;
+export const selectReviewsError = (state: { reviews: ReviewState }) =>
+  state.reviews.error;
+export const selectReviewsPagination = (state: { reviews: ReviewState }) =>
+  state.reviews.pagination;
+export const selectSelectedReview = (state: { reviews: ReviewState }) =>
+  state.reviews.selectedReview;
+
+// Individual loading state selectors
+export const selectCreateReviewLoading = (state: { reviews: ReviewState }) =>
+  state.reviews.createLoading;
+export const selectUpdateReviewLoading = (state: { reviews: ReviewState }) =>
+  state.reviews.updateLoading;
+export const selectDeleteReviewLoading = (state: { reviews: ReviewState }) =>
+  state.reviews.deleteLoading;
+export const selectFetchReviewsLoading = (state: { reviews: ReviewState }) =>
+  state.reviews.fetchLoading;
+export const selectVoteReviewLoading = (state: { reviews: ReviewState }) =>
+  state.reviews.voteLoading;

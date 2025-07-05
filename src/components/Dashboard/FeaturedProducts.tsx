@@ -12,8 +12,14 @@ import { useEffect } from "react";
 import {
   fetchProducts,
   selectAllProducts,
+  selectLoading,
 } from "@/components/store/productSlice";
 import { AppDispatch } from "@/components/store";
+import { RootState } from "@/components/store";
+import { toggleWishlist } from "@/components/store/UserSlice";
+import { toast } from "react-hot-toast";
+import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
+import FeaturedProductsShimmer from "../Loaders/FeaturedProductsShimmer";
 
 const FeaturedProducts = () => {
   // const products = [
@@ -88,9 +94,21 @@ const FeaturedProducts = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [isPending, startTransition] = useTransition();
   const products = useSelector(selectAllProducts);
+  const loading = useSelector(selectLoading);
+  const { wishlist, isLoggedIn } = useSelector(
+    (state: RootState) => state.user
+  );
+  const requireLoginForWishlist = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
+  );
 
   useEffect(() => {
+    console.log(
+      "FeaturedProducts useEffect - products length:",
+      products.length
+    );
     if (products.length === 0) {
+      console.log("Dispatching fetchProducts...");
       dispatch(fetchProducts());
     }
   }, [dispatch, products.length]);
@@ -106,6 +124,40 @@ const FeaturedProducts = () => {
       }, 800); // adjust if your route loads slowly
     });
   };
+
+  const handleToggleWishlist = (product: any, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to product page
+
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to use the wishlist.");
+      router.push("/auth");
+      return;
+    }
+
+    const wishlistItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image:
+        product.images && product.images.length > 0 ? product.images[0] : "",
+      category: product.category,
+    };
+
+    dispatch(toggleWishlist(wishlistItem));
+
+    const isInWishlist = wishlist.some((item) => item.id === product.id);
+    if (isInWishlist) {
+      toast.success("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
+  };
+
+  // Show shimmer while loading
+  if (loading || products.length === 0) {
+    return <FeaturedProductsShimmer />;
+  }
 
   return (
     <section id="products" className="py-5 bg-gray-900/50">

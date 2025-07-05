@@ -17,6 +17,8 @@ import { RootState } from "@/components/store";
 import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
 import { AppDispatch } from "@/components/store";
+import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
+import { ProductRatingShimmer } from "./Loaders/RatingShimmer";
 
 const AllProductsPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,7 +27,12 @@ const AllProductsPage = () => {
   const error = useSelector(selectError);
 
   const router = useRouter();
-  const { wishlist } = useSelector((state: RootState) => state.user);
+  const { wishlist, isLoggedIn } = useSelector(
+    (state: RootState) => state.user
+  );
+  const requireLoginForWishlist = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
+  );
 
   // Get unique categories from products
   const uniqueCategories = [
@@ -47,6 +54,13 @@ const AllProductsPage = () => {
   }, [dispatch, products.length]);
 
   const handleToggleWishlist = (product: any) => {
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to use the wishlist.");
+      router.push("/auth");
+      return;
+    }
+
     const wishlistItem = {
       id: product.id,
       name: product.name,
@@ -277,21 +291,27 @@ const AllProductsPage = () => {
                 >
                   {product.name}
                 </h3>
-                <div className="flex items-center mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(product.rating)
-                          ? "text-yellow-400"
-                          : "text-gray-600"
-                      }`}
-                    />
-                  ))}
-                  <span className="text-gray-400 text-sm ml-2">
-                    {product.rating} ({product.reviews})
-                  </span>
-                </div>
+
+                {/* Rating Section - Show shimmer while loading */}
+                {loading ? (
+                  <ProductRatingShimmer className="mb-3" />
+                ) : (
+                  <div className="flex items-center mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < Math.floor(product.rating)
+                            ? "text-yellow-400"
+                            : "text-gray-600"
+                        }`}
+                      />
+                    ))}
+                    <span className="text-gray-400 text-sm ml-2">
+                      {product.rating} ({product.reviews})
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
