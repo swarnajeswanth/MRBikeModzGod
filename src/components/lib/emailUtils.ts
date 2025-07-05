@@ -17,14 +17,24 @@ interface SendOTPEmailParams {
   userName?: string;
 }
 
-const getEmailConfig = (): EmailConfig => {
+export const getEmailConfig = (): EmailConfig => {
+  // Check if required environment variables are set
+  if (!process.env.GMAIL_USER) {
+    throw new Error("GMAIL_USER environment variable is not configured");
+  }
+  if (!process.env.GMAIL_APP_PASSWORD) {
+    throw new Error(
+      "GMAIL_APP_PASSWORD environment variable is not configured"
+    );
+  }
+
   return {
     host: "smtp.gmail.com",
     port: 587,
     secure: false,
     auth: {
-      user: process.env.GMAIL_USER!,
-      pass: process.env.GMAIL_APP_PASSWORD!,
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
   };
 };
@@ -211,22 +221,50 @@ export const sendOTPEmail = async ({
   userName,
 }: SendOTPEmailParams): Promise<boolean> => {
   try {
+    console.log("🔧 Attempting to send OTP email...");
+    console.log("📧 To:", to);
+    console.log("👤 Role:", role);
+    console.log("🔑 GMAIL_USER configured:", !!process.env.GMAIL_USER);
+    console.log(
+      "🔑 GMAIL_APP_PASSWORD configured:",
+      !!process.env.GMAIL_APP_PASSWORD
+    );
+
     const transporter = createTransporter();
 
     const mailOptions = {
       from: `"MrBikeModzGod" <${process.env.GMAIL_USER}>`,
       to: to,
       subject: `Account Verification - ${
-        role === "retailer" ? "Retailer" : "Customer"
-      } Registration`,
+        role === "retailer" ? "Retailer Account" : "Customer Account"
+      }`,
       html: generateOTPEmailHTML(otp, role, userName),
     };
 
-    const result = await transporter.sendMail(mailOptions);
-    console.log("OTP email sent successfully:", result.messageId);
+    console.log("📤 Sending email...");
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email sent successfully:", info.messageId);
     return true;
   } catch (error) {
-    console.error("Failed to send OTP email:", error);
+    console.error("❌ Email sending failed:", error);
+
+    // Provide specific error messages for common issues
+    if (error instanceof Error) {
+      if (error.message.includes("GMAIL_USER environment variable")) {
+        console.error("🔧 Fix: Set GMAIL_USER environment variable in Netlify");
+      } else if (
+        error.message.includes("GMAIL_APP_PASSWORD environment variable")
+      ) {
+        console.error(
+          "🔧 Fix: Set GMAIL_APP_PASSWORD environment variable in Netlify"
+        );
+      } else if (error.message.includes("Invalid login")) {
+        console.error("🔧 Fix: Check Gmail credentials and app password");
+      } else if (error.message.includes("SMTP")) {
+        console.error("🔧 Fix: Check SMTP configuration");
+      }
+    }
+
     return false;
   }
 };

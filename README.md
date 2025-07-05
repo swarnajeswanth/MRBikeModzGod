@@ -1,119 +1,278 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 MrBikeModzGod - Real-Time E-Commerce Platform
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0.0-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.11-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-8.16.1-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.8.2-purple?style=for-the-badge&logo=redux)](https://redux-toolkit.js.org/)
 
-### Option 1: Start Everything Together (Recommended)
+> **A cutting-edge real-time e-commerce platform for bike parts and accessories with advanced store management, real-time synchronization, and comprehensive feature controls.**
+
+## 🌟 Key Features
+
+### 🛍️ **E-Commerce Excellence**
+
+- **Real-time Product Management** - Instant updates across all instances
+- **Advanced Store Settings** - Granular control over features and customer experience
+- **Multi-Role Authentication** - Customer and retailer accounts with OTP verification
+- **Dynamic Feature Toggles** - Enable/disable features in real-time
+- **Comprehensive Product Catalog** - Categories, filters, search, and wishlist
+
+### 🔄 **Real-Time Synchronization**
+
+- **WebSocket Integration** - Live updates across multiple browsers and devices
+- **Fallback Polling System** - Reliable data sync even when WebSocket fails
+- **Cross-Instance Updates** - Changes reflect immediately across all app instances
+- **Connection Status Monitoring** - Real-time connection health indicators
+
+### 🎨 **Modern UI/UX**
+
+- **GSAP Animations** - Smooth, professional animations and transitions
+- **Responsive Design** - Mobile-first approach with Tailwind CSS
+- **Loading States** - Shimmer effects and skeleton screens
+- **Toast Notifications** - User-friendly feedback system
+- **Dark Theme** - Modern dark interface with accent colors
+
+### 🛠️ **Advanced Store Management**
+
+- **Feature Controls** - 15+ configurable features (cart, wishlist, reviews, etc.)
+- **Page Access Control** - Restrict access to specific pages
+- **Customer Experience Settings** - Customize user journey and requirements
+- **Real-time Settings Sync** - Instant application of store changes
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- MongoDB connection
+- Gmail account (for OTP authentication)
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/mrbikemodzgod.git
+cd mrbikemodzgod
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your configuration
+```
+
+### Environment Setup
+
+Create a `.env.local` file with:
+
+```env
+# ImageKit Configuration
+PUBLIC_API_KEY=your_imagekit_public_key
+PRIVATE_API_KEY=your_imagekit_private_key
+URL_ENDPOINT=your_imagekit_url_endpoint
+
+# JWT Secret
+JWT_SECRET=your_jwt_secret_here
+
+# MongoDB Connection
+MONGODB_URI=your_mongodb_connection_string
+
+# Gmail OTP Configuration
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-16-character-app-password
+```
+
+### Running the Application
+
+```bash
+# Start everything together (Recommended)
 npm run dev:full
+
+# Or start components separately
+npm run dev          # Next.js app
+npm run websocket    # WebSocket server
 ```
 
-This starts both the Next.js app and the WebSocket server for real-time synchronization.
+Visit [http://localhost:3000](http://localhost:3000) to see the application.
 
-### Option 2: Start Components Separately
+## 🏗️ Architecture
 
-**Terminal 1 - Next.js App:**
+### Frontend Stack
 
-```bash
-npm run dev
-```
+- **Next.js 15** - React framework with App Router
+- **React 19** - Latest React with concurrent features
+- **TypeScript** - Type-safe development
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **GSAP** - Professional animations
+- **Redux Toolkit** - State management with persistence
+- **React Hot Toast** - User notifications
 
-**Terminal 2 - WebSocket Server (for real-time sync):**
+### Backend Stack
 
-```bash
-# Windows
-start-websocket.bat
+- **Next.js API Routes** - Serverless API endpoints
+- **MongoDB** - NoSQL database with Mongoose ODM
+- **JWT** - Stateless authentication
+- **Nodemailer** - Email service for OTP
+- **ImageKit** - Image storage and CDN
+- **WebSocket** - Real-time communication
 
-# Unix/Linux/Mac
-chmod +x start-websocket.sh
-./start-websocket.sh
+### Real-Time Features
 
-# Or manually
-npm run websocket
-```
+- **WebSocket Server** - Custom WebSocket implementation
+- **Broadcast System** - Cross-instance message broadcasting
+- **Fallback Polling** - Reliable data synchronization
+- **Connection Management** - Automatic reconnection and error handling
 
-### Access the Application
+## 📊 Core Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🔐 Authentication System
 
-**Note:** For real-time synchronization across multiple app instances, make sure the WebSocket server is running on port 3001.
+- **Multi-Role Support** - Customer and retailer accounts
+- **OTP Verification** - Email-based verification for retailers
+- **JWT Tokens** - Secure session management
+- **Protected Routes** - Role-based access control
 
-## Real-Time Features
+### 🛍️ Product Management
 
-This application includes comprehensive real-time synchronization for:
+- **CRUD Operations** - Complete product lifecycle management
+- **Image Upload** - Integrated ImageKit for image storage
+- **Category Management** - Dynamic category system
+- **Stock Management** - Inventory tracking
+- **Pricing System** - Original price, discounts, and promotions
 
-- **Product Data**: When retailers seed products, changes are immediately reflected across all instances
-- **Store Settings**: When retailers change store settings, updates are instantly applied to all customer instances
-- **Reviews**: Review changes are synchronized in real-time across all app instances
+### ⚙️ Store Settings
 
-### Testing Real-Time Features
+- **Feature Toggles** - 15+ configurable features
+- **Page Access Control** - 8+ page-level restrictions
+- **Customer Experience** - 7+ user experience settings
+- **Real-time Updates** - Instant application of changes
+
+### 🔄 Real-Time Synchronization
+
+- **WebSocket Integration** - Live data updates
+- **Cross-Instance Sync** - Updates across all app instances
+- **Fallback System** - Polling when WebSocket unavailable
+- **Connection Monitoring** - Real-time status indicators
+
+## 🧪 Testing
 
 ```bash
 # Test WebSocket connection
 npm run test-websocket
 
-# Test product/review synchronization
+# Test real-time synchronization
 npm run test-realtime
 
-# Test store settings synchronization
+# Test store settings sync
 npm run test-store-settings
+
+# Test toggle functionality
+npm run test-toggle
 ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+mrbikemodzgod/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── api/               # API routes
+│   │   ├── auth/              # Authentication pages
+│   │   ├── dashboard/         # Dashboard pages
+│   │   └── product/           # Product pages
+│   ├── components/            # React components
+│   │   ├── Authentication/    # Auth components
+│   │   ├── Cart/             # Shopping cart
+│   │   ├── Dashboard/        # Dashboard components
+│   │   ├── Loaders/          # Loading components
+│   │   ├── Profile/          # User profile components
+│   │   ├── Reviews/          # Review system
+│   │   ├── store/            # Redux store
+│   │   └── lib/              # Utility functions
+│   └── models/               # MongoDB models
+├── websocket-server.js       # WebSocket server
+├── test-*.js                 # Test scripts
+└── *.md                      # Documentation
+```
 
-## Learn More
+## 🚀 Deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Railway Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application is configured for Railway deployment with:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Frontend Service** - Next.js application
+- **WebSocket Service** - Real-time communication server
+- **Environment Variables** - Secure configuration management
 
-## Deploy on Vercel
+### Netlify Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Configured with `netlify.toml` for seamless deployment.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔧 Development
 
-## 🚀 Railway Deployment Guide
+### Available Scripts
 
-### 1. Deploy WebSocket Server to Railway
+```bash
+npm run dev              # Start Next.js development server
+npm run websocket        # Start WebSocket server
+npm run dev:full         # Start both servers together
+npm run build            # Build for production
+npm run start            # Start production server
+```
 
-- Create a new Railway project and add your repo.
-- Set up a new service for `websocket-server.js` (Node.js service).
-- Railway will automatically set the `PORT` environment variable for you (no need to hardcode it).
-- The WebSocket server will listen on `process.env.PORT` (already handled in your code).
+### Testing Commands
 
-### 2. Set Environment Variables
+```bash
+npm run test-websocket     # Test WebSocket connection
+npm run test-realtime      # Test real-time sync
+npm run test-store-settings # Test store settings sync
+npm run test-toggle        # Test toggle functionality
+```
 
-- In your Railway **frontend** service, set:
-  - `NEXT_PUBLIC_WS_URL` to your Railway WebSocket endpoint, e.g.:
-    - `wss://your-railway-app.up.railway.app/sync`
-- In your Railway **websocket server** service, no extra variables are needed unless you want to override the port.
+## 📚 Documentation
 
-### 3. Update Client Code
+- [Setup Guide](SETUP_GUIDE.md) - Complete setup instructions
+- [Feature Controls Guide](FEATURE_CONTROLS_GUIDE.md) - Store settings documentation
+- [Real-Time Testing Guide](REALTIME_TESTING_GUIDE.md) - Testing real-time features
+- [Store Settings Guide](STORE_SETTINGS_SYNC_GUIDE.md) - Store management
+- [Seeding System Guide](SEEDING_SYSTEM_GUIDE.md) - Data seeding system
+- [WebSocket Troubleshooting](WEBSOCKET_TROUBLESHOOTING.md) - Connection issues
+- [Environment Setup](ENVIRONMENT_SETUP.md) - Configuration guide
+- [Gmail OTP Setup](GMAIL_OTP_SETUP.md) - Email verification setup
 
-- The client now uses `NEXT_PUBLIC_WS_URL` (with fallback to local dev):
-  - `const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/sync";`
-- This is already implemented in `src/components/RealTimeSync.tsx`, `src/components/store/index.ts`, and all test scripts.
+## 🤝 Contributing
 
-### 4. Local Development
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-- You can still run everything locally with the default settings:
-  - WebSocket server: `node websocket-server.js` (on port 3001)
-  - Frontend: `npm run dev` (connects to ws://localhost:3001/sync)
-- For local testing with a custom WebSocket URL, create a `.env` file with:
-  - `NEXT_PUBLIC_WS_URL=ws://localhost:3001/sync`
+## 📄 License
 
-### 5. Production/Cloud Usage
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- When deployed, the frontend will connect to the Railway WebSocket endpoint using the value of `NEXT_PUBLIC_WS_URL`.
-- No code changes are needed for switching between local and Railway deployments—just set the environment variable.
+## 🙏 Acknowledgments
 
-### 6. Troubleshooting
+- **Next.js** - React framework
+- **Tailwind CSS** - Utility-first CSS
+- **GSAP** - Animation library
+- **Redux Toolkit** - State management
+- **ImageKit** - Image storage service
+- **MongoDB** - Database solution
 
-- If you see connection errors, check that both services are running and the URLs are correct.
-- See `WEBSOCKET_TROUBLESHOOTING.md` for more help.
+## 📞 Support
+
+For support and questions:
+
+- 📧 Email: [your-email@example.com]
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/mrbikemodzgod/issues)
+- 📖 Documentation: Check the `/docs` folder
+
+---
+
+**Built with ❤️ using Next.js, React, TypeScript, and modern web technologies.**
