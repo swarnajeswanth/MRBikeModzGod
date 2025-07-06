@@ -1,9 +1,9 @@
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ categoryName: string }>;
+  params: { categoryName: string };
 }) {
-  const { categoryName } = await params;
+  const { categoryName } = params;
 
   return {
     title: `Category: ${categoryName}`,

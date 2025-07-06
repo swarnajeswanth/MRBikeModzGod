@@ -69,18 +69,42 @@ const categoryConfig = {
   },
 };
 
+const genericCategory = {
+  name: "Category",
+  description: "Browse products in this category.",
+  icon: ShoppingCart,
+  color: "from-gray-500 to-gray-700",
+  textColor: "text-gray-300",
+};
+
 export default function CategoryClient({ categoryName }: Props) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Get products from Redux store
-  const products = useSelector((state: RootState) =>
-    selectProductsByCategory(state, categoryName)
-  );
-
   // Get all products to check if they're loaded
   const allProducts = useSelector(selectAllProducts);
+
+  // Normalize category name for matching
+  const normalizedCategoryName = categoryName.trim().toLowerCase();
+
+  // Get products from Redux store, matching category in a case-insensitive, trimmed way
+  const products = allProducts.filter(
+    (p) =>
+      p.category && p.category.trim().toLowerCase() === normalizedCategoryName
+  );
+
+  // Debugging logs
+  console.log("[CategoryClient] categoryName:", categoryName);
+  console.log(
+    "[CategoryClient] normalizedCategoryName:",
+    normalizedCategoryName
+  );
+  console.log(
+    "[CategoryClient] all product categories:",
+    allProducts.map((p) => p.category)
+  );
+  console.log("[CategoryClient] matched products:", products);
 
   // Load products if not already loaded
   useEffect(() => {
@@ -107,8 +131,10 @@ export default function CategoryClient({ categoryName }: Props) {
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
 
+  // Use generic category if not in config, but only show 'not found' if no products
   const currentCategory =
-    categoryConfig[categoryName.toLowerCase() as keyof typeof categoryConfig];
+    categoryConfig[categoryName.toLowerCase() as keyof typeof categoryConfig] ||
+    (products.length > 0 ? genericCategory : null);
 
   if (!currentCategory) {
     return (

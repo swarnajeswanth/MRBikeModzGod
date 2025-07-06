@@ -13,6 +13,7 @@ import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
 import LoadingButton from "@/components/Loaders/LoadingButton";
 import { RootState } from "@/components/store";
 import { startLoading, stopLoading } from "@/components/store/LoadingSlice";
+import { validateRetailerEmail } from "@/components/lib/retailerConfig";
 
 gsap.registerPlugin(ScrambleTextPlugin, MorphSVGPlugin);
 
@@ -53,6 +54,15 @@ const AuthPage = () => {
 
   const handleSendOTP = async () => {
     if (!email || otpLoading) return;
+
+    // Validate retailer email if role is retailer
+    if (selectedRole === "retailer") {
+      const emailValidation = validateRetailerEmail(email);
+      if (!emailValidation.isValid) {
+        toast.error(emailValidation.message);
+        return;
+      }
+    }
 
     // Ensure password is set from the form
     const passwordValue = inputRef.current?.value || "";
@@ -133,6 +143,15 @@ const AuthPage = () => {
       });
       toast.error("Please provide both email and password");
       return;
+    }
+
+    // Validate retailer email if role is retailer
+    if (selectedRole === "retailer") {
+      const emailValidation = validateRetailerEmail(email);
+      if (!emailValidation.isValid) {
+        toast.error(emailValidation.message);
+        return;
+      }
     }
 
     dispatch(startLoading());
@@ -603,9 +622,14 @@ const AuthPage = () => {
                 </div>
               </div>
               {!isLogin && selectedRole === "retailer" && (
-                <div className="flex items-center mt-2 text-xs text-blue-400">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Email verification required for retailer accounts
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center text-xs text-blue-400">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Email verification required for retailer accounts
+                  </div>
+                  <div className="text-xs text-yellow-400">
+                    Only authorized business emails can register as retailers
+                  </div>
                 </div>
               )}
             </div>

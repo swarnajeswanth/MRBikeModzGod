@@ -6,8 +6,8 @@ import LoadingOverlay from "@/components/Loaders/LoadingSpinner";
 import PageTransitionWrapper from "@/components/Loaders/PageTransitionWrapper";
 import DebugTools from "@/components/DebugTools";
 import DebugStoreSettings from "@/components/DebugStoreSettings";
-import { Toaster } from "react-hot-toast";
 import RealTimeSync from "@/components/RealTimeSync";
+import CustomToaster from "@/components/CustomToaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,23 +36,9 @@ export default function RootLayout({
           <PageTransitionWrapper />
           <LoadingOverlay />
           <RealTimeSync />
-          <Toaster
-            toastOptions={{
-              style: {
-                background: "#1f1f1f",
-                color: "#fff",
-              },
-              success: {
-                style: { border: "1px solid green" },
-              },
-              error: {
-                style: { border: "1px solid red" },
-              },
-            }}
-            position="top-right"
-            reverseOrder={false}
-          />
+          <CustomToaster />
           {children}
+          {/* <CartDebug /> */}
           {/* <DebugTools /> */}
           {/* <DebugStoreSettings /> */}
         </ReduxProvider>

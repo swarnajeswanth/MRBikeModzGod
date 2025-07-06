@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Force text selection globally */
+body,
+html,
+* {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
 /* Card flip animation styles */
 .perspective-1000 {
   perspective: 1000px;
@@ -64,4 +73,23 @@ body.menu-open {
 .sticky-container {
   position: relative;
   z-index: 1;
+}
+
+/* Toast hover effects */
+[data-testid="toast"],
+[role="alert"] {
+  transition: all 0.2s ease !important;
+}
+
+[data-testid="toast"]:hover,
+[role="alert"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+  opacity: 0.9 !important;
+}
+
+/* Make sure toasts are clickable */
+[data-testid="toast"] *,
+[role="alert"] * {
+  cursor: pointer !important;
 }

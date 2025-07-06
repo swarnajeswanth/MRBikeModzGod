@@ -63,6 +63,7 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   // Remove localStorage dependency since we're using Redux state now
 
   const handleAddToCart = async (e: React.MouseEvent) => {
+    console.log("AddToCartButton product:", product);
     e.stopPropagation(); // Prevent navigation to product page
     if (!isAddToCartEnabled) {
       toast.error("Add to cart feature is currently disabled");
@@ -198,7 +199,9 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
         name: product.name,
         price: product.price,
         image:
-          product.images && product.images.length > 0 ? product.images[0] : "",
+          (product.images && product.images.length > 0 && product.images[0]) ||
+          product.image ||
+          "",
         category: product.category,
         originalPrice: product.originalPrice,
         discount: product.discount,

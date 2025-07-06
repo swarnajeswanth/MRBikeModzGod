@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "@/components/store";
+import { RootState, AppDispatch, store } from "@/components/store";
 import {
   selectCartItems,
   selectCartTotal,
@@ -24,11 +24,15 @@ export const useCart = () => {
   const error = useSelector((state: RootState) => state.cart.error);
 
   // Helper functions
-  const getItemById = (productId: string) =>
-    useSelector((state: RootState) => selectCartItemById(state, productId));
+  const getItemById = (productId: string) => {
+    const state = store.getState();
+    return selectCartItemById(state, productId);
+  };
 
-  const isItemInCart = (productId: string) =>
-    useSelector((state: RootState) => selectIsItemInCart(state, productId));
+  const isItemInCart = (productId: string) => {
+    const state = store.getState();
+    return selectIsItemInCart(state, productId);
+  };
 
   // Actions
   const addItem = async (product: Omit<CartItem, "quantity">) => {

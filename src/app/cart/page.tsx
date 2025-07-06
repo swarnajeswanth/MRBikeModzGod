@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ShoppingCart,
   Minus,
@@ -41,7 +41,24 @@ export default function CartPage() {
   const cartTotal = useSelector(selectCartTotal);
   const cartItemCount = useSelector(selectCartItemCount);
 
+  // Debug: Log cart items and their image properties
+  console.log("Cart items:", cartItems);
+  cartItems.forEach((item) => console.log("Cart item image:", item.image));
+
+  // Debug: Log cart items to see image data
+  console.log("Cart total:", cartTotal);
+  console.log("Cart item count:", cartItemCount);
+
   const [promoCode, setPromoCode] = useState("");
+
+  // Monitor cart changes
+  useEffect(() => {
+    console.log("Cart state changed:", {
+      items: cartItems,
+      total: cartTotal,
+      count: cartItemCount,
+    });
+  }, [cartItems, cartTotal, cartItemCount]);
 
   const updateQuantity = async (id: string, newQty: number) => {
     if (newQty < 1) return;
@@ -73,7 +90,10 @@ export default function CartPage() {
             <p className="text-gray-400 mb-6">
               Add some products to get started
             </p>
-            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+            <button
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+              onClick={() => (window.location.href = "/")}
+            >
               Continue Shopping
             </button>
           </div>
@@ -87,9 +107,26 @@ export default function CartPage() {
                   className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 sm:p-6"
                 >
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    {/* Product Image/Icon */}
-                    <div className="w-76 h-76 sm:w-20 sm:h-20 bg-gray-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
+                    {/* Product Image */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {item.image && item.image.trim() !== "" ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback to placeholder if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.png";
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src="/placeholder.png"
+                          alt="No image"
+                          className="w-full h-full object-cover opacity-60"
+                        />
+                      )}
                     </div>
 
                     {/* Product Info */}
@@ -108,7 +145,9 @@ export default function CartPage() {
                       <div className="flex items-center space-x-2 sm:space-x-3">
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
+                            item.quantity === 1
+                              ? removeItem(item.id)
+                              : updateQuantity(item.id, item.quantity - 1)
                           }
                           className="h-8 w-8 flex items-center justify-center border border-gray-600 text-gray-300 rounded"
                         >
@@ -188,7 +227,10 @@ export default function CartPage() {
               </div>
 
               {/* Continue Shopping */}
-              <button className="w-full border border-gray-600 text-gray-300 hover:bg-gray-800 py-2 rounded">
+              <button
+                className="w-full border border-gray-600 text-gray-300 hover:bg-gray-800 py-2 rounded"
+                onClick={() => (window.location.href = "/")}
+              >
                 Continue Shopping
               </button>
             </div>

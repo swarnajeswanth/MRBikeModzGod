@@ -200,7 +200,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {/* Add to Cart Button - Only show if add to cart feature is enabled */}
-        {features?.addToCart && <AddToCartButton />}
+        {features?.addToCart && (
+          <AddToCartButton
+            product={{
+              id,
+              name: title,
+              price,
+              image: images && images.length > 0 ? images[0] : "",
+              category,
+              originalPrice,
+              discount,
+            }}
+          />
+        )}
       </div>
     </div>
   );

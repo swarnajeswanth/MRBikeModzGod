@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/Authentication/useAuth";
 import { toast } from "react-hot-toast";
 import { Mail, Lock, Shield, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { validateRetailerEmail } from "@/components/lib/retailerConfig";
 import LoadingSpinner from "@/components/Loaders/LoadingSpinner";
 import { useDispatch } from "react-redux";
 import { startLoading, stopLoading } from "@/components/store/LoadingSlice";
@@ -33,6 +34,13 @@ const RetailerLoginPage = () => {
   const handleSendOTP = async () => {
     if (!formData.email || otpLoading) return;
 
+    // Validate retailer email
+    const emailValidation = validateRetailerEmail(formData.email);
+    if (!emailValidation.isValid) {
+      toast.error(emailValidation.message);
+      return;
+    }
+
     dispatch(startLoading());
     setOtpLoading(true);
     try {
@@ -57,6 +65,13 @@ const RetailerLoginPage = () => {
     e.preventDefault();
     if (!formData.email || !formData.password) {
       toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    // Validate retailer email
+    const emailValidation = validateRetailerEmail(formData.email);
+    if (!emailValidation.isValid) {
+      toast.error(emailValidation.message);
       return;
     }
 

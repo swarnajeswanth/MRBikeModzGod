@@ -6,6 +6,7 @@ import {
   generateOTP,
   isValidEmail,
 } from "@/components/lib/emailUtils";
+import { validateRetailerEmail } from "@/components/lib/retailerConfig";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +41,20 @@ export async function POST(req: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    // Validate retailer email if role is retailer
+    if (role === "retailer") {
+      const emailValidation = validateRetailerEmail(email);
+      if (!emailValidation.isValid) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: emailValidation.message,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     await connectToDB();

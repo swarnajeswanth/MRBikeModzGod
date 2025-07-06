@@ -353,7 +353,7 @@ const AllProductsPage = () => {
                   )}
                 </div>
 
-                <AddToCartButton />
+                <AddToCartButton product={product} />
               </div>
             </div>
           ))}

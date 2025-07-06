@@ -1,9 +1,9 @@
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ productId: string }>;
+  params: { productId: string };
 }) {
-  const { productId } = await params;
+  const { productId } = params;
 
   return {
     title: `Product: ${productId}`,
