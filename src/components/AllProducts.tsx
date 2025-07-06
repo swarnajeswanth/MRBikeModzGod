@@ -25,6 +25,7 @@ const AllProductsPage = () => {
   const products = useSelector(selectAllProducts);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
+  const [isVisible, setIsVisible] = useState(false);
 
   const router = useRouter();
   const { isLoggedIn } = useSelector((state: RootState) => state.user);
@@ -51,6 +52,11 @@ const AllProductsPage = () => {
       dispatch(fetchProducts());
     }
   }, [dispatch, products.length]);
+
+  // Trigger fade in animation when component mounts
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const handleToggleWishlist = (product: any) => {
     // Check if login is required for wishlist and user is not logged in
@@ -155,7 +161,11 @@ const AllProductsPage = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div
+        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-1000 ease-in-out ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">All Products</h1>
           <p className="text-gray-400">
@@ -234,10 +244,18 @@ const AllProductsPage = () => {
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
+          {filteredProducts.map((product, index) => (
             <div
               key={product.id}
-              className="bg-gray-800/50 border border-gray-700 hover:border-red-500/30 transition-all duration-300 rounded-lg overflow-hidden cursor-pointer"
+              className={`bg-gray-800/50 border border-gray-700 hover:border-red-500/30 transition-all duration-500 ease-out rounded-lg overflow-hidden cursor-pointer ${
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-8"
+              }`}
+              style={{
+                transitionDelay: `${index * 100}ms`,
+                transform: isVisible ? "translateY(0)" : "translateY(32px)",
+              }}
             >
               <div
                 className="h-48 relative flex items-center justify-center cursor-pointer bg-gray-700"
@@ -245,8 +263,13 @@ const AllProductsPage = () => {
               >
                 {product.label && (
                   <span
-                    className={`absolute top-4 left-4 px-2 py-1 text-sm text-white rounded`}
-                    style={{ backgroundColor: product.backgroundColor }}
+                    className={`absolute top-3 left-3 px-2.5 py-1 text-xs font-bold uppercase rounded-full ${
+                      product.labelType === "sale"
+                        ? "bg-purple-400 text-white"
+                        : product.labelType === "premium"
+                        ? "bg-yellow-400 text-black"
+                        : "bg-white text-black"
+                    }`}
                   >
                     {product.label}
                   </span>

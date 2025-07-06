@@ -483,13 +483,62 @@ const RetailerDashboard = () => {
 
       {activeTab === "wishlist" && (
         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-6 rounded-lg">
-          <WishlistGrid
-            title="My Wishlist"
-            description="Your saved items for later"
-            maxItems={8}
-            showEmptyState={true}
-            className=""
-          />
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-white flex items-center">
+                <FaHeart className="h-5 w-5 mr-2 text-red-400" /> Wishlist
+                Analytics
+              </h2>
+              <p className="text-gray-400 mt-1">
+                Overview of customer wishlist activity
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Total Wishlist Items</p>
+                  <p className="text-2xl font-bold text-white">0</p>
+                </div>
+                <FaHeart className="h-8 w-8 text-red-400" />
+              </div>
+            </div>
+
+            <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Most Wished Item</p>
+                  <p className="text-lg font-semibold text-white">-</p>
+                </div>
+                <FaHeart className="h-8 w-8 text-yellow-400" />
+              </div>
+            </div>
+
+            <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Active Users</p>
+                  <p className="text-2xl font-bold text-white">0</p>
+                </div>
+                <FaUsers className="h-8 w-8 text-blue-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Recent Wishlist Activity
+            </h3>
+            <div className="text-center py-8">
+              <FaHeart className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+              <p className="text-gray-400">No wishlist activity to display</p>
+              <p className="text-gray-500 text-sm mt-2">
+                Customer wishlist data will appear here when available
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

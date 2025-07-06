@@ -3,17 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  ArrowLeft,
-  Heart,
-  Minus,
-  Plus,
-  Share2,
-  ShoppingCart,
-  Star,
-} from "lucide-react";
+import { ArrowLeft, Heart, Share2, Star } from "lucide-react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import AddToCartButton from "@/components/Cart/AddToCart";
 import { RootState, AppDispatch } from "@/components/store";
 import {
   selectProductById,
@@ -30,8 +22,17 @@ const ProductPage = () => {
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
   const productId = params.productId as string;
-  const [quantity, setQuantity] = useState<number>(1);
   const [selectedImage, setSelectedImage] = useState<number>(0);
+
+  // Handle back navigation
+  const handleBackNavigation = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      // Fallback to homepage if no previous page
+      router.push("/");
+    }
+  };
 
   // Get product from Redux store - try by ID first, then by title
   const product = useSelector((state: RootState) => {
@@ -105,7 +106,15 @@ const ProductPage = () => {
             </div>
           </div>
         </div>
-        <Footer />
+        <div className="mt-8 text-center">
+          <button
+            onClick={handleBackNavigation}
+            className="flex items-center justify-center mx-auto bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Previous Page
+          </button>
+        </div>
       </div>
     );
   }
@@ -171,17 +180,6 @@ const ProductPage = () => {
     }
   };
 
-  // Handle quantity change
-  const handleQuantityChange = (delta: number) => {
-    const newQuantity = Math.max(1, quantity + delta);
-    setQuantity(newQuantity);
-  };
-
-  // Handle add to cart
-  const handleAddToCart = () => {
-    toast.success(`Added ${quantity} ${product?.name} to cart`);
-  };
-
   // Handle share
   const handleShare = async () => {
     if (navigator.share) {
@@ -211,29 +209,59 @@ const ProductPage = () => {
     router.push(`/category/${category.toLowerCase()}`);
   };
 
-  // If product not found, show loading or error
+  // If product not found, show error message
   if (!product) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-gray-900">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-16">
-            <div className="text-white text-xl">Product not found</div>
-            <div className="text-gray-400 text-sm mt-2">
-              Looking for product ID: {productId}
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <div className="text-center">
+            <div className="mb-8">
+              <div className="text-6xl mb-4">🔍</div>
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Product Not Found
+              </h1>
+              <p className="text-gray-400 mb-6">
+                Looking for product ID:{" "}
+                <span className="text-red-400">{productId}</span>
+              </p>
+              <p className="text-gray-400 mb-8">
+                Total products loaded: {products.length}
+              </p>
             </div>
-            <div className="text-gray-500 text-xs mt-1">
-              Total products loaded: {products.length}
+
+            <div className="space-y-4">
+              <p className="text-gray-300">
+                The product you're looking for doesn't exist or may have been
+                removed.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => router.push("/")}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  Go to Homepage
+                </button>
+                <button
+                  onClick={() => router.push("/product/allproducts")}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  Browse All Products
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => router.back()}
-              className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-            >
-              Go Back
-            </button>
           </div>
         </div>
-        <Footer />
+        <div className="mt-8 text-center">
+          <button
+            onClick={handleBackNavigation}
+            className="flex items-center justify-center mx-auto bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Previous Page
+          </button>
+        </div>
       </div>
     );
   }
@@ -410,39 +438,19 @@ const ProductPage = () => {
               {product.description}
             </p>
 
-            {/* Quantity and Add to Cart */}
+            {/* Add to Cart, Wishlist, and Share */}
             <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center border border-gray-600 rounded">
-                  <button
-                    onClick={() => handleQuantityChange(-1)}
-                    className="p-2 hover:bg-gray-700 transition-colors"
-                  >
-                    <Minus className="h-4 w-4 text-white" />
-                  </button>
-                  <span className="px-4 py-2 text-white">{quantity}</span>
-                  <button
-                    onClick={() => handleQuantityChange(1)}
-                    className="p-2 hover:bg-gray-700 transition-colors"
-                  >
-                    <Plus className="h-4 w-4 text-white" />
-                  </button>
-                </div>
-              </div>
-
               <div className="flex space-x-4">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!product.inStock}
-                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  <span>Add to Cart</span>
-                </button>
+                <div className="flex-1">
+                  <AddToCartButton product={product} />
+                </div>
 
                 <button
                   onClick={handleToggleWishlist}
                   className="p-3 border border-gray-600 hover:border-red-500 rounded-lg transition-colors"
+                  title={
+                    isInWishlist ? "Remove from wishlist" : "Add to wishlist"
+                  }
                 >
                   <Heart
                     className={`h-6 w-6 ${
@@ -456,48 +464,42 @@ const ProductPage = () => {
                 <button
                   onClick={handleShare}
                   className="p-3 border border-gray-600 hover:border-red-500 rounded-lg transition-colors"
+                  title="Share product"
                 >
                   <Share2 className="h-6 w-6 text-gray-400" />
                 </button>
               </div>
             </div>
 
-            {/* Features */}
+            {/* Key Features - Dynamic Layout */}
             {product.features && product.features.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-white mb-3">
                   Key Features
                 </h3>
-                <ul className="space-y-2">
+                <div
+                  className={`grid gap-3 ${
+                    product.features.length === 1
+                      ? "grid-cols-1"
+                      : product.features.length === 2
+                      ? "grid-cols-1 sm:grid-cols-2"
+                      : product.features.length === 3
+                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  }`}
+                >
                   {product.features.map((feature: string, index: number) => (
-                    <li key={index} className="flex items-start space-x-2">
+                    <div
+                      key={index}
+                      className="flex items-start space-x-2 bg-gray-800/30 p-3 rounded-lg border border-gray-700"
+                    >
                       <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
-                      <span className="text-gray-300">{feature}</span>
-                    </li>
+                      <span className="text-gray-300 text-sm">{feature}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
-
-            {/* Specifications */}
-            {product.specifications &&
-              Object.keys(product.specifications).length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">
-                    Specifications
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {Object.entries(product.specifications).map(
-                      ([key, value]: [string, any]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="text-gray-400">{key}:</span>
-                          <span className="text-white">{value}</span>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
           </div>
         </div>
 
@@ -563,7 +565,16 @@ const ProductPage = () => {
         )}
       </main>
 
-      <Footer />
+      {/* Back to Previous Page Button */}
+      <div className="mt-8 text-center pb-8">
+        <button
+          onClick={handleBackNavigation}
+          className="flex items-center justify-center mx-auto bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back to Previous Page
+        </button>
+      </div>
     </div>
   );
 };
