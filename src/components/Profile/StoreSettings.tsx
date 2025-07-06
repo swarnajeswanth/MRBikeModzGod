@@ -443,6 +443,7 @@ const StoreSettings = () => {
       allowProductSharing: { enabled: Share, disabled: Share2 },
       enableNotifications: { enabled: Bell, disabled: BellOff },
       enableWhatsAppChat: { enabled: MessageCircle, disabled: MessageSquare },
+      enableWishlistAnalytics: { enabled: Zap, disabled: ZapOff },
     };
 
     const icons = iconMap[setting];
@@ -496,6 +497,8 @@ const StoreSettings = () => {
       allowProductSharing: "Allow sharing products on social media",
       enableNotifications: "Send notifications to customers",
       enableWhatsAppChat: "Show WhatsApp chat button for customer support",
+      enableWishlistAnalytics:
+        "Track customer wishlist activity and login analytics",
     };
     return descriptions[setting] || setting;
   };

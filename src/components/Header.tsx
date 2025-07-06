@@ -65,6 +65,8 @@ const Header = () => {
   const pages = useSelector(selectPages);
   const pathname = usePathname();
 
+  const isHome = pathname === "/";
+
   // Dynamic navigation based on authentication status and store settings
   const getNavigation = (): NavigationItem[] => {
     const baseNav: NavigationItem[] = [];
@@ -216,7 +218,9 @@ const Header = () => {
                   loadingText="Logging out..."
                   variant="secondary"
                   size="sm"
-                  className="flex items-center text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none p-0"
+                  className={`flex items-center text-sm font-medium transition-colors ${
+                    isHome ? "duration-100" : "duration-200"
+                  } text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none p-0`}
                   icon={item.icon}
                 >
                   Logout
@@ -228,7 +232,9 @@ const Header = () => {
                     navRefs.current[index] = el;
                   }}
                   onClick={() => setActiveIndex(index)}
-                  className={`relative flex items-center text-sm font-medium transition-colors duration-200 ${
+                  className={`relative flex items-center text-sm font-medium transition-colors ${
+                    isHome ? "duration-100" : "duration-200"
+                  } ${
                     index === activeIndex
                       ? "text-red-400"
                       : "text-gray-300 hover:text-red-400"
@@ -300,7 +306,9 @@ const Header = () => {
 
       {/* Mobile Nav */}
       <div
-        className={`md:hidden bg-black/95 px-4 pb-4 overflow-hidden transition-all duration-500 ease-in-out ${
+        className={`md:hidden bg-black/95 px-4 pb-4 overflow-hidden transition-all ${
+          isHome ? "duration-300" : "duration-500"
+        } ease-in-out ${
           isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -308,7 +316,9 @@ const Header = () => {
           {navigation.map((item, index) => (
             <div
               key={item.name}
-              className={`transform transition-all duration-300 ease-out ${
+              className={`transform transition-all ${
+                isHome ? "duration-100" : "duration-300"
+              } ease-out ${
                 isMenuOpen
                   ? "translate-x-0 opacity-100"
                   : "translate-x-full opacity-0"
