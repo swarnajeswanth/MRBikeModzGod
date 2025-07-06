@@ -8,14 +8,15 @@ import {
   WishlistItem,
 } from "../store/UserSlice";
 import { toast } from "react-hot-toast";
-import { selectAllProducts } from "../store/productSlice";
+import { useWishlistAnalytics } from "./useWishlistAnalytics";
 
 export const useWishlist = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { wishlist, isLoggedIn } = useSelector(
     (state: RootState) => state.user
   );
-  const products = useSelector(selectAllProducts);
+  const { trackAddToWishlist, trackRemoveFromWishlist } =
+    useWishlistAnalytics();
 
   // Get token from localStorage
   const getToken = () => {
@@ -132,14 +133,22 @@ export const useWishlist = () => {
       // Sync with backend
       await syncWishlist(newWishlistState);
 
-      // Show toast message
-      if (isCurrentlyInWishlist) {
+      // Track analytics
+      if (isInWishlist) {
+        trackRemoveFromWishlist(item.id, item.name);
         toast.success("Removed from wishlist");
       } else {
+        trackAddToWishlist(item.id, item.name);
         toast.success("Added to wishlist");
       }
     },
-    [dispatch, wishlist, syncWishlist]
+    [
+      dispatch,
+      wishlist,
+      syncWishlist,
+      trackAddToWishlist,
+      trackRemoveFromWishlist,
+    ]
   );
 
   // Check if item is in wishlist

@@ -12,6 +12,42 @@ import {
   FaImages,
   FaHeart,
 } from "react-icons/fa";
+
+interface WishlistAnalytics {
+  summary: {
+    totalWishlistItems: number;
+    activeUsers: number;
+    totalCustomers: number;
+    mostWishedItem: {
+      productId: string;
+      productName: string;
+      wishCount: number;
+    } | null;
+  };
+  mostWishedProducts: Array<{
+    productId: string;
+    productName: string;
+    wishCount: number;
+  }>;
+  recentActivity: Array<{
+    customerId: string;
+    customerUsername: string;
+    productId: string;
+    productName: string;
+    addedAt: string;
+    lastLoginAt: string;
+  }>;
+  customerStats: Array<{
+    customerId: string;
+    customerUsername: string;
+    loginCount: number;
+    lastLoginAt: string;
+    firstLoginAt: string;
+    totalWishlistItems: number;
+    wishlistActivityCount: number;
+    lastWishlistActivity: string;
+  }>;
+}
 import AddProductModal, {
   ProductForm,
 } from "@/components/Profile/AddProductModal";
@@ -80,10 +116,56 @@ const RetailerDashboard = () => {
   const dispatch = useDispatch();
   const [editProductId, setEditProductId] = useState<string | null>(null);
 
+  // Wishlist analytics state
+  const [wishlistAnalytics, setWishlistAnalytics] =
+    useState<WishlistAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
   // Fetch products on component mount
   useEffect(() => {
     dispatch(fetchProducts() as any);
   }, [dispatch]);
+
+  // Fetch wishlist analytics
+  const fetchWishlistAnalytics = async () => {
+    setAnalyticsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      const response = await fetch("/api/admin/wishlist-analytics", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setWishlistAnalytics(data.data);
+        } else {
+          toast.error("Failed to fetch analytics");
+        }
+      } else {
+        toast.error("Failed to fetch analytics");
+      }
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      toast.error("Failed to fetch analytics");
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  // Fetch analytics when wishlist tab is active
+  useEffect(() => {
+    if (activeTab === "wishlist") {
+      fetchWishlistAnalytics();
+    }
+  }, [activeTab]);
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -493,52 +575,163 @@ const RetailerDashboard = () => {
                 Overview of customer wishlist activity
               </p>
             </div>
+            <button
+              onClick={fetchWishlistAnalytics}
+              disabled={analyticsLoading}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+            >
+              {analyticsLoading ? "Loading..." : "Refresh"}
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Total Wishlist Items</p>
-                  <p className="text-2xl font-bold text-white">0</p>
-                </div>
-                <FaHeart className="h-8 w-8 text-red-400" />
-              </div>
+          {analyticsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-400 mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading analytics...</p>
             </div>
-
-            <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Most Wished Item</p>
-                  <p className="text-lg font-semibold text-white">-</p>
+          ) : wishlistAnalytics ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">
+                        Total Wishlist Items
+                      </p>
+                      <p className="text-2xl font-bold text-white">
+                        {wishlistAnalytics.summary.totalWishlistItems}
+                      </p>
+                    </div>
+                    <FaHeart className="h-8 w-8 text-red-400" />
+                  </div>
                 </div>
-                <FaHeart className="h-8 w-8 text-yellow-400" />
-              </div>
-            </div>
 
-            <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Active Users</p>
-                  <p className="text-2xl font-bold text-white">0</p>
+                <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Most Wished Item</p>
+                      <p className="text-lg font-semibold text-white">
+                        {wishlistAnalytics.summary.mostWishedItem
+                          ?.productName || "-"}
+                      </p>
+                      {wishlistAnalytics.summary.mostWishedItem && (
+                        <p className="text-sm text-gray-400">
+                          {wishlistAnalytics.summary.mostWishedItem.wishCount}{" "}
+                          wishes
+                        </p>
+                      )}
+                    </div>
+                    <FaHeart className="h-8 w-8 text-yellow-400" />
+                  </div>
                 </div>
-                <FaUsers className="h-8 w-8 text-blue-400" />
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              Recent Wishlist Activity
-            </h3>
+                <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Active Users</p>
+                      <p className="text-2xl font-bold text-white">
+                        {wishlistAnalytics.summary.activeUsers}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        of {wishlistAnalytics.summary.totalCustomers} total
+                      </p>
+                    </div>
+                    <FaUsers className="h-8 w-8 text-blue-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Recent Activity */}
+                <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600">
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    Recent Wishlist Activity
+                  </h3>
+                  {wishlistAnalytics.recentActivity.length > 0 ? (
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {wishlistAnalytics.recentActivity.map(
+                        (activity, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-gray-600/30 rounded-lg"
+                          >
+                            <div>
+                              <p className="text-white font-medium">
+                                {activity.customerUsername}
+                              </p>
+                              <p className="text-gray-400 text-sm">
+                                {activity.productName}
+                              </p>
+                              <p className="text-gray-500 text-xs">
+                                {new Date(
+                                  activity.addedAt
+                                ).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <FaHeart className="h-4 w-4 text-red-400" />
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FaHeart className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400">No recent activity</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Customer Stats */}
+                <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600">
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    Customer Statistics
+                  </h3>
+                  {wishlistAnalytics.customerStats.length > 0 ? (
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {wishlistAnalytics.customerStats
+                        .slice(0, 5)
+                        .map((customer, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-gray-600/30 rounded-lg"
+                          >
+                            <div>
+                              <p className="text-white font-medium">
+                                {customer.customerUsername}
+                              </p>
+                              <p className="text-gray-400 text-sm">
+                                {customer.totalWishlistItems} items •{" "}
+                                {customer.loginCount} logins
+                              </p>
+                              <p className="text-gray-500 text-xs">
+                                Last active:{" "}
+                                {new Date(
+                                  customer.lastWishlistActivity
+                                ).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <FaUsers className="h-4 w-4 text-blue-400" />
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FaUsers className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400">No customer data</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
             <div className="text-center py-8">
               <FaHeart className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400">No wishlist activity to display</p>
+              <p className="text-gray-400">No analytics data available</p>
               <p className="text-gray-500 text-sm mt-2">
                 Customer wishlist data will appear here when available
               </p>
             </div>
-          </div>
+          )}
         </div>
       )}
 

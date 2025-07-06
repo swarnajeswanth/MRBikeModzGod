@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   setUser,
   logout,
@@ -8,6 +8,30 @@ import {
   syncWishlistWithBackend,
 } from "../store/UserSlice";
 import { toast } from "react-hot-toast";
+import { selectIsCustomerExperienceEnabled } from "../store/storeSettingsSlice";
+
+// Helper function to track login analytics
+const trackLoginAnalytics = async (
+  token: string,
+  isAnalyticsEnabled: boolean
+) => {
+  if (!isAnalyticsEnabled) return;
+
+  try {
+    await fetch("/api/admin/wishlist-analytics", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "login",
+      }),
+    });
+  } catch (error) {
+    console.error("Error tracking login analytics:", error);
+  }
+};
 
 type UserRole = "customer" | "retailer";
 
@@ -36,6 +60,9 @@ interface SignupData {
 export function useAuth() {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const isAnalyticsEnabled = useSelector(
+    selectIsCustomerExperienceEnabled("enableWishlistAnalytics")
+  );
 
   const login = async (username: string, password: string, role?: UserRole) => {
     dispatch(setLoginLoading(true));
@@ -65,6 +92,9 @@ export function useAuth() {
 
         // Store token in localStorage
         localStorage.setItem("token", data.data.token);
+
+        // Track login analytics
+        await trackLoginAnalytics(data.data.token, isAnalyticsEnabled);
 
         // Load user's wishlist from backend
         try {
@@ -142,6 +172,10 @@ export function useAuth() {
 
         // Store token in localStorage
         localStorage.setItem("token", data.data.token);
+
+        // Track login analytics
+        await trackLoginAnalytics(data.data.token, isAnalyticsEnabled);
+
         toast.success("Login successful!");
         return { success: true };
       } else {

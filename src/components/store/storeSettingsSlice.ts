@@ -101,28 +101,7 @@ export interface StoreSettings {
     allowProductSharing: boolean;
     enableNotifications: boolean;
     enableWhatsAppChat: boolean;
-    // New bike-specific customer experience
-    showInstallationGuides: boolean;
-    showWarrantyInfo: boolean;
-    showReturnPolicy: boolean;
-    allowBulkOrdering: boolean;
-    allowCustomModifications: boolean;
-    showPerformanceMetrics: boolean;
-    enableBrandFiltering: boolean;
-    enablePriceAlerts: boolean;
-    enableStockNotifications: boolean;
-    enableComparisonTool: boolean;
-    showFitmentGuides: boolean;
-    showMaintenanceSchedules: boolean;
-    showPartCompatibility: boolean;
-    enableDealerLocator: boolean;
-    enableServiceCenters: boolean;
-    showTrainingVideos: boolean;
-    enableBlog: boolean;
-    enableSupport: boolean;
-    requireVINVerification: boolean;
-    showBikeCompatibility: boolean;
-    enableExpertConsultation: boolean;
+    enableWishlistAnalytics: boolean;
   };
 }
 
@@ -238,28 +217,7 @@ export const initialState: StoreSettings = {
     allowProductSharing: true,
     enableNotifications: true,
     enableWhatsAppChat: true,
-    // New bike-specific customer experience
-    showInstallationGuides: true,
-    showWarrantyInfo: true,
-    showReturnPolicy: true,
-    allowBulkOrdering: true,
-    allowCustomModifications: true,
-    showPerformanceMetrics: true,
-    enableBrandFiltering: true,
-    enablePriceAlerts: true,
-    enableStockNotifications: true,
-    enableComparisonTool: true,
-    showFitmentGuides: true,
-    showMaintenanceSchedules: true,
-    showPartCompatibility: true,
-    enableDealerLocator: true,
-    enableServiceCenters: true,
-    showTrainingVideos: true,
-    enableBlog: true,
-    enableSupport: true,
-    requireVINVerification: true,
-    showBikeCompatibility: true,
-    enableExpertConsultation: true,
+    enableWishlistAnalytics: true,
   },
 };
 

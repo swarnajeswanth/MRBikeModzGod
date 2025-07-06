@@ -31,6 +31,7 @@ const ProductPage = () => {
     if (window.history.length > 1) {
       router.back();
     } else {
+      // Fallback to homepage if no previous page
       router.push("/");
     }
   };
@@ -107,14 +108,13 @@ const ProductPage = () => {
             </div>
           </div>
         </div>
-        {/* Back Button */}
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mt-8 text-center">
           <button
             onClick={handleBackNavigation}
-            className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors border border-gray-600"
+            className="flex items-center justify-center mx-auto bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span>Back to Previous Page</span>
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Previous Page
           </button>
         </div>
       </div>
@@ -164,7 +164,14 @@ const ProductPage = () => {
       category: product.category,
     };
 
-    toggleWishlistItem(wishlistItem);
+    dispatch(toggleWishlist(wishlistItem));
+
+    const isInWishlist = wishlist.some((item) => item.id === product.id);
+    if (isInWishlist) {
+      toast.success("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
   };
 
   // Handle share
@@ -196,36 +203,57 @@ const ProductPage = () => {
     router.push(`/category/${category.toLowerCase()}`);
   };
 
-  // If product not found, show loading or error
+  // If product not found, show error message
   if (!product) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-gray-900">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-16">
-            <div className="text-white text-xl">Product not found</div>
-            <div className="text-gray-400 text-sm mt-2">
-              Looking for product ID: {productId}
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <div className="text-center">
+            <div className="mb-8">
+              <div className="text-6xl mb-4">🔍</div>
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Product Not Found
+              </h1>
+              <p className="text-gray-400 mb-6">
+                Looking for product ID:{" "}
+                <span className="text-red-400">{productId}</span>
+              </p>
+              <p className="text-gray-400 mb-8">
+                Total products loaded: {products.length}
+              </p>
             </div>
-            <div className="text-gray-500 text-xs mt-1">
-              Total products loaded: {products.length}
+
+            <div className="space-y-4">
+              <p className="text-gray-300">
+                The product you're looking for doesn't exist or may have been
+                removed.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => router.push("/")}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  Go to Homepage
+                </button>
+                <button
+                  onClick={() => router.push("/product/allproducts")}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  Browse All Products
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => router.back()}
-              className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-            >
-              Go Back
-            </button>
           </div>
         </div>
-        {/* Back Button */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mt-8 text-center">
           <button
             onClick={handleBackNavigation}
-            className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors border border-gray-600"
+            className="flex items-center justify-center mx-auto bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span>Back to Previous Page</span>
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Previous Page
           </button>
         </div>
       </div>
@@ -414,13 +442,17 @@ const ProductPage = () => {
                 <button
                   onClick={handleToggleWishlist}
                   className="p-3 border border-gray-600 hover:border-red-500 rounded-lg transition-colors"
-                  title="Add to wishlist"
+                  title={
+                    isInWishlist ? "Remove from wishlist" : "Add to wishlist"
+                  }
                 >
-                  {isInWishlist(product.id) ? (
-                    <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
-                  ) : (
-                    <FaRegHeart className="w-5 h-5 text-white" />
-                  )}
+                  <Heart
+                    className={`h-6 w-6 ${
+                      isInWishlist
+                        ? "text-red-500 fill-current"
+                        : "text-gray-400"
+                    }`}
+                  />
                 </button>
 
                 <button
@@ -527,14 +559,14 @@ const ProductPage = () => {
         )}
       </main>
 
-      {/* Back Button */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Back to Previous Page Button */}
+      <div className="mt-8 text-center pb-8">
         <button
           onClick={handleBackNavigation}
-          className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors border border-gray-600"
+          className="flex items-center justify-center mx-auto bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
         >
-          <ArrowLeft className="h-5 w-5" />
-          <span>Back to Previous Page</span>
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back to Previous Page
         </button>
       </div>
     </div>

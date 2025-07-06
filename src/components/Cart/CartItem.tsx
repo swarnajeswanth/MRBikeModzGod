@@ -8,6 +8,7 @@ interface CartItemProps {
   category: string;
   price: number;
   quantity: number;
+  image?: string;
   onIncrement: (id: number) => void;
   onDecrement: (id: number) => void;
   onRemove: (id: number) => void;
@@ -19,6 +20,7 @@ export default function CartItem({
   category,
   price,
   quantity,
+  image,
   onIncrement,
   onDecrement,
   onRemove,
@@ -66,8 +68,16 @@ export default function CartItem({
     <div className="flex items-center justify-between bg-[#0D1117] border border-[#1F2937] p-4 rounded-lg mb-4">
       {/* Product Info */}
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-gray-700 rounded-md flex items-center justify-center">
-          <ShoppingCart className="w-6 h-6 text-gray-400" />
+        <div className="w-16 h-16 bg-gray-700 rounded-md flex items-center justify-center overflow-hidden">
+          {image ? (
+            <img
+              src={image}
+              alt={name}
+              className="w-full h-full object-cover rounded-md"
+            />
+          ) : (
+            <ShoppingCart className="w-6 h-6 text-gray-400" />
+          )}
         </div>
         <div>
           <h3 className="text-white font-semibold text-lg">{name}</h3>
