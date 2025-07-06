@@ -28,6 +28,19 @@ import { selectCartItemCount } from "@/components/store/cartSlice";
 import StoreSettingsWrapper from "@/components/StoreSettingsWrapper";
 import toast from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
+import {
+  AnimatedHomeIcon,
+  AnimatedCartIcon,
+  AnimatedListIcon,
+  AnimatedMapPinIcon,
+  AnimatedInfoIcon,
+  AnimatedMailIcon,
+  AnimatedUserIcon,
+  AnimatedLogInIcon,
+  AnimatedLogOutIcon,
+  AnimatedHeartIcon,
+  AnimatedShoppingCartIcon,
+} from "./AnimatedIcons";
 
 type NavigationItem =
   | { name: string; href: string; icon: React.ReactNode; isLogout?: never }
@@ -60,7 +73,7 @@ const Header = () => {
       baseNav.push({
         name: "Home",
         href: "/",
-        icon: <HomeIcon className="h-4 w-4 mr-2" />,
+        icon: <AnimatedHomeIcon className="h-4 w-4 mr-2" />,
       });
     }
 
@@ -69,32 +82,32 @@ const Header = () => {
         baseNav.push({
           name: "Products",
           href: "#products",
-          icon: <ShoppingCart className="h-4 w-4 mr-2" />,
+          icon: <AnimatedCartIcon className="h-4 w-4 mr-2" />,
         });
       }
       if (features?.categories) {
         baseNav.push({
           name: "Categories",
           href: "#categories",
-          icon: <List className="h-4 w-4 mr-2" />,
+          icon: <AnimatedListIcon className="h-4 w-4 mr-2" />,
         });
       }
       baseNav.push({
         name: "Store Location",
         href: "#store-location",
-        icon: <MapPin className="h-4 w-4 mr-2" />,
+        icon: <AnimatedMapPinIcon className="h-4 w-4 mr-2" />,
       });
       baseNav.push({
         name: "About",
         href: "#footer",
-        icon: <Info className="h-4 w-4 mr-2" />,
+        icon: <AnimatedInfoIcon className="h-4 w-4 mr-2" />,
       });
     }
 
     baseNav.push({
       name: "Contact",
       href: "#footer",
-      icon: <Mail className="h-4 w-4 mr-2" />,
+      icon: <AnimatedMailIcon className="h-4 w-4 mr-2" />,
     });
 
     if (isLoggedIn) {
@@ -102,13 +115,13 @@ const Header = () => {
         baseNav.push({
           name: "Dashboard",
           href: "/dashboard",
-          icon: <User className="h-4 w-4 mr-2" />,
+          icon: <AnimatedUserIcon className="h-4 w-4 mr-2" />,
         });
       }
       baseNav.push({
         name: `Logout (${username})`,
         href: "#logout",
-        icon: <LogOut className="h-4 w-4 mr-2" />,
+        icon: <AnimatedLogOutIcon className="h-4 w-4 mr-2" />,
         isLogout: true,
       });
     } else {
@@ -116,7 +129,7 @@ const Header = () => {
         baseNav.push({
           name: "Login",
           href: "/auth",
-          icon: <LogIn className="h-4 w-4 mr-2" />,
+          icon: <AnimatedLogInIcon className="h-4 w-4 mr-2" />,
         });
       }
     }
@@ -164,7 +177,7 @@ const Header = () => {
   }, [activeIndex, isMenuOpen]);
 
   return (
-    <header className="relative bg-black/90 backdrop-blur-sm border-b border-red-600/20 z-50">
+    <header className="sticky top-0 bg-black/90 backdrop-blur-sm border-b border-red-600/20 z-50">
       {/* Top Bar */}
       {/* <div className="bg-red-600 text-white py-2">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-sm">
@@ -234,7 +247,7 @@ const Header = () => {
               href="/cart"
               className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
             >
-              <ShoppingCart className="h-5 w-5" />
+              <AnimatedShoppingCartIcon className="h-5 w-5" />
               {cartItemsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemsCount}
@@ -250,7 +263,10 @@ const Header = () => {
                 href="/dashboard"
                 className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
               >
-                <Heart className="h-5 w-5" />
+                <AnimatedHeartIcon
+                  className="h-5 w-5"
+                  filled={wishlist.length > 0}
+                />
                 {wishlist.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {wishlist.length}
@@ -283,10 +299,25 @@ const Header = () => {
       </div>
 
       {/* Mobile Nav */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-black/95 px-4 pb-4">
+      <div
+        className={`md:hidden bg-black/95 px-4 pb-4 overflow-hidden transition-all duration-500 ease-in-out ${
+          isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="py-4 space-y-2">
           {navigation.map((item, index) => (
-            <div key={item.name}>
+            <div
+              key={item.name}
+              className={`transform transition-all duration-300 ease-out ${
+                isMenuOpen
+                  ? "translate-x-0 opacity-100"
+                  : "translate-x-full opacity-0"
+              }`}
+              style={{
+                transitionDelay: `${index * 100}ms`,
+                transform: isMenuOpen ? "translateX(0)" : "translateX(100%)",
+              }}
+            >
               {item.isLogout ? (
                 <LoadingButton
                   onClick={() => {
@@ -297,7 +328,7 @@ const Header = () => {
                   loadingText="Logging out..."
                   variant="secondary"
                   size="sm"
-                  className="flex items-center w-full py-2 pl-0 font-medium transition-colors text-gray-300 hover:text-red-400 bg-transparent border-none shadow-none justify-start"
+                  className="flex items-center w-full py-3 pl-0 font-medium transition-all duration-200 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg px-3 bg-transparent border-none shadow-none justify-start"
                   icon={item.icon}
                 >
                   Logout
@@ -309,10 +340,10 @@ const Header = () => {
                     setActiveIndex(index);
                     setIsMenuOpen(false);
                   }}
-                  className={`block flex items-center py-2 font-medium transition-colors ${
+                  className={`block flex items-center py-3 px-3 font-medium transition-all duration-200 rounded-lg ${
                     index === activeIndex
-                      ? "text-red-400"
-                      : "text-gray-300 hover:text-red-400"
+                      ? "text-red-400 bg-red-500/10"
+                      : "text-gray-300 hover:text-red-400 hover:bg-red-500/10"
                   }`}
                 >
                   {item.icon}
@@ -324,41 +355,68 @@ const Header = () => {
 
           {/* Mobile Cart */}
           <StoreSettingsWrapper feature="addToCart">
-            <Link
-              href="/cart"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center py-2 font-medium transition-colors text-gray-300 hover:text-red-400"
+            <div
+              className={`transform transition-all duration-300 ease-out ${
+                isMenuOpen
+                  ? "translate-x-0 opacity-100"
+                  : "translate-x-full opacity-0"
+              }`}
+              style={{
+                transitionDelay: `${navigation.length * 100}ms`,
+                transform: isMenuOpen ? "translateX(0)" : "translateX(100%)",
+              }}
             >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Cart
-              {cartItemsCount > 0 && (
-                <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
-              )}
-            </Link>
+              <Link
+                href="/cart"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center py-3 px-3 font-medium transition-all duration-200 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+              >
+                <AnimatedShoppingCartIcon className="h-4 w-4 mr-2" />
+                Cart
+                {cartItemsCount > 0 && (
+                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )}
+              </Link>
+            </div>
           </StoreSettingsWrapper>
 
           {/* Mobile Wishlist */}
           <StoreSettingsWrapper feature="wishlist">
             {isLoggedIn && (
-              <Link
-                href="/dashboard"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center py-2 font-medium transition-colors text-gray-300 hover:text-red-400"
+              <div
+                className={`transform transition-all duration-300 ease-out ${
+                  isMenuOpen
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-full opacity-0"
+                }`}
+                style={{
+                  transitionDelay: `${(navigation.length + 1) * 100}ms`,
+                  transform: isMenuOpen ? "translateX(0)" : "translateX(100%)",
+                }}
               >
-                <Heart className="h-4 w-4 mr-2" />
-                Wishlist
-                {wishlist.length > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Link>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center py-3 px-3 font-medium transition-all duration-200 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                >
+                  <AnimatedHeartIcon
+                    className="h-4 w-4 mr-2"
+                    filled={wishlist.length > 0}
+                  />
+                  Wishlist
+                  {wishlist.length > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </Link>
+              </div>
             )}
           </StoreSettingsWrapper>
         </div>
-      )}
+      </div>
     </header>
   );
 };

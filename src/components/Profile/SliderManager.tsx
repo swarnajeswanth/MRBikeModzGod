@@ -289,8 +289,8 @@ const SliderManager: React.FC<SliderManagerProps> = ({ isOpen, onClose }) => {
                   const formData = new FormData(e.currentTarget);
                   handleEditImage(editingImage.id, {
                     title: formData.get("title") as string,
-                    description: formData.get("description") as string,
-                    alt: formData.get("alt") as string,
+                    description: editingImage.description,
+                    alt: editingImage.alt,
                   });
                 }}
                 className="space-y-4"
@@ -303,29 +303,6 @@ const SliderManager: React.FC<SliderManagerProps> = ({ isOpen, onClose }) => {
                     type="text"
                     name="title"
                     defaultValue={editingImage.title}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    defaultValue={editingImage.description}
-                    rows={3}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Alt Text
-                  </label>
-                  <input
-                    type="text"
-                    name="alt"
-                    defaultValue={editingImage.alt}
-                    required
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-red-500"
                   />
                 </div>
