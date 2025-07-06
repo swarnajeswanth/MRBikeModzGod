@@ -161,6 +161,11 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
+// Attach the Redux store to window for debugging
+if (typeof window !== "undefined") {
+  (window as any).__REDUX_STORE__ = store;
+}
+
 // Debug: Log initial state and handle any issues
 try {
   const initialState = store.getState();

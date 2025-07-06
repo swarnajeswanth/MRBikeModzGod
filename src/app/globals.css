@@ -46,3 +46,22 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
+
+/* Ensure sticky header works properly on all devices */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  will-change: transform;
+}
+
+/* Prevent body scroll when mobile menu is open */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* Ensure proper stacking context for sticky elements */
+.sticky-container {
+  position: relative;
+  z-index: 1;
+}

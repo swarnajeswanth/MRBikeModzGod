@@ -27,6 +27,10 @@ const RealTimeSync: React.FC = () => {
   const maxReconnectAttempts = 3;
   const [forceUpdate, setForceUpdate] = useState(0);
 
+  // Add debounce mechanism to prevent multiple rapid updates
+  const lastUpdateRef = useRef<{ [key: string]: number }>({});
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Generate a unique instance ID for this browser tab
   const instanceId = useRef(
     `instance-${Math.random().toString(36).substr(2, 9)}`
@@ -132,6 +136,7 @@ const RealTimeSync: React.FC = () => {
 
     // Only process messages that are less than 30 seconds old
     if (messageAge > 30000) {
+      console.log("Ignoring old message:", message.type, "age:", messageAge);
       return;
     }
 
@@ -140,6 +145,24 @@ const RealTimeSync: React.FC = () => {
       console.log("Ignoring message from same instance:", message.type);
       return;
     }
+
+    // Debounce rapid updates of the same type
+    const lastUpdate = lastUpdateRef.current[message.type] || 0;
+    const timeSinceLastUpdate = now - lastUpdate;
+
+    if (timeSinceLastUpdate < 2000) {
+      // 2 second debounce
+      console.log(
+        "Debouncing rapid update:",
+        message.type,
+        "time since last:",
+        timeSinceLastUpdate
+      );
+      return;
+    }
+
+    // Update the last update time
+    lastUpdateRef.current[message.type] = now;
 
     try {
       switch (message.type) {
@@ -155,39 +178,46 @@ const RealTimeSync: React.FC = () => {
           toast.success("Reviews updated from another instance");
           break;
         case "STORE_SETTINGS_UPDATED":
-          await dispatch(fetchStoreSettings());
-          setForceUpdate((n) => n + 1); // Force re-render
-          // Clear only storeSettings from persisted state to prevent user logout
-          try {
-            const persistedState = localStorage.getItem("persist:root");
-            if (persistedState) {
-              const parsedState = JSON.parse(persistedState);
-              if (!parsedState.storeSettings) {
-                console.log(
-                  "Clearing stale storeSettings from localStorage due to missing storeSettings"
-                );
-                // Only remove storeSettings key, not the whole state
-                delete parsedState.storeSettings;
-                localStorage.setItem(
-                  "persist:root",
-                  JSON.stringify(parsedState)
-                );
+          console.log("[RealTimeSync] STORE_SETTINGS_UPDATED message received");
+
+          // Clear any existing timeout
+          if (updateTimeoutRef.current) {
+            clearTimeout(updateTimeoutRef.current);
+          }
+
+          // Debounce the actual update to prevent multiple rapid updates
+          updateTimeoutRef.current = setTimeout(async () => {
+            try {
+              // Clear storeSettings from persisted state to force fresh fetch
+              const persistedState = localStorage.getItem("persist:root");
+              if (persistedState) {
+                const parsedState = JSON.parse(persistedState);
+                if (parsedState.storeSettings) {
+                  console.log(
+                    "Clearing cached storeSettings from localStorage"
+                  );
+                  delete parsedState.storeSettings;
+                  localStorage.setItem(
+                    "persist:root",
+                    JSON.stringify(parsedState)
+                  );
+                }
               }
+
+              // Fetch fresh store settings
+              const result = await dispatch(fetchStoreSettings());
+              console.log("Store settings fetch result:", result);
+
+              setForceUpdate((n) => n + 1); // Force re-render
+
+              // Show notification only once
+              toast.success("Store settings updated");
+            } catch (error) {
+              console.error("Failed to update store settings:", error);
+              toast.error("Failed to update store settings");
             }
-          } catch (error) {
-            console.error("Error checking localStorage:", error);
-          }
-          // Always fetch products and reviews after store settings update or state clear
-          await dispatch(fetchProducts());
-          await dispatch(fetchReviews());
-          // Optionally reload for customer-facing pages
-          if (
-            typeof window !== "undefined" &&
-            !window.location.pathname.includes("dashboard")
-          ) {
-            window.location.reload();
-          }
-          toast.success("Store settings updated from another instance");
+          }, 500); // 500ms debounce
+
           break;
         case "ALL_DATA_UPDATED":
           await Promise.all([
@@ -236,6 +266,24 @@ const RealTimeSync: React.FC = () => {
   };
 
   const broadcastUpdate = (type: SyncMessage["type"]) => {
+    // Debounce broadcasts to prevent spam
+    const now = Date.now();
+    const lastBroadcast = lastUpdateRef.current[`broadcast_${type}`] || 0;
+    const timeSinceLastBroadcast = now - lastBroadcast;
+
+    if (timeSinceLastBroadcast < 1000) {
+      // 1 second debounce for broadcasts
+      console.log(
+        "Debouncing broadcast:",
+        type,
+        "time since last:",
+        timeSinceLastBroadcast
+      );
+      return;
+    }
+
+    lastUpdateRef.current[`broadcast_${type}`] = now;
+
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       const message: SyncMessage = {
         type,
@@ -265,6 +313,9 @@ const RealTimeSync: React.FC = () => {
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
       }
     };
   }, []);

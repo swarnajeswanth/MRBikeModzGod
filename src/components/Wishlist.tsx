@@ -158,11 +158,11 @@ const Wishlist: React.FC = () => {
     return (
       <div className="w-full bg-[#101828] text-white p-6 rounded-lg shadow-lg">
         <div className="flex items-center gap-3 mb-5">
-          <Heart className="text-red-400 text-2xl" />
+          <Heart className="text-red-400 text-2xl outline-2 outline-red-500 outline-offset-1" />
           <h2 className="text-2xl font-bold">My Wishlist</h2>
         </div>
         <div className="text-center py-8">
-          <Heart className="text-gray-400 text-4xl mx-auto mb-4" />
+          <Heart className="text-gray-400 text-4xl mx-auto mb-4 outline-2 outline-gray-500 outline-offset-1" />
           <p className="text-gray-400">Your wishlist is empty</p>
           <p className="text-gray-500 text-sm">
             Start adding products to your wishlist!
@@ -175,7 +175,7 @@ const Wishlist: React.FC = () => {
   return (
     <div className="w-full bg-[#101828] text-white p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-3 mb-5">
-        <Heart className="text-red-400 text-2xl" />
+        <Heart className="text-red-400 text-2xl outline-2 outline-red-500 outline-offset-1" />
         <h2 className="text-2xl font-bold">My Wishlist ({wishlist.length})</h2>
       </div>
       {wishlist.map((item) => (

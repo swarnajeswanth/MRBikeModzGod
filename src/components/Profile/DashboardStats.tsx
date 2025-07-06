@@ -29,7 +29,9 @@ const DashboardStats: React.FC = () => {
     {
       label: "Wishlist Items",
       value: 5, // Placeholder
-      icon: <FaHeart className="text-red-400 text-3xl" />,
+      icon: (
+        <FaHeart className="text-red-400 text-3xl outline-2 outline-red-500 outline-offset-1" />
+      ),
     },
     {
       label: "Total Spent",

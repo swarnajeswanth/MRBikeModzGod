@@ -1,4 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { Store } from "@reduxjs/toolkit";
+
+// Extend the Window interface to include the Redux store
+declare global {
+  interface Window {
+    __REDUX_STORE__?: Store;
+  }
+}
 
 export interface StoreSettings {
   // Feature Controls
@@ -132,7 +140,7 @@ export const fetchStoreSettings = createAsyncThunk(
         throw new Error("Failed to fetch store settings");
       }
       const data = await response.json();
-      return data.settings;
+      return data;
     } finally {
       dispatch(setFetchLoading(false));
     }
@@ -161,6 +169,25 @@ export const updateStoreSettings = createAsyncThunk(
     } finally {
       dispatch(setUpdateLoading(false));
     }
+  }
+);
+
+// Utility function to force refresh store settings
+export const forceRefreshStoreSettings = createAsyncThunk(
+  "storeSettings/forceRefresh",
+  async (_, { dispatch }) => {
+    // Clear any cached state
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("persist:root");
+        console.log("Cleared persisted state for store settings refresh");
+      } catch (error) {
+        console.warn("Failed to clear persisted state:", error);
+      }
+    }
+
+    // Fetch fresh settings
+    return dispatch(fetchStoreSettings() as any);
   }
 );
 
@@ -260,7 +287,21 @@ const storeSettingsSlice = createSlice({
           "Store settings loaded:",
           action.payload ? "from API" : "using defaults"
         );
-        return { ...state, ...action.payload };
+        console.log("API Response:", action.payload);
+        // The API returns the settings directly, not wrapped in a 'settings' property
+        const newState = { ...state, ...action.payload };
+        setTimeout(() => {
+          try {
+            // Attach the Redux store to window for debugging if not already done
+            if (typeof window !== "undefined" && window.__REDUX_STORE__) {
+              console.log(
+                "Redux state after fetch:",
+                window.__REDUX_STORE__.getState().storeSettings
+              );
+            }
+          } catch (e) {}
+        }, 100);
+        return newState;
       })
       .addCase(fetchStoreSettings.rejected, (state, action) => {
         console.error("Store settings fetch rejected:", action.error);
@@ -272,6 +313,13 @@ const storeSettingsSlice = createSlice({
       .addCase(updateStoreSettings.rejected, (state, action) => {
         console.error("Store settings update rejected:", action.payload);
         // Don't change state on update failure
+      })
+      .addCase(forceRefreshStoreSettings.fulfilled, (state, action) => {
+        console.log("Store settings force refreshed");
+        // The action.payload will be the result of fetchStoreSettings
+        if (action.payload?.payload) {
+          return { ...state, ...action.payload.payload };
+        }
       });
   },
 });

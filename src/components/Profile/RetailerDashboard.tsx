@@ -568,8 +568,8 @@ const RetailerDashboard = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
             <div>
               <h2 className="text-xl font-bold text-white flex items-center">
-                <FaHeart className="h-5 w-5 mr-2 text-red-400" /> Wishlist
-                Analytics
+                <FaHeart className="h-5 w-5 mr-2 text-red-400 outline-2 outline-red-500 outline-offset-1" />{" "}
+                Wishlist Analytics
               </h2>
               <p className="text-gray-400 mt-1">
                 Overview of customer wishlist activity
@@ -602,7 +602,7 @@ const RetailerDashboard = () => {
                         {wishlistAnalytics.summary.totalWishlistItems}
                       </p>
                     </div>
-                    <FaHeart className="h-8 w-8 text-red-400" />
+                    <FaHeart className="h-8 w-8 text-red-400 outline-2 outline-red-500 outline-offset-1" />
                   </div>
                 </div>
 
@@ -621,7 +621,7 @@ const RetailerDashboard = () => {
                         </p>
                       )}
                     </div>
-                    <FaHeart className="h-8 w-8 text-yellow-400" />
+                    <FaHeart className="h-8 w-8 text-yellow-400 outline-2 outline-yellow-500 outline-offset-1" />
                   </div>
                 </div>
 
@@ -668,14 +668,14 @@ const RetailerDashboard = () => {
                                 ).toLocaleDateString()}
                               </p>
                             </div>
-                            <FaHeart className="h-4 w-4 text-red-400" />
+                            <FaHeart className="h-4 w-4 text-red-400 outline-2 outline-red-500 outline-offset-1" />
                           </div>
                         )
                       )}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <FaHeart className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <FaHeart className="h-12 w-12 text-gray-500 mx-auto mb-4 outline-2 outline-gray-500 outline-offset-1" />
                       <p className="text-gray-400">No recent activity</p>
                     </div>
                   )}
@@ -725,7 +725,7 @@ const RetailerDashboard = () => {
             </>
           ) : (
             <div className="text-center py-8">
-              <FaHeart className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+              <FaHeart className="h-12 w-12 text-gray-500 mx-auto mb-4 outline-2 outline-gray-500 outline-offset-1" />
               <p className="text-gray-400">No analytics data available</p>
               <p className="text-gray-500 text-sm mt-2">
                 Customer wishlist data will appear here when available

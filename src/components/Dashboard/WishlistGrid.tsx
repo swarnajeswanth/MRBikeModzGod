@@ -151,11 +151,16 @@ const WishlistGrid: React.FC<WishlistGridProps> = ({
                   </span>
                 )}
 
+                {/* Wishlist Button */}
                 <button
-                  className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
+                  className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all z-10"
                   onClick={(e) => handleToggleWishlist(product, e)}
                 >
-                  <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
+                  {isInWishlist(product.id) ? (
+                    <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
+                  ) : (
+                    <FaRegHeart className="w-5 h-5 text-white" />
+                  )}
                 </button>
 
                 {product.images && product.images.length > 0 ? (

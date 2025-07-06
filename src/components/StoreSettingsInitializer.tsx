@@ -29,8 +29,15 @@ const StoreSettingsInitializer = ({
         }
 
         // Fetch store settings when the app loads, but don't block rendering
-        await dispatch(fetchStoreSettings() as any);
-        console.log("Store settings initialized successfully");
+        const result = await dispatch(fetchStoreSettings() as any);
+        console.log("Store settings initialized successfully", result);
+
+        // Check if the settings were loaded properly
+        if (result.payload) {
+          console.log("Settings loaded from API:", result.payload);
+        } else {
+          console.warn("No settings loaded from API, using defaults");
+        }
       } catch (error) {
         console.warn("Store settings fetch failed, using defaults:", error);
       } finally {

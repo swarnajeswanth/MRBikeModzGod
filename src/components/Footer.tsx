@@ -37,7 +37,7 @@ const Footer = () => {
         displayCategories.length > 0
           ? displayCategories
           : loading
-          ? ["Loading...", "Loading...", "Loading..."]
+          ? ["Loading...1", "Loading...2", "Loading...3"]
           : [
               "Engine Parts",
               "Exhaust Systems",
@@ -149,8 +149,8 @@ const Footer = () => {
                   {section.title}
                 </h3>
                 <ul className="space-y-2">
-                  {section.links.map((link) => (
-                    <li key={link}>
+                  {section.links.map((link, idx) => (
+                    <li key={link + idx}>
                       <a
                         href="#"
                         onClick={(e) => {
@@ -163,7 +163,7 @@ const Footer = () => {
                         }}
                         className="text-gray-400 hover:text-red-400 transition-colors duration-200 cursor-pointer"
                       >
-                        {link}
+                        {link.replace(/\.\.\.[0-9]+$/, "...")}
                       </a>
                     </li>
                   ))}

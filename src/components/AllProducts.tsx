@@ -34,10 +34,14 @@ const AllProductsPage = () => {
   );
   const { isInWishlist, toggleWishlistItem } = useWishlist();
 
-  // Get unique categories from products
+  // Get unique categories from products (case-insensitive)
   const uniqueCategories = [
-    ...new Set(products.map((product) => product.category)),
-  ];
+    ...new Set(
+      products
+        .map((product) => product.category?.toLowerCase().trim())
+        .filter(Boolean)
+    ),
+  ].map((category) => category.charAt(0).toUpperCase() + category.slice(1));
 
   const [filters, setFilters] = useState({
     category: "",
@@ -83,7 +87,8 @@ const AllProductsPage = () => {
     if (filters.category) {
       filtered = filtered.filter(
         (product) =>
-          product.category.toLowerCase() === filters.category.toLowerCase()
+          product.category?.toLowerCase().trim() ===
+          filters.category.toLowerCase().trim()
       );
     }
 
@@ -257,10 +262,7 @@ const AllProductsPage = () => {
                 transform: isVisible ? "translateY(0)" : "translateY(32px)",
               }}
             >
-              <div
-                className="h-48 relative flex items-center justify-center cursor-pointer bg-gray-700"
-                onClick={() => router.push(`/product/${product.id}`)}
-              >
+              <div className="h-48 relative flex items-center justify-center bg-gray-700">
                 {product.label && (
                   <span
                     className={`absolute top-3 left-3 px-2.5 py-1 text-xs font-bold uppercase rounded-full ${
@@ -282,7 +284,7 @@ const AllProductsPage = () => {
                   {isInWishlist(product.id) ? (
                     <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
                   ) : (
-                    <FaRegHeart className="w-5 h-5 text-white" />
+                    <FaRegHeart className="w-5 h-5 text-red-500" />
                   )}
                 </button>
 
@@ -301,7 +303,7 @@ const AllProductsPage = () => {
 
               <div className="p-4">
                 <h3
-                  className="text-lg font-semibold text-white mb-2 line-clamp-2"
+                  className="text-lg font-semibold text-white mb-2 line-clamp-2 cursor-pointer hover:text-red-400 transition-colors"
                   onClick={() => router.push(`/product/${product.id}`)}
                 >
                   {product.name}

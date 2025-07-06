@@ -80,37 +80,12 @@ const Header = () => {
     }
 
     if (pathname === "/") {
-      if (pages?.allProducts) {
-        baseNav.push({
-          name: "Products",
-          href: "#products",
-          icon: <AnimatedCartIcon className="h-4 w-4 mr-2" />,
-        });
-      }
-      if (features?.categories) {
-        baseNav.push({
-          name: "Categories",
-          href: "#categories",
-          icon: <AnimatedListIcon className="h-4 w-4 mr-2" />,
-        });
-      }
-      baseNav.push({
-        name: "Store Location",
-        href: "#store-location",
-        icon: <AnimatedMapPinIcon className="h-4 w-4 mr-2" />,
-      });
       baseNav.push({
         name: "About",
         href: "#footer",
         icon: <AnimatedInfoIcon className="h-4 w-4 mr-2" />,
       });
     }
-
-    baseNav.push({
-      name: "Contact",
-      href: "#footer",
-      icon: <AnimatedMailIcon className="h-4 w-4 mr-2" />,
-    });
 
     if (isLoggedIn) {
       if (pages?.customerDashboard) {
@@ -178,8 +153,22 @@ const Header = () => {
     }
   }, [activeIndex, isMenuOpen]);
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add("menu-open");
+    } else {
+      document.body.classList.remove("menu-open");
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove("menu-open");
+    };
+  }, [isMenuOpen]);
+
   return (
-    <header className="sticky top-0 bg-black/90 backdrop-blur-sm border-b border-red-600/20 z-50">
+    <header className="sticky-header bg-black/95 backdrop-blur-md border-b border-red-600/20 shadow-lg">
       {/* Top Bar */}
       {/* <div className="bg-red-600 text-white py-2">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-sm">
@@ -200,12 +189,15 @@ const Header = () => {
       {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-2xl font-bold text-white">
+        <Link
+          href="/"
+          className="text-2xl font-bold text-white hover:text-red-400 transition-colors duration-200 cursor-pointer"
+        >
           MR<span className="text-red-600">BIKEMODZ</span>
           <div className="text-xs text-gray-400 hidden sm:block">
             AUTO SPARE & ACCESSORIES
           </div>
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="relative hidden md:flex items-center space-x-8">
@@ -267,7 +259,7 @@ const Header = () => {
             {isLoggedIn && (
               <Link
                 href="/dashboard"
-                className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
+                className="relative text-sm font-medium transition-colors duration-200 text-red-400 hover:text-red-300"
               >
                 <AnimatedHeartIcon
                   className="h-5 w-5"
@@ -306,7 +298,7 @@ const Header = () => {
 
       {/* Mobile Nav */}
       <div
-        className={`md:hidden bg-black/95 px-4 pb-4 overflow-hidden transition-all ${
+        className={`md:hidden bg-black/98 backdrop-blur-lg px-4 pb-4 overflow-hidden transition-all ${
           isHome ? "duration-300" : "duration-500"
         } ease-in-out ${
           isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
@@ -338,7 +330,7 @@ const Header = () => {
                   loadingText="Logging out..."
                   variant="secondary"
                   size="sm"
-                  className="flex items-center w-full py-3 pl-0 font-medium transition-all duration-200 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg px-3 bg-transparent border-none shadow-none justify-start"
+                  className="block flex items-center py-3 px-3 font-medium transition-all duration-200 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-500/10"
                   icon={item.icon}
                 >
                   Logout
@@ -409,7 +401,7 @@ const Header = () => {
                 <Link
                   href="/dashboard"
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center py-3 px-3 font-medium transition-all duration-200 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                  className="flex items-center py-3 px-3 font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg"
                 >
                   <AnimatedHeartIcon
                     className="h-4 w-4 mr-2"

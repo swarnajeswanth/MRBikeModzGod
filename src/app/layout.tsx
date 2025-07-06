@@ -5,6 +5,7 @@ import { ReduxProvider } from "./provider";
 import LoadingOverlay from "@/components/Loaders/LoadingSpinner";
 import PageTransitionWrapper from "@/components/Loaders/PageTransitionWrapper";
 import DebugTools from "@/components/DebugTools";
+import DebugStoreSettings from "@/components/DebugStoreSettings";
 import { Toaster } from "react-hot-toast";
 import RealTimeSync from "@/components/RealTimeSync";
 
@@ -53,6 +54,7 @@ export default function RootLayout({
           />
           {children}
           {/* <DebugTools /> */}
+          {/* <DebugStoreSettings /> */}
         </ReduxProvider>
       </body>
     </html>

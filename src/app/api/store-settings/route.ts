@@ -133,6 +133,44 @@ export async function PUT(request: NextRequest) {
     await client.close();
 
     if (result.acknowledged) {
+      // Broadcast the update to all connected clients via WebSocket
+      try {
+        const wsUrl =
+          process.env.NEXT_PUBLIC_WS_URL ||
+          "wss://websocket-server-production-ffd1.up.railway.app/sync";
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          const message = {
+            type: "STORE_SETTINGS_UPDATED",
+            timestamp: Date.now(),
+            source: "store-settings-api",
+            instanceId: `api-${Date.now()}-${Math.random()
+              .toString(36)
+              .substr(2, 9)}`,
+          };
+          ws.send(JSON.stringify(message));
+          console.log("Broadcasted STORE_SETTINGS_UPDATED message");
+          ws.close();
+        };
+
+        ws.onerror = (error) => {
+          console.warn("Failed to broadcast store settings update:", error);
+        };
+
+        // Add timeout to prevent hanging connections
+        setTimeout(() => {
+          if (
+            ws.readyState === WebSocket.CONNECTING ||
+            ws.readyState === WebSocket.OPEN
+          ) {
+            ws.close();
+          }
+        }, 5000);
+      } catch (wsError) {
+        console.warn("WebSocket broadcast failed:", wsError);
+      }
+
       return NextResponse.json(
         { message: "Store settings updated successfully", ...updateData },
         { status: 200 }

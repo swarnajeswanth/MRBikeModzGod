@@ -137,9 +137,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
             onClick={handleToggleWishlist}
           >
             {wishlist.some((item) => item.id === (id || title)) ? (
-              <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
+              <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110 outline-2  outline-offset-1" />
             ) : (
-              <FaRegHeart className="w-5 h-5 text-white" />
+              <FaRegHeart
+                className="w-5 h-5 text-white   outline-offset-1"
+                style={{ color: "red" }}
+              />
             )}
           </button>
         )}
