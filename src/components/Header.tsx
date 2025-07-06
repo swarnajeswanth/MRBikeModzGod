@@ -63,7 +63,8 @@ const Header = () => {
   const getNavigation = (): NavigationItem[] => {
     const baseNav: NavigationItem[] = [];
 
-    if (pages?.home) {
+    // Only show Home for non-logged-in users
+    if (pages?.home && !isLoggedIn) {
       baseNav.push({
         name: "Home",
         href: "/",

@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Star, ShoppingCart, Filter, X } from "lucide-react";
+import { Star, ShoppingCart, Filter, X, Home } from "lucide-react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import AddToCartButton from "./Cart/AddToCart";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
@@ -377,7 +376,17 @@ const AllProductsPage = () => {
           </div>
         )}
       </div>
-      <Footer />
+
+      {/* Home Button */}
+      <div className="flex justify-center py-8">
+        <button
+          onClick={() => router.push("/")}
+          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+        >
+          <Home className="h-5 w-5" />
+          Home
+        </button>
+      </div>
     </div>
   );
 };

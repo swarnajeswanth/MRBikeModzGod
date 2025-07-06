@@ -1,7 +1,6 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import { gsap } from "gsap";
-import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { RootState } from "@/components/store";
@@ -12,8 +11,6 @@ import {
 import { useCart } from "@/components/hooks/useCart";
 import { useRouter } from "next/navigation";
 import "./AddToCart.css";
-
-gsap.registerPlugin(MorphSVGPlugin);
 
 interface AddToCartButtonProps {
   product?: any;
@@ -32,7 +29,6 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   const cartRef = useRef<HTMLDivElement>(null);
   const tickRef = useRef<SVGSVGElement>(null);
   const crossRef = useRef<SVGSVGElement>(null);
-  const shirtPathRef = useRef<SVGPathElement>(null);
   const addTextRef = useRef<HTMLSpanElement>(null);
   const staticCartRef = useRef<SVGSVGElement>(null);
 
@@ -52,19 +48,20 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       setButtonText("Added");
       setHasAdded(true);
       setShowCross(true);
-      gsap.set(tickRef.current, { opacity: 0 });
-      gsap.set(crossRef.current, { opacity: 1 });
-      gsap.set(staticCartRef.current, { opacity: 1 });
-      gsap.set(addTextRef.current, { opacity: 1 });
-      gsap.set([shirtRef.current, cartRef.current], { opacity: 0 });
+      // Set initial states for already added items
+      if (tickRef.current) gsap.set(tickRef.current, { opacity: 0 });
+      if (crossRef.current) gsap.set(crossRef.current, { opacity: 1 });
+      if (staticCartRef.current)
+        gsap.set(staticCartRef.current, { opacity: 1 });
+      if (addTextRef.current) gsap.set(addTextRef.current, { opacity: 1 });
+      if (shirtRef.current) gsap.set(shirtRef.current, { opacity: 0 });
+      if (cartRef.current) gsap.set(cartRef.current, { opacity: 0 });
     }
   }, [isInCart]);
 
-  // Remove localStorage dependency since we're using Redux state now
-
   const handleAddToCart = async (e: React.MouseEvent) => {
-    console.log("AddToCartButton product:", product);
     e.stopPropagation(); // Prevent navigation to product page
+
     if (!isAddToCartEnabled) {
       toast.error("Add to cart feature is currently disabled");
       return;
@@ -77,7 +74,7 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       return;
     }
 
-    if (hasAdded || isInCart) return; // prevent re-animation if already added
+    if (hasAdded || isInCart || isLoading) return; // prevent re-animation if already added
     if (buttonText !== "Add to cart") return; // allow only if untouched
 
     setIsLoading(true);
@@ -87,7 +84,6 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
     const cart = cartRef.current;
     const tick = tickRef.current;
     const cross = crossRef.current;
-    const shirtPath = shirtPathRef.current;
     const addText = addTextRef.current;
     const staticCart = staticCartRef.current;
 
@@ -97,101 +93,121 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       !cart ||
       !tick ||
       !cross ||
-      !shirtPath ||
       !addText ||
       !staticCart
-    )
+    ) {
+      setIsLoading(false);
       return;
+    }
 
+    // Add active class to button
     button.classList.add("active");
+
+    // Hide static elements
     gsap.set(staticCart, { opacity: 0 });
     gsap.set(addText, { opacity: 0 });
+
+    // Show animated elements
     gsap.set([shirt, cart], { opacity: 1 });
 
-    // Animate shirt
-    gsap.fromTo(
+    // Create timeline for better animation control
+    const tl = gsap.timeline({
+      onComplete: () => {
+        // Animation complete - add to cart
+        handleCartAddition();
+      },
+    });
+
+    // Animate shirt flying to cart
+    tl.fromTo(
       shirt,
-      { y: -42, scale: 1, opacity: 1 },
       {
-        y: 20,
+        y: -20,
+        scale: 1,
+        opacity: 1,
+        x: 0,
+      },
+      {
+        y: 10,
         scale: 0.3,
         opacity: 0,
-        duration: 1.2,
+        x: 50,
+        duration: 0.8,
         ease: "power2.inOut",
       }
     );
 
-    gsap.to(shirtPath, {
-      keyframes: [
-        {
-          morphSVG:
-            "M4.99997 3L8.99997 1.5C8.99997 1.5 10.6901 3 12 3C13.3098 3 15 1.5 15 1.5L19 3L23.5 8L20.5 11L19 9.5L18 22.5C18 22.5 14 21.5 12 21.5C10 21.5 5.99997 22.5 5.99997 22.5L4.99997 9.5L3.5 11L0.5 8L4.99997 3Z",
-          duration: 0.25,
-          delay: 0.25,
-        },
-        {
-          morphSVG:
-            "M4.99997 3L8.99997 1.5C8.99997 1.5 10.6901 3 12 3C13.3098 3 15 1.5 15 1.5L19 3L23.5 8L20.5 11L19 9.5L18.5 22.5C18.5 22.5 13.5 22.5 12 22.5C10.5 22.5 5.5 22.5 5.5 22.5L4.99997 9.5L3.5 11L0.5 8L4.99997 3Z",
-          duration: 0.85,
-          ease: "elastic.out(1, .5)",
-        },
-      ],
-    });
-
-    // Animate cart and tick
-    gsap.fromTo(
+    // Animate cart movement
+    tl.fromTo(
       cart,
-      { x: 0, scale: 1, rotate: 0 },
       {
-        keyframes: [
-          { x: 52, rotate: -15, duration: 0.2 },
-          { x: 104, rotate: 0, duration: 0.2 },
-          {
-            x: -104,
-            duration: 0,
-            onComplete: () => gsap.set(tick, { opacity: 1 }),
-          },
-          {
-            x: -48,
-            scale: 0.75,
-            duration: 0.25,
-            onComplete: () => {
-              button.classList.remove("active");
-              gsap.set([shirt, cart], { opacity: 0 });
-              gsap.set(staticCart, { opacity: 1 });
-              gsap.to(addText, {
-                opacity: 1,
-                duration: 0.3,
-                onStart: () => {
-                  setButtonText("Added");
-                  setHasAdded(true);
-                },
-              });
-              // Show cross after 2s
-              setTimeout(() => {
-                gsap.set(tick, { opacity: 0 });
-                gsap.set(cross, { opacity: 1 });
-                setShowCross(true);
-              }, 2000);
-            },
-          },
-        ],
-        delay: 1.0,
-      }
+        x: 0,
+        scale: 1,
+        rotate: 0,
+        opacity: 1,
+      },
+      {
+        x: 50,
+        scale: 1.2,
+        rotate: -10,
+        duration: 0.4,
+        ease: "power2.out",
+      },
+      "-=0.4"
     );
 
-    gsap.fromTo(
+    // Return cart to position and show tick
+    tl.to(cart, {
+      x: 0,
+      scale: 1,
+      rotate: 0,
+      duration: 0.3,
+      ease: "back.out(1.7)",
+    });
+
+    // Show tick
+    tl.set(tick, { opacity: 1 }, "-=0.1");
+    tl.fromTo(
       tick,
-      { y: -10, opacity: 0 },
       {
-        y: 0,
+        scale: 0,
         opacity: 1,
+      },
+      {
+        scale: 1,
         duration: 0.3,
-        delay: 1.4,
         ease: "back.out(1.7)",
       }
     );
 
+    // Hide animated elements and show static ones
+    tl.set([shirt, cart], { opacity: 0 });
+    tl.set(staticCart, { opacity: 1 });
+    tl.to(addText, {
+      opacity: 1,
+      duration: 0.3,
+      onStart: () => {
+        setButtonText("Added");
+        setHasAdded(true);
+        button.classList.remove("active");
+      },
+    });
+
+    // Show cross after 2 seconds
+    tl.to(
+      {},
+      {
+        duration: 2,
+        onComplete: () => {
+          gsap.set(tick, { opacity: 0 });
+          gsap.set(cross, { opacity: 1 });
+          setShowCross(true);
+        },
+      }
+    );
+  };
+
+  const handleCartAddition = async () => {
     // Add product to cart via Redux
     if (product) {
       const cartItem = {
@@ -219,6 +235,7 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
 
   const handleReset = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation to product page
+
     // Remove item from cart if it exists
     if (product && isInCart) {
       await removeItem(product.id);
@@ -227,11 +244,15 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
     setButtonText("Add to cart");
     setHasAdded(false);
     setShowCross(false);
+    setIsLoading(false);
+
     // Reset visuals
-    gsap.set(tickRef.current, { opacity: 0 });
-    gsap.set(crossRef.current, { opacity: 0 });
-    gsap.set(staticCartRef.current, { opacity: 1 });
-    gsap.set(addTextRef.current, { opacity: 1 });
+    if (tickRef.current) gsap.set(tickRef.current, { opacity: 0 });
+    if (crossRef.current) gsap.set(crossRef.current, { opacity: 0 });
+    if (staticCartRef.current) gsap.set(staticCartRef.current, { opacity: 1 });
+    if (addTextRef.current) gsap.set(addTextRef.current, { opacity: 1 });
+    if (shirtRef.current) gsap.set(shirtRef.current, { opacity: 0 });
+    if (cartRef.current) gsap.set(cartRef.current, { opacity: 0 });
   };
 
   // Show disabled state if add to cart feature is disabled
@@ -291,12 +312,12 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
       ref={buttonRef}
       onClick={handleAddToCart}
       disabled={isLoading}
-      className={`add-to-cart relative w-full  py-3 rounded bg-[#8e0005] text-black font-semibold text-sm overflow-hidden flex items-center justify-center gap-2 ${className}`}
+      className={`add-to-cart relative w-full py-3 rounded bg-[#8e0005] text-white font-semibold text-sm overflow-hidden flex items-center justify-center gap-2 ${className}`}
     >
       {/* Static Cart Icon */}
       <svg
         ref={staticCartRef}
-        className="w-5 h-5 text-black transition-opacity duration-300"
+        className="w-5 h-5 text-white transition-opacity duration-300"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -312,30 +333,27 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
         {isLoading ? "Adding..." : buttonText}
       </span>
 
-      {/* Shirt */}
+      {/* Shirt Icon */}
       <div
         ref={shirtRef}
-        className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 z-10"
+        className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 z-10"
       >
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="#000">
-          <path
-            ref={shirtPathRef}
-            d="M4.99997 3L8.99997 1.5C8.99997 1.5 10.6901 3 12 3C13.3098 3 15 1.5 15 1.5L19 3L23.5 8L20.5 11L19 9.5L18 22.5C18 22.5 14 21.5 12 21.5C10 21.5 5.99997 22.5 5.99997 22.5L4.99997 9.5L3.5 11L0.5 8L4.99997 3Z"
-          />
+        <svg
+          className="w-5 h-5 text-white"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M4.99997 3L8.99997 1.5C8.99997 1.5 10.6901 3 12 3C13.3098 3 15 1.5 15 1.5L19 3L23.5 8L20.5 11L19 9.5L18 22.5C18 22.5 14 21.5 12 21.5C10 21.5 5.99997 22.5 5.99997 22.5L4.99997 9.5L3.5 11L0.5 8L4.99997 3Z" />
         </svg>
       </div>
 
       {/* Animated Cart */}
       <div
         ref={cartRef}
-        className="absolute top-2 left-1/2 pointer-events-none opacity-0 z-10"
-        style={{
-          transform: "translate(-50%, 0)",
-          transformOrigin: "center",
-        }}
+        className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 z-10"
       >
         <svg
-          className="w-6 h-6 text-black"
+          className="w-5 h-5 text-white"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
