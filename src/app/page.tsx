@@ -36,7 +36,7 @@ const Index = () => {
   return (
     <GuestAccessGuard>
       <GSAPScrollWrapper>
-        <div className={`min-h-screen flex flex-col ${getPageClasses()}`}>
+        <div className="min-h-screen flex flex-col bg-black/90 backdrop-blur-sm">
           <Header />
 
           {/* Hero Section - Full Viewport Height */}

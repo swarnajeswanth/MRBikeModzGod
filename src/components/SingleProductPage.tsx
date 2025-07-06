@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { ArrowLeft, Heart, Share2, Star } from "lucide-react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import AddToCartButton from "@/components/Cart/AddToCart";
 import { RootState, AppDispatch } from "@/components/store";
 import {
@@ -26,6 +25,15 @@ const ProductPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const productId = params.productId as string;
   const [selectedImage, setSelectedImage] = useState<number>(0);
+
+  // Handle back navigation
+  const handleBackNavigation = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
 
   // Get product from Redux store - try by ID first, then by title
   const product = useSelector((state: RootState) => {
@@ -99,7 +107,16 @@ const ProductPage = () => {
             </div>
           </div>
         </div>
-        <Footer />
+        {/* Back Button */}
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <button
+            onClick={handleBackNavigation}
+            className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors border border-gray-600"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back to Previous Page</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -201,7 +218,16 @@ const ProductPage = () => {
             </button>
           </div>
         </div>
-        <Footer />
+        {/* Back Button */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <button
+            onClick={handleBackNavigation}
+            className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors border border-gray-600"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back to Previous Page</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -501,7 +527,16 @@ const ProductPage = () => {
         )}
       </main>
 
-      <Footer />
+      {/* Back Button */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={handleBackNavigation}
+          className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors border border-gray-600"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          <span>Back to Previous Page</span>
+        </button>
+      </div>
     </div>
   );
 };
