@@ -3,14 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   Menu,
   X,
-  Phone,
-  Mail,
   LogOut,
   Heart,
   ShoppingCart,
   Home as HomeIcon,
-  List,
-  MapPin,
   Info,
   User,
   LogIn,
@@ -30,11 +26,7 @@ import toast from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
 import {
   AnimatedHomeIcon,
-  AnimatedCartIcon,
-  AnimatedListIcon,
-  AnimatedMapPinIcon,
   AnimatedInfoIcon,
-  AnimatedMailIcon,
   AnimatedUserIcon,
   AnimatedLogInIcon,
   AnimatedLogOutIcon,
