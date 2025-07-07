@@ -11,53 +11,90 @@ import {
   Star,
   StarOff,
 } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
+import { RootState } from "./store";
+import {
+  removeFromWishlist,
+  clearWishlist,
+  toggleWishlist,
+} from "./store/UserSlice";
+import {
+  selectIsFeatureEnabled,
+  selectIsCustomerExperienceEnabled,
+} from "./store/storeSettingsSlice";
 import { toast } from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// Sample wishlist data - you can replace this with your own data
+// Sample wishlist data for testing
 const sampleWishlistItems = [
   {
     id: "1",
     name: "Premium Brake Pads",
     price: 89.99,
-    category: "Brakes",
     image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=100&fit=crop",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
+    category: "Brakes",
   },
   {
     id: "2",
     name: "Performance Exhaust System",
     price: 299.99,
-    category: "Exhaust",
     image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=100&fit=crop",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
+    category: "Exhaust",
   },
   {
     id: "3",
     name: "LED Headlight Kit",
     price: 149.99,
-    category: "Lighting",
     image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=100&fit=crop",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
+    category: "Lighting",
   },
 ];
 
 const Wishlist: React.FC = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
-  const [wishlistItems, setWishlistItems] = useState(sampleWishlistItems);
+  const { wishlist, isLoggedIn } = useSelector(
+    (state: RootState) => state.user
+  );
+  const isWishlistEnabled = useSelector(selectIsFeatureEnabled("wishlist"));
+  const requireLoginForWishlist = useSelector(
+    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
+  );
+
+  // Loading states
   const [removingItem, setRemovingItem] = useState<string | null>(null);
   const [clearingWishlist, setClearingWishlist] = useState(false);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
+  // Add sample data to wishlist if empty (for testing)
+  useEffect(() => {
+    if (wishlist.length === 0) {
+      // Add sample items to wishlist
+      sampleWishlistItems.forEach((item) => {
+        dispatch(toggleWishlist(item));
+      });
+    }
+  }, [dispatch, wishlist.length]);
+
   const handleRemoveFromWishlist = async (productId: string) => {
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to manage your wishlist.");
+      router.push("/auth");
+      return;
+    }
+
     if (productId === "all") {
       setClearingWishlist(true);
       try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        setWishlistItems([]);
+        dispatch(clearWishlist());
         toast.success("Wishlist cleared");
       } catch (error) {
         toast.error("Failed to clear wishlist");
@@ -69,9 +106,7 @@ const Wishlist: React.FC = () => {
       try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 500));
-        setWishlistItems((prev) =>
-          prev.filter((item) => item.id !== productId)
-        );
+        dispatch(removeFromWishlist(productId));
         toast.success("Removed from wishlist");
       } catch (error) {
         toast.error("Failed to remove item");
@@ -82,10 +117,18 @@ const Wishlist: React.FC = () => {
   };
 
   const handleAddToCart = async (product: any) => {
+    // Check if login is required for wishlist and user is not logged in
+    if (requireLoginForWishlist && !isLoggedIn) {
+      toast.error("Please log in to manage your wishlist.");
+      router.push("/auth");
+      return;
+    }
+
     setAddingToCart(product.id);
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      // TODO: Implement actual add to cart functionality
       toast.success("Added to cart");
     } catch (error) {
       toast.error("Failed to add to cart");
@@ -94,7 +137,50 @@ const Wishlist: React.FC = () => {
     }
   };
 
-  if (wishlistItems.length === 0) {
+  // Hide wishlist if requireLoginForWishlist is true and user is not logged in
+  if (requireLoginForWishlist && !isLoggedIn) {
+    return (
+      <div className="w-full text-white p-6 rounded-lg shadow-lg">
+        <div className="flex items-center gap-3 mb-5">
+          <XCircle className="text-gray-400 text-2xl" />
+          <h2 className="text-2xl font-bold text-gray-400">
+            My Wishlist (Login Required)
+          </h2>
+        </div>
+        <div className="text-center py-8">
+          <Lock className="text-gray-400 text-4xl mx-auto mb-4" />
+          <p className="text-gray-400">
+            Please log in to use the wishlist feature
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show disabled state if wishlist feature is disabled
+  if (!isWishlistEnabled) {
+    return (
+      <div className="w-full text-white p-6 rounded-lg shadow-lg">
+        <div className="flex items-center gap-3 mb-5">
+          <XCircle className="text-gray-400 text-2xl" />
+          <h2 className="text-2xl font-bold text-gray-400">
+            My Wishlist (Disabled)
+          </h2>
+        </div>
+        <div className="text-center py-8">
+          <Lock className="text-gray-400 text-4xl mx-auto mb-4" />
+          <p className="text-gray-400">
+            Wishlist feature is currently disabled
+          </p>
+          <p className="text-gray-500 text-sm">
+            Contact the store administrator to enable this feature
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (wishlist.length === 0) {
     return (
       <div className="w-full text-white p-6 rounded-lg shadow-lg">
         <div className="flex items-center gap-3 mb-5">
@@ -113,14 +199,12 @@ const Wishlist: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-fi text-white p-6 rounded-lg shadow-lg bg-[#270001]">
+    <div className="w-full text-white p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-3 mb-5">
         <Heart className="text-red-400 text-2xl outline-2 outline-red-500 outline-offset-1" />
-        <h2 className="text-2xl font-bold">
-          My Wishlist ({wishlistItems.length})
-        </h2>
+        <h2 className="text-2xl font-bold">My Wishlist ({wishlist.length})</h2>
       </div>
-      {wishlistItems.map((item) => (
+      {wishlist.map((item) => (
         <div
           key={item.id}
           className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-[#0f172a] p-4 rounded-lg mb-3 cursor-pointer hover:bg-[#1e293b] transition-colors"
@@ -147,7 +231,7 @@ const Wishlist: React.FC = () => {
                   ? `${item.name.substring(0, 25)}...`
                   : item.name}
               </p>
-              <p className="text-red-400">${item.price}</p>
+              <p className="text-red-400">₹{item.price.toFixed(2)}</p>
               <p className="text-gray-400 text-sm">{item.category}</p>
             </div>
           </div>

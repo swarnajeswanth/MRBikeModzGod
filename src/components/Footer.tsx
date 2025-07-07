@@ -3,10 +3,12 @@ import {
   Phone,
   Mail,
   MapPin,
-  Facebook,
-  Instagram,
-  Youtube,
+  Code,
+  Database,
+  Globe,
+  Smartphone,
 } from "lucide-react";
+import SocialMediaIcons from "./SocialMediaIcons";
 import { useSelector } from "react-redux";
 import {
   selectUniqueCategories,
@@ -71,22 +73,31 @@ const Footer = () => {
     },
   ];
 
-  const socialLinks = [
-    {
-      icon: Facebook,
-      href: "https://www.facebook.com/share/1HUtQoEnwq/",
-      color: "hover:text-blue-400",
-    },
-    {
-      icon: Instagram,
-      href: "https://www.instagram.com/mrbikemodz?igsh=d250Ym1tb3NtcDZw",
-      color: "hover:text-pink-400",
-    },
-    { icon: Youtube, href: "#", color: "hover:text-red-400" },
-  ];
-
   return (
     <footer id="footer" className="bg-black border-t border-gray-800">
+      {/* Developer Section */}
+      <div className="bg-gray-900/50 border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-4">
+              <Code className="h-6 w-6 text-red-400 mr-3" />
+              <h3 className="text-xl font-semibold text-white">
+                Developed by{" "}
+                <span className="text-red-400">Jeswanth Swarna</span>
+              </h3>
+            </div>
+            <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
+              Full-stack developer specializing in modern web technologies and
+              scalable applications
+            </p>
+            {/* Removed tech stack icons row here */}
+            <div className="text-xs text-gray-500">
+              Built with modern web technologies for optimal performance and
+              user experience
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-16">
@@ -123,22 +134,12 @@ const Footer = () => {
               </div>
 
               {/* Social Links */}
-              <div className="flex space-x-4 mt-6">
-                {socialLinks.map((social, index) => {
-                  const Icon = social.icon;
-                  return (
-                    <a
-                      key={index}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`text-gray-400 ${social.color} transition-colors duration-200`}
-                      aria-label={`Follow us on ${social.icon.name}`}
-                    >
-                      <Icon className="h-6 w-6" />
-                    </a>
-                  );
-                })}
+              <div className="mt-6">
+                <SocialMediaIcons
+                  variant="default"
+                  size="md"
+                  className="text-gray-400"
+                />
               </div>
             </div>
 
@@ -173,7 +174,7 @@ const Footer = () => {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          router.push("/product/allproducts");
+                          router.push("/categories");
                         }}
                         className="text-gray-400 hover:text-red-400 transition-colors duration-200 cursor-pointer text-sm"
                       >
@@ -190,7 +191,7 @@ const Footer = () => {
         <div className="py-6 border-t border-gray-800">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
-              © 2024 MRBIKEMODZ. All rights reserved.
+              © 2025 MRBIKEMODZ. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm">
               <a

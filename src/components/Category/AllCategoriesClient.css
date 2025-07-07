@@ -1,0 +1,194 @@
+/* Custom animations for All Categories page */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+  }
+}
+
+@keyframes categoryHover {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Animation classes */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.6s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInFromRight 0.6s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.animate-category-hover {
+  animation: categoryHover 0.3s ease-in-out;
+}
+
+/* Category card hover effects */
+.category-card {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.category-card:hover .category-letter {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.category-card:hover .category-background {
+  transform: scale(1.1);
+}
+
+/* Gradient text effects */
+.gradient-text {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-scale-in,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-pulse-glow,
+  .animate-category-hover {
+    animation: none;
+  }
+
+  .category-card:hover {
+    transform: none;
+  }
+}
+
+/* Loading skeleton animation */
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeleton-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+/* Category letter styling */
+.category-letter {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Background image optimization */
+.category-background {
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Custom scrollbar for category grid */
+.category-grid {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(239, 68, 68, 0.5) transparent;
+}
+
+.category-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.category-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.category-grid::-webkit-scrollbar-thumb {
+  background: rgba(239, 68, 68, 0.5);
+  border-radius: 3px;
+}
+
+.category-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(239, 68, 68, 0.7);
+}

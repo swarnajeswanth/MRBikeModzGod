@@ -46,6 +46,7 @@ const Header = () => {
   const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const dispatch = useDispatch();
   const router = useRouter();
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const { isLoggedIn, username, role, wishlist } = useSelector(
     (state: RootState) => state.user
@@ -160,8 +161,25 @@ const Header = () => {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="sticky-header bg-black/95 backdrop-blur-md border-b border-red-600/20 shadow-lg">
+    <header
+      className={`sticky top-0 z-50 transition-all duration-300
+        ${
+          isScrolled
+            ? "bg-black/95 shadow-2xl border-b border-red-600/40"
+            : "bg-black/40 shadow-lg border-b border-transparent backdrop-blur-md"
+        }
+      `}
+      style={{ backdropFilter: "blur(12px)" }}
+    >
       {/* Top Bar */}
       {/* <div className="bg-red-600 text-white py-2">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-sm">

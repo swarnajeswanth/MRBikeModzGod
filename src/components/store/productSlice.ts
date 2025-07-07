@@ -432,14 +432,16 @@ export const selectProductsByCategory = (
 export const selectUniqueCategories = (state: { product: ProductState }) => {
   const categories = state.product.products
     .map((p) => p.category)
-    .filter(Boolean); // Filter out undefined/null categories
+    .filter(Boolean)
+    .map((cat) => cat.trim().toLowerCase()); // Normalize
   return [...new Set(categories)].sort();
 };
 
 export const selectCategoriesWithCount = (state: { product: ProductState }) => {
   const categoryCounts = state.product.products.reduce((acc, product) => {
     if (product.category) {
-      acc[product.category] = (acc[product.category] || 0) + 1;
+      const normalized = product.category.trim().toLowerCase();
+      acc[normalized] = (acc[normalized] || 0) + 1;
     }
     return acc;
   }, {} as Record<string, number>);
