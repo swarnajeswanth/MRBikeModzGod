@@ -251,7 +251,7 @@ const Header = () => {
           <StoreSettingsWrapper feature="wishlist">
             {isLoggedIn && (
               <Link
-                href="/dashboard"
+                href="/wishlist"
                 className="relative text-sm font-medium transition-colors duration-200 text-red-400 hover:text-red-300"
               >
                 <AnimatedHeartIcon
@@ -392,7 +392,7 @@ const Header = () => {
                 }}
               >
                 <Link
-                  href="/dashboard"
+                  href="/wishlist"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center py-3 px-3 font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg"
                 >

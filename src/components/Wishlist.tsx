@@ -11,64 +11,53 @@ import {
   Star,
   StarOff,
 } from "lucide-react";
-import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-import { RootState } from "./store";
-import { removeFromWishlist, clearWishlist } from "./store/UserSlice";
-import {
-  selectIsFeatureEnabled,
-  selectIsCustomerExperienceEnabled,
-} from "./store/storeSettingsSlice";
 import { toast } from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
 import { useState } from "react";
 
-const featureIcons = {
-  wishlist: {
-    enabled: <Heart className="text-pink-500" />,
-    disabled: <HeartOff className="text-gray-400" />,
+// Sample wishlist data - you can replace this with your own data
+const sampleWishlistItems = [
+  {
+    id: "1",
+    name: "Premium Brake Pads",
+    price: 89.99,
+    category: "Brakes",
+    image:
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=100&fit=crop",
   },
-  addToCart: {
-    enabled: <ShoppingCart className="text-green-500" />,
-    disabled: <MinusCircle className="text-gray-400" />,
+  {
+    id: "2",
+    name: "Performance Exhaust System",
+    price: 299.99,
+    category: "Exhaust",
+    image:
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=100&fit=crop",
   },
-  reviews: {
-    enabled: <Star className="text-yellow-400" />,
-    disabled: <StarOff className="text-gray-400" />,
+  {
+    id: "3",
+    name: "LED Headlight Kit",
+    price: 149.99,
+    category: "Lighting",
+    image:
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=100&fit=crop",
   },
-  // ...add for all features
-};
+];
 
 const Wishlist: React.FC = () => {
-  const dispatch = useDispatch();
   const router = useRouter();
-  const { wishlist, isLoggedIn } = useSelector(
-    (state: RootState) => state.user
-  );
-  const isWishlistEnabled = useSelector(selectIsFeatureEnabled("wishlist"));
-  const requireLoginForWishlist = useSelector(
-    selectIsCustomerExperienceEnabled("requireLoginForWishlist")
-  );
-
-  // Loading states
+  const [wishlistItems, setWishlistItems] = useState(sampleWishlistItems);
   const [removingItem, setRemovingItem] = useState<string | null>(null);
   const [clearingWishlist, setClearingWishlist] = useState(false);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
   const handleRemoveFromWishlist = async (productId: string) => {
-    // Check if login is required for wishlist and user is not logged in
-    if (requireLoginForWishlist && !isLoggedIn) {
-      toast.error("Please log in to manage your wishlist.");
-      router.push("/auth");
-      return;
-    }
-
     if (productId === "all") {
       setClearingWishlist(true);
       try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        dispatch(clearWishlist());
+        setWishlistItems([]);
         toast.success("Wishlist cleared");
       } catch (error) {
         toast.error("Failed to clear wishlist");
@@ -80,7 +69,9 @@ const Wishlist: React.FC = () => {
       try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 500));
-        dispatch(removeFromWishlist(productId));
+        setWishlistItems((prev) =>
+          prev.filter((item) => item.id !== productId)
+        );
         toast.success("Removed from wishlist");
       } catch (error) {
         toast.error("Failed to remove item");
@@ -91,18 +82,10 @@ const Wishlist: React.FC = () => {
   };
 
   const handleAddToCart = async (product: any) => {
-    // Check if login is required for wishlist and user is not logged in
-    if (requireLoginForWishlist && !isLoggedIn) {
-      toast.error("Please log in to manage your wishlist.");
-      router.push("/auth");
-      return;
-    }
-
     setAddingToCart(product.id);
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      // TODO: Implement actual add to cart functionality
       toast.success("Added to cart");
     } catch (error) {
       toast.error("Failed to add to cart");
@@ -111,52 +94,9 @@ const Wishlist: React.FC = () => {
     }
   };
 
-  // Hide wishlist if requireLoginForWishlist is true and user is not logged in
-  if (requireLoginForWishlist && !isLoggedIn) {
+  if (wishlistItems.length === 0) {
     return (
-      <div className="w-full bg-[#101828] text-white p-6 rounded-lg shadow-lg">
-        <div className="flex items-center gap-3 mb-5">
-          <XCircle className="text-gray-400 text-2xl" />
-          <h2 className="text-2xl font-bold text-gray-400">
-            My Wishlist (Login Required)
-          </h2>
-        </div>
-        <div className="text-center py-8">
-          <Lock className="text-gray-400 text-4xl mx-auto mb-4" />
-          <p className="text-gray-400">
-            Please log in to use the wishlist feature
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show disabled state if wishlist feature is disabled
-  if (!isWishlistEnabled) {
-    return (
-      <div className="w-full bg-[#101828] text-white p-6 rounded-lg shadow-lg">
-        <div className="flex items-center gap-3 mb-5">
-          <XCircle className="text-gray-400 text-2xl" />
-          <h2 className="text-2xl font-bold text-gray-400">
-            My Wishlist (Disabled)
-          </h2>
-        </div>
-        <div className="text-center py-8">
-          <Lock className="text-gray-400 text-4xl mx-auto mb-4" />
-          <p className="text-gray-400">
-            Wishlist feature is currently disabled
-          </p>
-          <p className="text-gray-500 text-sm">
-            Contact the store administrator to enable this feature
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (wishlist.length === 0) {
-    return (
-      <div className="w-full bg-[#101828] text-white p-6 rounded-lg shadow-lg">
+      <div className="w-full text-white p-6 rounded-lg shadow-lg">
         <div className="flex items-center gap-3 mb-5">
           <Heart className="text-red-400 text-2xl outline-2 outline-red-500 outline-offset-1" />
           <h2 className="text-2xl font-bold">My Wishlist</h2>
@@ -173,36 +113,45 @@ const Wishlist: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-[#101828] text-white p-6 rounded-lg shadow-lg">
+    <div className="w-full h-fi text-white p-6 rounded-lg shadow-lg bg-[#270001]">
       <div className="flex items-center gap-3 mb-5">
         <Heart className="text-red-400 text-2xl outline-2 outline-red-500 outline-offset-1" />
-        <h2 className="text-2xl font-bold">My Wishlist ({wishlist.length})</h2>
+        <h2 className="text-2xl font-bold">
+          My Wishlist ({wishlistItems.length})
+        </h2>
       </div>
-      {wishlist.map((item) => (
+      {wishlistItems.map((item) => (
         <div
           key={item.id}
-          className="flex justify-between items-center bg-[#1D2939] p-4 rounded-lg mb-3 cursor-pointer hover:bg-[#2A3A4A] transition-colors"
+          className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-[#0f172a] p-4 rounded-lg mb-3 cursor-pointer hover:bg-[#1e293b] transition-colors"
           onClick={() => router.push(`/product/${item.id}`)}
         >
-          <div className="flex items-center gap-3">
-            <div className="bg-[#344054] p-3 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3 sm:mb-0">
+            <div className="bg-[#334155] p-3 rounded-lg w-full sm:w-auto">
               {item.image ? (
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="w-12 h-12 object-cover rounded"
+                  className="w-full h-32 sm:w-12 sm:h-12 object-cover rounded"
                 />
               ) : (
-                <FaBox className="text-gray-300 text-xl" />
+                <FaBox className="text-gray-300 text-xl w-full h-32 sm:w-12 sm:h-12 flex items-center justify-center" />
               )}
             </div>
-            <div>
-              <p className="font-semibold">{item.name}</p>
+            <div className="w-full sm:w-auto">
+              <p
+                className="font-semibold truncate max-w-full sm:max-w-[200px]"
+                title={item.name}
+              >
+                {item.name.length > 25
+                  ? `${item.name.substring(0, 25)}...`
+                  : item.name}
+              </p>
               <p className="text-red-400">${item.price}</p>
               <p className="text-gray-400 text-sm">{item.category}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <LoadingButton
               onClick={(e) => {
                 e?.stopPropagation();
@@ -212,7 +161,7 @@ const Wishlist: React.FC = () => {
               loadingText="Adding..."
               variant="primary"
               size="sm"
-              className="bg-red-600 hover:bg-red-700"
+              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700"
             >
               Add to Cart
             </LoadingButton>
@@ -225,7 +174,7 @@ const Wishlist: React.FC = () => {
               loadingText=""
               variant="danger"
               size="sm"
-              className="bg-gray-600 hover:bg-gray-700"
+              className="flex-1 sm:flex-none bg-gray-600 hover:bg-gray-700"
               icon={<FaTrash className="text-sm" />}
             />
           </div>

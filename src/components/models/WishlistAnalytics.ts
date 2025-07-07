@@ -155,7 +155,6 @@ const WishlistAnalyticsSchema = new Schema<IWishlistAnalytics>(
 );
 
 // Indexes for better query performance
-WishlistAnalyticsSchema.index({ customerId: 1 });
 WishlistAnalyticsSchema.index({ lastLoginAt: -1 });
 WishlistAnalyticsSchema.index({ lastWishlistActivity: -1 });
 WishlistAnalyticsSchema.index({ customerRole: 1 });
