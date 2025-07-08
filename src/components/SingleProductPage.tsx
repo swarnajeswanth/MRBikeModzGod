@@ -131,8 +131,13 @@ const ProductPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   useEffect(() => {
     if (role === "retailer") {
-      const savedDate = localStorage.getItem("retailerSelectedDate");
-      if (savedDate) setSelectedDate(new Date(savedDate));
+      const updateSelectedDate = () => {
+        const savedDate = localStorage.getItem("retailerSelectedDate");
+        if (savedDate) setSelectedDate(new Date(savedDate));
+      };
+      updateSelectedDate();
+      window.addEventListener("focus", updateSelectedDate);
+      return () => window.removeEventListener("focus", updateSelectedDate);
     }
   }, [role]);
 

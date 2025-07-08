@@ -58,10 +58,22 @@ const RetailerCart = () => {
             name: product.name,
             price: product.price,
             quantity: 1,
+            image:
+              product.images && product.images.length > 0
+                ? product.images[0]
+                : product.image || "",
+            category: product.category,
           },
         ];
       }
-      return { ...prev, [formattedDate]: newCart };
+      const updatedCart = { ...prev, [formattedDate]: newCart };
+      // Always sync with database after cart change
+      if (newCart.length > 0) {
+        syncCartWithDatabase(newCart);
+      } else {
+        handleDeleteOrderFromDB();
+      }
+      return updatedCart;
     });
   };
 
@@ -69,12 +81,12 @@ const RetailerCart = () => {
     setCartByDate((prev) => {
       const prevCart = prev[formattedDate] || [];
       const newCart = prevCart.filter((item) => item.productId !== productId);
-
-      // If this was a past order and we're removing the last item, delete the order from DB
-      if (newCart.length === 0 && isEditingPastOrder()) {
+      // Always sync with database after cart change
+      if (newCart.length > 0) {
+        syncCartWithDatabase(newCart);
+      } else {
         handleDeleteOrderFromDB();
       }
-
       return { ...prev, [formattedDate]: newCart };
     });
   };
@@ -94,6 +106,8 @@ const RetailerCart = () => {
         toast.success("Order deleted from database");
         // Set flag to notify dashboard to refresh stats
         localStorage.setItem("orderUpdated", Date.now().toString());
+      } else if (res.status === 404) {
+        toast("No order to delete for this date");
       } else {
         toast.error("Failed to delete order from database");
       }
@@ -107,22 +121,19 @@ const RetailerCart = () => {
     setCartByDate((prev) => {
       const prevCart = prev[formattedDate] || [];
       let newCart;
-
       if (qty <= 0) {
-        // Remove item if quantity is 0 or less
         newCart = prevCart.filter((item) => item.productId !== productId);
       } else {
-        // Update quantity
         newCart = prevCart.map((item) =>
           item.productId === productId ? { ...item, quantity: qty } : item
         );
       }
-
-      // If this was a past order and we're removing the last item, delete the order from DB
-      if (newCart.length === 0 && isEditingPastOrder()) {
+      // Always sync with database after cart change
+      if (newCart.length > 0) {
+        syncCartWithDatabase(newCart);
+      } else {
         handleDeleteOrderFromDB();
       }
-
       return { ...prev, [formattedDate]: newCart };
     });
   };
@@ -137,6 +148,35 @@ const RetailerCart = () => {
       // If this was a past order, delete it from database
       if (isEditingPastOrder()) {
         await handleDeleteOrderFromDB();
+      } else {
+        // For current date, create an empty order to maintain consistency
+        try {
+          const userId = user.id || "retailer-demo";
+          const orderData = {
+            userId,
+            items: [],
+            total: 0,
+            status: "pending",
+            createdAt: selectedDate.toISOString(),
+            misc: "",
+          };
+
+          const res = await fetch("/api/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            console.log("Empty order created for date:", formattedDate);
+            localStorage.setItem("orderUpdated", Date.now().toString());
+          }
+        } catch (error) {
+          console.error("Error creating empty order:", error);
+        }
       }
 
       // Only clear cart and notes for the selected date
@@ -190,6 +230,12 @@ const RetailerCart = () => {
           const updatedCart = JSON.parse(e.newValue);
           setCartByDate(updatedCart);
           console.log("Cart updated from storage event:", updatedCart);
+
+          // Sync with database if cart was updated from another component
+          const currentCartForDate = updatedCart[formattedDate];
+          if (currentCartForDate && currentCartForDate.length > 0) {
+            syncCartWithDatabase(currentCartForDate);
+          }
         } catch (error) {
           console.error("Error parsing cart data from storage event:", error);
         }
@@ -200,10 +246,17 @@ const RetailerCart = () => {
       const savedCart = localStorage.getItem("retailerCartByDate");
       if (savedCart) {
         // Always create a new object reference to force re-render
-        setCartByDate({ ...JSON.parse(savedCart) });
+        const updatedCart = JSON.parse(savedCart);
+        setCartByDate({ ...updatedCart });
         console.log(
           "Cart updated from retailerCartUpdated event (new object reference)"
         );
+
+        // Sync with database if cart was updated from another component
+        const currentCartForDate = updatedCart[formattedDate];
+        if (currentCartForDate && currentCartForDate.length > 0) {
+          syncCartWithDatabase(currentCartForDate);
+        }
       }
     };
 
@@ -216,7 +269,49 @@ const RetailerCart = () => {
         handleRetailerCartUpdated
       );
     };
-  }, []);
+  }, [formattedDate]);
+
+  // Function to sync cart with database
+  const syncCartWithDatabase = async (cartItems: any[]) => {
+    try {
+      const userId = user.id || "retailer-demo";
+      const orderData = {
+        userId,
+        items: cartItems.map((item: any) => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        total: cartItems.reduce(
+          (sum: number, item: any) => sum + item.price * item.quantity,
+          0
+        ),
+        status: "pending",
+        createdAt: selectedDate.toISOString(),
+        misc: retailerMiscNote,
+      };
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        console.log("Cart synced with database for date:", formattedDate);
+        // Set flag to notify dashboard to refresh stats
+        localStorage.setItem("orderUpdated", Date.now().toString());
+      } else {
+        console.error("Failed to sync cart with database:", data.message);
+      }
+    } catch (error) {
+      console.error("Error syncing cart with database:", error);
+    }
+  };
 
   // Always re-read cart data from localStorage when selectedDate changes
   useEffect(() => {

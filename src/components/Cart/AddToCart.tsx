@@ -42,7 +42,11 @@ const AddToCartButton = ({
   const allowGuestBrowsing = useSelector(
     selectIsCustomerExperienceEnabled("allowGuestBrowsing")
   );
-  const { isLoggedIn, role } = useSelector((state: RootState) => state.user);
+  const {
+    isLoggedIn,
+    role,
+    id: userId,
+  } = useSelector((state: RootState) => state.user);
 
   // Check if product is already in cart
   const isInCart = product
@@ -254,6 +258,7 @@ const AddToCartButton = ({
           dateToUse = new Date();
           localStorage.setItem("retailerSelectedDate", dateToUse.toISOString());
         }
+
         const savedCart = localStorage.getItem("retailerCartByDate");
         const cartByDate = savedCart ? JSON.parse(savedCart) : {};
         const formattedDate = dateToUse.toISOString().slice(0, 10);
@@ -261,6 +266,7 @@ const AddToCartButton = ({
         const existingItem = currentCart.find(
           (item: any) => item.productId === product.id
         );
+
         let updatedCart;
         if (existingItem) {
           updatedCart = currentCart.map((item: any) =>
@@ -276,11 +282,120 @@ const AddToCartButton = ({
               name: product.name,
               price: product.price,
               quantity: 1,
+              image:
+                product.images && product.images.length > 0
+                  ? product.images[0]
+                  : product.image || "",
+              category: product.category,
             },
           ];
         }
+
         cartByDate[formattedDate] = updatedCart;
         localStorage.setItem("retailerCartByDate", JSON.stringify(cartByDate));
+
+        // Sync with Redux for retailer cart
+        const cartItem = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image:
+            (product.images &&
+              product.images.length > 0 &&
+              product.images[0]) ||
+            product.image ||
+            "",
+          category: product.category,
+          originalPrice: product.originalPrice,
+          discount: product.discount,
+        };
+
+        // Add to Redux cart for retailer (this will be used for UI consistency)
+        await addItem(cartItem);
+
+        // Auto-sync with database if this is the first item for this date
+        if (currentCart.length === 0) {
+          try {
+            const orderUserId = userId || "retailer-demo";
+            const orderData = {
+              userId: orderUserId,
+              items: updatedCart.map((item: any) => ({
+                productId: item.productId,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+              })),
+              total: updatedCart.reduce(
+                (sum: number, item: any) => sum + item.price * item.quantity,
+                0
+              ),
+              status: "pending",
+              createdAt: dateToUse.toISOString(),
+              misc: "",
+            };
+
+            const res = await fetch("/api/orders", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(orderData),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+              console.log("Order created for date:", formattedDate);
+              // Set flag to notify dashboard to refresh stats
+              localStorage.setItem("orderUpdated", Date.now().toString());
+            } else {
+              console.error("Failed to create order:", data.message);
+            }
+          } catch (error) {
+            console.error("Error creating order:", error);
+          }
+        } else {
+          // Update existing order in database
+          try {
+            const orderUserId = userId || "retailer-demo";
+            const orderData = {
+              userId: orderUserId,
+              items: updatedCart.map((item: any) => ({
+                productId: item.productId,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+              })),
+              total: updatedCart.reduce(
+                (sum: number, item: any) => sum + item.price * item.quantity,
+                0
+              ),
+              status: "pending",
+              createdAt: dateToUse.toISOString(),
+              misc: "",
+            };
+
+            const res = await fetch("/api/orders", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(orderData),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+              console.log("Order updated for date:", formattedDate);
+              // Set flag to notify dashboard to refresh stats
+              localStorage.setItem("orderUpdated", Date.now().toString());
+            } else {
+              console.error("Failed to update order:", data.message);
+            }
+          } catch (error) {
+            console.error("Error updating order:", error);
+          }
+        }
+
+        // Dispatch events to update UI
         window.dispatchEvent(
           new StorageEvent("storage", {
             key: "retailerCartByDate",
@@ -344,6 +459,53 @@ const AddToCartButton = ({
               "retailerCartByDate",
               JSON.stringify(cartByDate)
             );
+
+            // Sync with database
+            if (updatedCart.length > 0) {
+              try {
+                const orderUserId = userId || "retailer-demo";
+                const orderData = {
+                  userId: orderUserId,
+                  items: updatedCart.map((item: any) => ({
+                    productId: item.productId,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                  })),
+                  total: updatedCart.reduce(
+                    (sum: number, item: any) =>
+                      sum + item.price * item.quantity,
+                    0
+                  ),
+                  status: "pending",
+                  createdAt: dateToUse.toISOString(),
+                  misc: "",
+                };
+
+                const res = await fetch("/api/orders", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(orderData),
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                  console.log(
+                    "Order updated after item removal for date:",
+                    formattedDate
+                  );
+                  localStorage.setItem("orderUpdated", Date.now().toString());
+                }
+              } catch (error) {
+                console.error(
+                  "Error updating order after item removal:",
+                  error
+                );
+              }
+            }
+
             window.dispatchEvent(
               new StorageEvent("storage", {
                 key: "retailerCartByDate",
