@@ -474,7 +474,7 @@ const RetailerCart = () => {
         />
       </div>
       {/* Auto-date indicator */}
-      {user.isLoggedIn && (
+      {/* {user.isLoggedIn && (
         <div
           className={`max-w-xl mx-auto border rounded-lg p-3 mb-4 transition-all duration-300 ${
             dateAutoSet
@@ -498,10 +498,10 @@ const RetailerCart = () => {
             </ul>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Helpful notes */}
-      <div className="max-w-xl mx-auto bg-blue-600/20 border border-blue-600/50 rounded-lg p-3 mb-6">
+      {/* <div className="max-w-xl mx-auto bg-blue-600/20 border border-blue-600/50 rounded-lg p-3 mb-6">
         <div className="text-blue-300 text-sm">
           <p className="font-medium mb-1">💡 How it works:</p>
           <ul className="text-xs space-y-1">
@@ -513,10 +513,10 @@ const RetailerCart = () => {
             </li>
           </ul>
         </div>
-      </div>
+      </div> */}
 
       {/* Debug Info - Remove this after testing */}
-      <div className="max-w-xl mx-auto bg-yellow-600/20 border border-yellow-600/50 rounded-lg p-3 mb-6">
+      {/* <div className="max-w-xl mx-auto bg-yellow-600/20 border border-yellow-600/50 rounded-lg p-3 mb-6">
         <div className="text-yellow-300 text-sm">
           <p className="font-medium mb-1">🐛 Debug Info:</p>
           <ul className="text-xs space-y-1">
@@ -542,7 +542,7 @@ const RetailerCart = () => {
             Refresh Cart Data
           </button>
         </div>
-      </div>
+      </div> */}
 
       {retailerCartItems.length === 0 ? (
         <div className="max-w-xl mx-auto bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 sm:p-12 text-center">
