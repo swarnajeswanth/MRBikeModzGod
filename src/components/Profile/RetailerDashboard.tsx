@@ -76,6 +76,8 @@ import { useEffect } from "react";
 import { toast } from "react-hot-toast";
 import LoadingButton from "@/components/Loaders/LoadingButton";
 import { RootState } from "@/components/store";
+import { useLoading } from "@/components/hooks/useLoading";
+import SimpleLoadingSpinner from "@/components/Loaders/SimpleLoadingSpinner";
 
 const RetailerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,6 +93,7 @@ const RetailerDashboard = () => {
   const fetchLoading = useSelector(selectFetchLoading);
   const dispatch = useDispatch();
   const [editProductId, setEditProductId] = useState<string | null>(null);
+  const { isLoading: pageLoading, withLoading } = useLoading();
 
   // Wishlist analytics state
   const [wishlistAnalytics, setWishlistAnalytics] =
@@ -99,8 +102,11 @@ const RetailerDashboard = () => {
 
   // Fetch products on component mount
   useEffect(() => {
-    dispatch(fetchProducts() as any);
-  }, [dispatch]);
+    withLoading(
+      () => dispatch(fetchProducts() as any),
+      "Loading dashboard data..."
+    );
+  }, [dispatch, withLoading]);
 
   // Fetch wishlist analytics
   const fetchWishlistAnalytics = async () => {
@@ -510,6 +516,19 @@ const RetailerDashboard = () => {
     },
   ];
 
+  // Show loading spinner while data is being fetched
+  if (loading || pageLoading || products.length === 0) {
+    return (
+      <div className="min-h-screen bg-black/90">
+        <SimpleLoadingSpinner
+          isLoading={true}
+          message="Loading dashboard..."
+          className="min-h-screen"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Summary Cards */}
@@ -526,6 +545,157 @@ const RetailerDashboard = () => {
             {card.icon}
           </div>
         ))}
+      </div>
+
+      {/* Selected Date Section */}
+      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-6 rounded-lg">
+        <div className="flex flex-col lg:flex-row items-center gap-6">
+          {/* Date Image */}
+          <div className="relative">
+            <div className="w-32 h-32 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center shadow-lg">
+              <div className="text-center text-white">
+                <div className="text-4xl font-bold">
+                  {(() => {
+                    const savedDate = localStorage.getItem(
+                      "retailerSelectedDate"
+                    );
+                    if (savedDate) {
+                      const date = new Date(savedDate);
+                      return date.getDate();
+                    }
+                    return new Date().getDate();
+                  })()}
+                </div>
+                <div className="text-sm font-medium">
+                  {(() => {
+                    const savedDate = localStorage.getItem(
+                      "retailerSelectedDate"
+                    );
+                    if (savedDate) {
+                      const date = new Date(savedDate);
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                      });
+                    }
+                    return new Date().toLocaleDateString("en-US", {
+                      month: "short",
+                    });
+                  })()}
+                </div>
+              </div>
+            </div>
+            {/* Calendar icon overlay */}
+            <div className="absolute -top-2 -right-2 bg-white text-red-600 rounded-full p-2 shadow-lg">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Date Information */}
+          <div className="flex-1 text-center lg:text-left">
+            <h3 className="text-xl font-bold text-white mb-2">
+              Selected Date for Cart
+            </h3>
+            <p className="text-gray-300 mb-4">
+              {(() => {
+                const savedDate = localStorage.getItem("retailerSelectedDate");
+                if (savedDate) {
+                  const date = new Date(savedDate);
+                  return date.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  });
+                }
+                return new Date().toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                });
+              })()}
+            </p>
+
+            {/* Cart Status */}
+            <div className="flex items-center justify-center lg:justify-start gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-gray-300">
+                  {(() => {
+                    const savedCart =
+                      localStorage.getItem("retailerCartByDate");
+                    const savedDate = localStorage.getItem(
+                      "retailerSelectedDate"
+                    );
+                    if (savedCart && savedDate) {
+                      const cartByDate = JSON.parse(savedCart);
+                      const date = new Date(savedDate);
+                      const formattedDate = date.toISOString().slice(0, 10);
+                      const cartItems = cartByDate[formattedDate] || [];
+                      const itemCount = cartItems.reduce(
+                        (total: number, item: any) => total + item.quantity,
+                        0
+                      );
+                      return `${itemCount} items in cart`;
+                    }
+                    return "No items in cart";
+                  })()}
+                </span>
+              </div>
+
+              <button
+                onClick={() => (window.location.href = "/cart")}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm"
+              >
+                View Cart
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                const today = new Date();
+                localStorage.setItem(
+                  "retailerSelectedDate",
+                  today.toISOString()
+                );
+                window.location.reload();
+              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm flex items-center justify-center"
+              title="Set to Today"
+              aria-label="Set to Today"
+            >
+              {/* Refresh Icon */}
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => (window.location.href = "/cart")}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm"
+            >
+              Manage Cart
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Refresh Stats Button */}

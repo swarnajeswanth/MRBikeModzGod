@@ -1,23 +1,22 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Star, ShoppingCart, Filter, X, Home } from "lucide-react";
-import Header from "@/components/Header";
-import { useRouter } from "next/navigation";
-import AddToCartButton from "./Cart/AddToCart";
-import { FaRegHeart, FaHeart } from "react-icons/fa";
+import { RootState, AppDispatch } from "@/components/store";
 import {
   selectAllProducts,
   selectLoading,
   selectError,
   fetchProducts,
 } from "@/components/store/productSlice";
-import { RootState } from "@/components/store";
+import { toggleWishlist } from "@/components/store/UserSlice";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { AppDispatch } from "@/components/store";
 import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSettingsSlice";
-import { ProductRatingShimmer } from "./Loaders/RatingShimmer";
-import { useWishlist } from "./hooks/useWishlist";
+import { useWishlist } from "@/components/hooks/useWishlist";
+import IndividualProduct from "@/components/IndividualProduct";
+import SimpleLoadingSpinner from "@/components/Loaders/SimpleLoadingSpinner";
+import { useLoading } from "@/components/hooks/useLoading";
 
 const AllProductsPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,6 +24,7 @@ const AllProductsPage = () => {
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const [isVisible, setIsVisible] = useState(false);
+  const { isLoading: pageLoading, withLoading } = useLoading();
 
   const router = useRouter();
   const { isLoggedIn } = useSelector((state: RootState) => state.user);
@@ -44,9 +44,9 @@ const AllProductsPage = () => {
 
   useEffect(() => {
     if (products.length === 0) {
-      dispatch(fetchProducts());
+      withLoading(() => dispatch(fetchProducts()), "Loading products...");
     }
-  }, [dispatch, products.length]);
+  }, [dispatch, products.length, withLoading]);
 
   useEffect(() => {
     if (role === "retailer") {
@@ -86,52 +86,44 @@ const AllProductsPage = () => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image:
+        product.images && product.images.length > 0 ? product.images[0] : "",
       category: product.category,
     };
 
-    toggleWishlistItem(wishlistItem);
+    dispatch(toggleWishlist(wishlistItem));
+
+    const isInWishlist = products.some((item) => item.id === product.id);
+    if (isInWishlist) {
+      toast.success("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
   };
 
   const filterProducts = () => {
     let filtered = [...products];
 
+    // Category filter
     if (filters.category) {
       filtered = filtered.filter(
         (product) =>
-          product.category?.toLowerCase().trim() ===
-          filters.category.toLowerCase().trim()
+          product.category.toLowerCase() === filters.category.toLowerCase()
       );
     }
 
+    // Price range filter
     if (filters.priceRange) {
+      const [min, max] = filters.priceRange.split("-").map(Number);
       filtered = filtered.filter((product) => {
-        switch (filters.priceRange) {
-          case "under-50":
-            return product.price < 50;
-          case "50-200":
-            return product.price >= 50 && product.price <= 200;
-          case "200-500":
-            return product.price >= 200 && product.price <= 500;
-          case "over-500":
-            return product.price > 500;
-          default:
-            return true;
+        if (max) {
+          return product.price >= min && product.price <= max;
         }
+        return product.price >= min;
       });
     }
 
-    if (filters.offers === "offers") {
-      filtered = filtered.filter(
-        (product) => product.discount && product.discount !== ""
-      );
-    } else if (filters.offers === "deals") {
-      filtered = filtered.filter(
-        (product) =>
-          product.originalPrice && product.originalPrice > product.price
-      );
-    }
-
+    // Sort products
     if (filters.sortBy) {
       filtered.sort((a, b) => {
         switch (filters.sortBy) {
@@ -149,261 +141,201 @@ const AllProductsPage = () => {
       });
     }
 
+    // Offers filter
+    if (filters.offers) {
+      filtered = filtered.filter((product) => {
+        switch (filters.offers) {
+          case "discount":
+            return (
+              product.originalPrice && product.originalPrice > product.price
+            );
+          case "new":
+            return product.labelType === "new";
+          case "bestseller":
+            return product.labelType === "bestseller";
+          default:
+            return true;
+        }
+      });
+    }
+
     return filtered;
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      category: "",
+      priceRange: "",
+      sortBy: "",
+      offers: "",
+    });
   };
 
   const filteredProducts = filterProducts();
 
-  const clearFilters = () => {
-    setFilters({ category: "", priceRange: "", sortBy: "", offers: "" });
-  };
-
-  const hasActiveFilters = Object.values(filters).some((val) => val !== "");
-
-  if (loading) {
+  // Show loading spinner while products are being fetched
+  if (loading || pageLoading || products.length === 0) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading products...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-red-400 text-xl">Error: {error}</div>
+      <div className="min-h-screen bg-black/90">
+        <SimpleLoadingSpinner
+          isLoading={true}
+          message="Loading products..."
+          className="min-h-screen"
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <div
-        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-1000 ease-in-out ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        }`}
-      >
-        <div className="mb-8">
+    <div className="min-h-screen bg-black/90">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">All Products</h1>
-          <p className="text-gray-400">
-            Showing {filteredProducts.length} of {products.length} products
+          <p className="text-gray-400 text-lg">
+            Discover our complete collection of premium auto parts and
+            accessories
           </p>
         </div>
 
         {/* Filters */}
         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white flex items-center">
-              <Filter className="h-5 w-5 mr-2" /> Filters
-            </h2>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="text-red-400 hover:text-red-300 flex items-center"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Category Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Category
+              </label>
+              <select
+                value={filters.category}
+                onChange={(e) =>
+                  setFilters({ ...filters, category: e.target.value })
+                }
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
-                <X className="h-4 w-4 mr-2" /> Clear All
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
-              {
-                label: "Category",
-                value: filters.category,
-                options: ["", ...uniqueCategories],
-                key: "category",
-              },
-              {
-                label: "Price Range",
-                value: filters.priceRange,
-                options: ["", "under-50", "50-200", "200-500", "over-500"],
-                key: "priceRange",
-              },
-              {
-                label: "Special Offers",
-                value: filters.offers,
-                options: ["", "offers", "deals"],
-                key: "offers",
-              },
-              {
-                label: "Sort By",
-                value: filters.sortBy,
-                options: ["", "price-low", "price-high", "rating", "reviews"],
-                key: "sortBy",
-              },
-            ].map((filter) => (
-              <div key={filter.key}>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  {filter.label}
-                </label>
-                <select
-                  value={filter.value}
-                  onChange={(e) =>
-                    setFilters({ ...filters, [filter.key]: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded"
-                >
-                  {filter.options.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt
-                        ? opt
-                            .replace(/-/g, " ")
-                            .replace(/\b\w/g, (l) => l.toUpperCase())
-                        : `All ${filter.label}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product, index) => (
-            <div
-              key={product.id}
-              className={`bg-gray-800/50 border border-gray-700 hover:border-red-500/30 transition-all duration-500 ease-out rounded-lg overflow-hidden cursor-pointer ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-8"
-              }`}
-              style={{
-                transitionDelay: `${index * 100}ms`,
-                transform: isVisible ? "translateY(0)" : "translateY(32px)",
-              }}
-            >
-              <div className="h-48 relative flex items-center justify-center bg-gray-700">
-                {product.label && (
-                  <span
-                    className={`absolute top-3 left-3 px-2.5 py-1 text-xs font-bold uppercase rounded-full ${
-                      product.labelType === "sale"
-                        ? "bg-purple-400 text-white"
-                        : product.labelType === "premium"
-                        ? "bg-yellow-400 text-black"
-                        : "bg-white text-black"
-                    }`}
-                  >
-                    {product.label}
-                  </span>
-                )}
-
-                <button
-                  className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-                  onClick={() => handleToggleWishlist(product)}
-                >
-                  {isInWishlist(product.id) ? (
-                    <FaHeart className="w-5 h-5 text-red-500 transition-transform duration-200 scale-110" />
-                  ) : (
-                    <FaRegHeart className="w-5 h-5 text-red-500" />
-                  )}
-                </button>
-
-                {product.images && product.images.length > 0 ? (
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-white text-6xl font-bold opacity-20">
-                    {product.name.charAt(0)}
-                  </div>
-                )}
-              </div>
-
-              <div className="p-4">
-                <h3
-                  className="text-lg font-semibold text-white mb-2 line-clamp-2 cursor-pointer hover:text-red-400 transition-colors"
-                  onClick={() => router.push(`/product/${product.id}`)}
-                >
-                  {product.name}
-                </h3>
-
-                {/* Rating Section - Show shimmer while loading */}
-                {loading ? (
-                  <ProductRatingShimmer className="mb-3" />
-                ) : (
-                  <div className="flex items-center mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(product.rating)
-                            ? "text-yellow-400"
-                            : "text-gray-600"
-                        }`}
-                      />
-                    ))}
-                    <span className="text-gray-400 text-sm ml-2">
-                      {product.rating} ({product.reviews})
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xl font-bold text-white">
-                      ₹{product.price}
-                    </span>
-                    {product.originalPrice && (
-                      <span className="text-sm text-gray-500 line-through">
-                        ₹{product.originalPrice}
-                      </span>
-                    )}
-                  </div>
-                  {product.originalPrice && (
-                    <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">
-                      {Math.round(
-                        ((product.originalPrice - product.price) /
-                          product.originalPrice) *
-                          100
-                      )}
-                      % OFF
-                    </span>
-                  )}
-                </div>
-
-                <AddToCartButton
-                  product={product}
-                  {...(role === "retailer" && selectedDate
-                    ? { selectedDate }
-                    : {})}
-                />
-              </div>
+                <option value="">All Categories</option>
+                {uniqueCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
-          ))}
-        </div>
 
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-16">
-            <div className="text-6xl text-gray-600 mb-4">🔍</div>
-            <h3 className="text-2xl font-semibold text-white mb-2">
-              No products found
-            </h3>
-            <p className="text-gray-400 mb-6">
-              Try adjusting your filters to see more results
-            </p>
+            {/* Price Range Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Price Range
+              </label>
+              <select
+                value={filters.priceRange}
+                onChange={(e) =>
+                  setFilters({ ...filters, priceRange: e.target.value })
+                }
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">All Prices</option>
+                <option value="0-100">Under ₹100</option>
+                <option value="100-500">₹100 - ₹500</option>
+                <option value="500-1000">₹500 - ₹1,000</option>
+                <option value="1000-5000">₹1,000 - ₹5,000</option>
+                <option value="5000-">Above ₹5,000</option>
+              </select>
+            </div>
+
+            {/* Sort By */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Sort By
+              </label>
+              <select
+                value={filters.sortBy}
+                onChange={(e) =>
+                  setFilters({ ...filters, sortBy: e.target.value })
+                }
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">Default</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+                <option value="reviews">Most Reviewed</option>
+              </select>
+            </div>
+
+            {/* Offers Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Offers
+              </label>
+              <select
+                value={filters.offers}
+                onChange={(e) =>
+                  setFilters({ ...filters, offers: e.target.value })
+                }
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">All Items</option>
+                <option value="discount">On Sale</option>
+                <option value="new">New Arrivals</option>
+                <option value="bestseller">Best Sellers</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          <div className="mt-4 text-center">
             <button
               onClick={clearFilters}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
+              className="text-red-400 hover:text-red-300 text-sm font-medium"
             >
               Clear All Filters
             </button>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Home Button */}
-      <div className="flex justify-center py-8">
-        <button
-          onClick={() => router.push("/")}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
-        >
-          <Home className="h-5 w-5" />
-          Home
-        </button>
+        {/* Results Count */}
+        <div className="mb-6">
+          <p className="text-gray-400">
+            Showing {filteredProducts.length} of {products.length} products
+          </p>
+        </div>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <IndividualProduct
+              key={product.id}
+              id={product.id}
+              label={product.label}
+              labelType={product.labelType}
+              backgroundColor={product.backgroundColor}
+              category={product.category}
+              title={product.title}
+              rating={product.rating}
+              reviews={product.reviews}
+              price={product.price}
+              originalPrice={product.originalPrice}
+              discount={product.discount}
+              images={product.images}
+            />
+          ))}
+        </div>
+
+        {/* No Results */}
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">
+              No products found matching your criteria.
+            </p>
+            <button
+              onClick={clearFilters}
+              className="mt-4 text-red-400 hover:text-red-300 font-medium"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

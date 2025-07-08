@@ -14,6 +14,8 @@ import LoadingButton from "@/components/Loaders/LoadingButton";
 import { RootState } from "@/components/store";
 import { startLoading, stopLoading } from "@/components/store/LoadingSlice";
 import { validateRetailerEmail } from "@/components/lib/retailerConfig";
+import { useLoading } from "@/components/hooks/useLoading";
+import SimpleLoadingSpinner from "@/components/Loaders/SimpleLoadingSpinner";
 
 gsap.registerPlugin(ScrambleTextPlugin, MorphSVGPlugin);
 
@@ -29,6 +31,7 @@ const AuthPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isLoggedIn } = useSelector((state: RootState) => state.user);
+  const { isLoading: authLoading, withLoading } = useLoading();
 
   const [isLogin, setIsLogin] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -466,6 +469,19 @@ const AuthPage = () => {
 
   if (isLoggedIn) {
     return null; // Prevent render flicker
+  }
+
+  // Show loading spinner during authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black/90 flex items-center justify-center">
+        <SimpleLoadingSpinner
+          isLoading={true}
+          message="Processing..."
+          className="min-h-screen"
+        />
+      </div>
+    );
   }
 
   return (

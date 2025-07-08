@@ -169,7 +169,7 @@ const Header = () => {
       // Add Cart link for retailers
       if (role === "retailer" && features?.addToCart) {
         baseNav.push({
-          name: "Cart",
+          name: `Cart${displayCartCount > 0 ? ` (${displayCartCount})` : ""}`,
           href: "/cart",
           icon: <AnimatedShoppingCartIcon className="h-4 w-4 mr-2" />,
         });
@@ -336,19 +336,21 @@ const Header = () => {
             </div>
           ))}
 
-          {/* Cart Icon - Only show if add to cart feature is enabled */}
+          {/* Cart Icon - Only show for customers (retailers have cart in navigation) */}
           <StoreSettingsWrapper feature="addToCart">
-            <Link
-              href="/cart"
-              className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
-            >
-              <AnimatedShoppingCartIcon className="h-5 w-5" />
-              {displayCartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {displayCartCount}
-                </span>
-              )}
-            </Link>
+            {role !== "retailer" && (
+              <Link
+                href="/cart"
+                className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
+              >
+                <AnimatedShoppingCartIcon className="h-5 w-5" />
+                {displayCartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg border border-red-600 min-w-[20px]">
+                    {displayCartCount > 99 ? "99+" : displayCartCount}
+                  </span>
+                )}
+              </Link>
+            )}
           </StoreSettingsWrapper>
 
           {/* Wishlist Icon - Only show if wishlist feature is enabled */}
@@ -363,8 +365,8 @@ const Header = () => {
                   filled={wishlist.length > 0}
                 />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {wishlist.length}
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg border border-red-600 min-w-[20px]">
+                    {wishlist.length > 99 ? "99+" : wishlist.length}
                   </span>
                 )}
               </Link>
@@ -452,33 +454,35 @@ const Header = () => {
             </div>
           ))}
 
-          {/* Mobile Cart */}
+          {/* Mobile Cart - Only show for customers (retailers have cart in navigation) */}
           <StoreSettingsWrapper feature="addToCart">
-            <div
-              className={`transform transition-all duration-300 ease-out ${
-                isMenuOpen
-                  ? "translate-x-0 opacity-100"
-                  : "translate-x-full opacity-0"
-              }`}
-              style={{
-                transitionDelay: `${navigation.length * 100}ms`,
-                transform: isMenuOpen ? "translateX(0)" : "translateX(100%)",
-              }}
-            >
-              <Link
-                href="/cart"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center py-3 px-3 font-medium transition-all duration-200 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+            {role !== "retailer" && (
+              <div
+                className={`transform transition-all duration-300 ease-out ${
+                  isMenuOpen
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-full opacity-0"
+                }`}
+                style={{
+                  transitionDelay: `${navigation.length * 100}ms`,
+                  transform: isMenuOpen ? "translateX(0)" : "translateX(100%)",
+                }}
               >
-                <AnimatedShoppingCartIcon className="h-4 w-4 mr-2" />
-                Cart
-                {displayCartCount > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {displayCartCount}
-                  </span>
-                )}
-              </Link>
-            </div>
+                <Link
+                  href="/cart"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center py-3 px-3 font-medium transition-all duration-200 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                >
+                  <AnimatedShoppingCartIcon className="h-4 w-4 mr-2" />
+                  Cart
+                  {displayCartCount > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg border border-red-600 min-w-[20px]">
+                      {displayCartCount > 99 ? "99+" : displayCartCount}
+                    </span>
+                  )}
+                </Link>
+              </div>
+            )}
           </StoreSettingsWrapper>
 
           {/* Mobile Wishlist */}
@@ -506,8 +510,8 @@ const Header = () => {
                   />
                   Wishlist
                   {wishlist.length > 0 && (
-                    <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {wishlist.length}
+                    <span className="ml-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg border border-red-600 min-w-[20px]">
+                      {wishlist.length > 99 ? "99+" : wishlist.length}
                     </span>
                   )}
                 </Link>

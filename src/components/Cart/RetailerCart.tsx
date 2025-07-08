@@ -6,9 +6,12 @@ import { FaBox } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { RootState } from "@/components/store";
 import { toast } from "react-hot-toast";
+import { useLoading } from "@/components/hooks/useLoading";
+import SimpleLoadingSpinner from "@/components/Loaders/SimpleLoadingSpinner";
 
 const RetailerCart = () => {
   const user = useSelector((state: RootState) => state.user);
+  const { isLoading: cartLoading, withLoading } = useLoading();
 
   // Retailer-specific state
   const today = new Date();
@@ -366,8 +369,8 @@ const RetailerCart = () => {
       }
     };
 
-    fetchCartForDate();
-  }, [selectedDate, user.id, formattedDate, cartByDate]);
+    withLoading(fetchCartForDate, "Loading cart data...");
+  }, [selectedDate, user.id, formattedDate, cartByDate, withLoading]);
 
   const isEditingPastOrder = () => {
     const today = new Date();
@@ -455,6 +458,19 @@ const RetailerCart = () => {
       currentCartForDate: cartByDate[formattedDate],
     });
   }, [selectedDate, formattedDate, cartByDate, retailerCartItems]);
+
+  // Show loading spinner while cart data is being fetched
+  if (cartLoading) {
+    return (
+      <div className="w-full text-white p-6 rounded-lg shadow-lg">
+        <SimpleLoadingSpinner
+          isLoading={true}
+          message="Loading cart..."
+          className="min-h-[400px]"
+        />
+      </div>
+    );
+  }
 
   // Always render the date picker at the top
   return (

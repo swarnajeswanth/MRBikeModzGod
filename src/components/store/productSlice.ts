@@ -1,5 +1,6 @@
 // store/productSlice.ts
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { startLoading, stopLoading, setLoadingMessage } from "./LoadingSlice";
 
 export type Product = {
   _id?: string;
@@ -44,6 +45,10 @@ type ProductState = {
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async (_, { dispatch }) => {
+    dispatch(startLoading("products"));
+    dispatch(
+      setLoadingMessage({ key: "products", message: "Loading products..." })
+    );
     dispatch(setFetchLoading(true));
     try {
       console.log("Fetching products from API...");
@@ -74,6 +79,7 @@ export const fetchProducts = createAsyncThunk(
       throw error;
     } finally {
       dispatch(setFetchLoading(false));
+      dispatch(stopLoading("products"));
     }
   }
 );
