@@ -74,32 +74,8 @@ import {
 } from "@/components/store/productSlice";
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";
-import SeedProductsButton from "./SeedProductsButton";
 import LoadingButton from "@/components/Loaders/LoadingButton";
 import { RootState } from "@/components/store";
-
-const summaryCards = [
-  {
-    label: "Total Products",
-    value: "1,234",
-    icon: <FaBox className="text-blue-400 text-2xl" />,
-  },
-  {
-    label: "Total Orders",
-    value: "856",
-    icon: <FaUsers className="text-green-400 text-2xl" />,
-  },
-  {
-    label: "Revenue",
-    value: "₹45,670",
-    icon: <FaDollarSign className="text-yellow-400 text-2xl" />,
-  },
-  {
-    label: "Growth",
-    value: "+12.5%",
-    icon: <FaChartLine className="text-purple-400 text-2xl" />,
-  },
-];
 
 const RetailerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -166,6 +142,205 @@ const RetailerDashboard = () => {
       fetchWishlistAnalytics();
     }
   }, [activeTab]);
+
+  // --- Monthly Analytics ---
+  const [monthStats, setMonthStats] = useState({ totalOrders: 0, revenue: 0 });
+  const [prevMonthStats, setPrevMonthStats] = useState({
+    totalOrders: 0,
+    revenue: 0,
+  });
+  const [monthGrowth, setMonthGrowth] = useState<string | null>(null);
+
+  // Function to get cached growth for current month
+  const getCachedGrowth = () => {
+    try {
+      const currentDate = new Date();
+      const monthKey = `${currentDate.getFullYear()}-${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}`;
+      const cached = localStorage.getItem(`monthlyGrowth_${monthKey}`);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      console.error("Error reading cached growth:", error);
+    }
+    return null;
+  };
+
+  // Function to cache growth for current month
+  const cacheGrowth = (growth: string) => {
+    try {
+      const currentDate = new Date();
+      const monthKey = `${currentDate.getFullYear()}-${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}`;
+      localStorage.setItem(`monthlyGrowth_${monthKey}`, JSON.stringify(growth));
+    } catch (error) {
+      console.error("Error caching growth:", error);
+    }
+  };
+
+  // Function to calculate and cache growth
+  const calculateAndCacheGrowth = () => {
+    let growth: string;
+    if (prevMonthStats.revenue === 0 && monthStats.revenue === 0) {
+      growth = "N/A";
+    } else if (prevMonthStats.revenue === 0) {
+      growth = "∞";
+    } else {
+      const percent =
+        ((monthStats.revenue - prevMonthStats.revenue) /
+          prevMonthStats.revenue) *
+        100;
+      growth = percent.toFixed(1) + "%";
+    }
+
+    setMonthGrowth(growth);
+    cacheGrowth(growth);
+  };
+
+  // Function to fetch monthly stats
+  const fetchMonthStats = async (year: number, month: number, setter: any) => {
+    try {
+      const yyyy = year;
+      const mm = (month + 1).toString().padStart(2, "0");
+      const res = await fetch(`/api/orders?month=${yyyy}-${mm}&status=paid`);
+      const data = await res.json();
+      if (data.success) {
+        setter({
+          totalOrders: data.totalOrders || 0,
+          revenue: data.revenue || 0,
+        });
+      } else {
+        setter({ totalOrders: 0, revenue: 0 });
+      }
+    } catch {
+      setter({ totalOrders: 0, revenue: 0 });
+    }
+  };
+
+  // Function to refresh all monthly stats
+  const refreshMonthlyStats = async () => {
+    const currentDate = new Date();
+    await fetchMonthStats(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      setMonthStats
+    );
+    let prevYear = currentDate.getFullYear();
+    let prevMonth = currentDate.getMonth() - 1;
+    if (prevMonth < 0) {
+      prevMonth = 11;
+      prevYear -= 1;
+    }
+    await fetchMonthStats(prevYear, prevMonth, setPrevMonthStats);
+
+    // Check if we need to recalculate growth (new month or no cache)
+    const cachedGrowth = getCachedGrowth();
+    if (!cachedGrowth) {
+      // Small delay to ensure stats are updated before calculating growth
+      setTimeout(() => {
+        calculateAndCacheGrowth();
+      }, 100);
+    }
+  };
+
+  // Listen for order changes from cart page
+  useEffect(() => {
+    const handleOrderChange = (event: StorageEvent) => {
+      if (event.key === "orderUpdated" && event.newValue) {
+        // Refresh stats when order is updated
+        refreshMonthlyStats();
+        // Clear the flag
+        localStorage.removeItem("orderUpdated");
+      }
+    };
+
+    // Listen for storage events (when cart page updates localStorage)
+    window.addEventListener("storage", handleOrderChange);
+
+    // Also check for localStorage changes on the same page
+    const checkForOrderUpdates = () => {
+      const orderUpdated = localStorage.getItem("orderUpdated");
+      if (orderUpdated) {
+        refreshMonthlyStats();
+        localStorage.removeItem("orderUpdated");
+      }
+    };
+
+    // Check periodically for order updates
+    const interval = setInterval(checkForOrderUpdates, 1000);
+
+    return () => {
+      window.removeEventListener("storage", handleOrderChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Load cached growth on mount and calculate only if not cached
+  useEffect(() => {
+    const cachedGrowth = getCachedGrowth();
+    if (cachedGrowth) {
+      setMonthGrowth(cachedGrowth);
+    } else {
+      // Only calculate if we have both current and previous month stats
+      if (monthStats.revenue > 0 || prevMonthStats.revenue > 0) {
+        calculateAndCacheGrowth();
+      }
+    }
+  }, [monthStats, prevMonthStats]);
+
+  // Function to clear old cached growth (when new month starts)
+  const clearOldCachedGrowth = () => {
+    try {
+      const currentDate = new Date();
+      const currentMonthKey = `${currentDate.getFullYear()}-${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}`;
+
+      // Clear all cached growth except current month
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (
+          key &&
+          key.startsWith("monthlyGrowth_") &&
+          !key.includes(currentMonthKey)
+        ) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (error) {
+      console.error("Error clearing old cached growth:", error);
+    }
+  };
+
+  // Fetch monthly stats on mount
+  useEffect(() => {
+    clearOldCachedGrowth(); // Clear old cached growth first
+    refreshMonthlyStats();
+  }, []); // <--- Only once on mount
+
+  // Function to manually refresh stats and recalculate growth
+  const manualRefreshStats = async () => {
+    // Clear cached growth to force recalculation
+    const currentDate = new Date();
+    const monthKey = `${currentDate.getFullYear()}-${(
+      currentDate.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}`;
+    localStorage.removeItem(`monthlyGrowth_${monthKey}`);
+
+    await refreshMonthlyStats();
+    toast.success("Stats refreshed successfully");
+  };
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -311,6 +486,30 @@ const RetailerDashboard = () => {
     { id: "settings", label: "Store Settings", icon: FaCog },
   ];
 
+  // Move summaryCards inside the component to use products.length and analytics
+  const summaryCards = [
+    {
+      label: "Total Products",
+      value: products.length.toLocaleString(),
+      icon: <FaBox className="text-blue-400 text-2xl" />,
+    },
+    {
+      label: "Total Orders",
+      value: monthStats.totalOrders?.toLocaleString() ?? "-",
+      icon: <FaUsers className="text-green-400 text-2xl" />,
+    },
+    {
+      label: "Revenue",
+      value: `₹${monthStats.revenue?.toLocaleString() ?? "-"}`,
+      icon: <FaDollarSign className="text-yellow-400 text-2xl" />,
+    },
+    {
+      label: "Growth",
+      value: monthGrowth ?? "-",
+      icon: <FaChartLine className="text-purple-400 text-2xl" />,
+    },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Summary Cards */}
@@ -327,6 +526,30 @@ const RetailerDashboard = () => {
             {card.icon}
           </div>
         ))}
+      </div>
+
+      {/* Refresh Stats Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={manualRefreshStats}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          title="Refresh dashboard statistics"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh Stats
+        </button>
       </div>
 
       {/* Navigation Tabs */}
@@ -358,7 +581,6 @@ const RetailerDashboard = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
             <h2 className="text-xl font-bold text-white">Product Management</h2>
             <div className="flex gap-2">
-              <SeedProductsButton />
               <button
                 className="flex items-center gap-2 px-4 py-2 rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white"
                 onClick={() => {
@@ -802,6 +1024,15 @@ const RetailerDashboard = () => {
         isOpen={isSliderManagerOpen}
         onClose={() => setIsSliderManagerOpen(false)}
       />
+
+      {/* Cart & Miscellaneous Input */}
+      {/* Removed: Cart for Selected Date section */}
+
+      {/* Daily Analytics */}
+      {/* Removed: Daily Analytics container */}
+
+      {/* Monthly Analytics */}
+      {/* Removed: Monthly Analytics container */}
     </div>
   );
 };

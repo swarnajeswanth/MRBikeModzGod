@@ -72,14 +72,14 @@ const Wishlist: React.FC = () => {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
   // Add sample data to wishlist if empty (for testing)
-  useEffect(() => {
-    if (wishlist.length === 0) {
-      // Add sample items to wishlist
-      sampleWishlistItems.forEach((item) => {
-        dispatch(toggleWishlist(item));
-      });
-    }
-  }, [dispatch, wishlist.length]);
+  // useEffect(() => {
+  //   if (wishlist.length === 0) {
+  //     // Add sample items to wishlist
+  //     sampleWishlistItems.forEach((item) => {
+  //       dispatch(toggleWishlist(item));
+  //     });
+  //   }
+  // }, [dispatch, wishlist.length]);
 
   const handleRemoveFromWishlist = async (productId: string) => {
     // Check if login is required for wishlist and user is not logged in
@@ -189,10 +189,13 @@ const Wishlist: React.FC = () => {
         </div>
         <div className="text-center py-8">
           <Heart className="text-gray-400 text-4xl mx-auto mb-4 outline-2 outline-gray-500 outline-offset-1" />
-          <p className="text-gray-400">Your wishlist is empty</p>
-          <p className="text-gray-500 text-sm">
-            Start adding products to your wishlist!
-          </p>
+          <p className="text-gray-400">No wishlist items added.</p>
+          <button
+            className="mt-6 px-6 py-2 rounded-lg bg-[#8e0005] text-white font-semibold shadow hover:bg-[#a80008] transition-colors duration-200"
+            onClick={() => router.push("/")}
+          >
+            Go to Home
+          </button>
         </div>
       </div>
     );
@@ -203,6 +206,22 @@ const Wishlist: React.FC = () => {
       <div className="flex items-center gap-3 mb-5">
         <Heart className="text-red-400 text-2xl outline-2 outline-red-500 outline-offset-1" />
         <h2 className="text-2xl font-bold">My Wishlist ({wishlist.length})</h2>
+      </div>
+      <div className="flex justify-end mb-4">
+        <button
+          className="flex items-center gap-2 px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors duration-200"
+          onClick={() => {
+            if (
+              window.confirm("Are you sure you want to clear your wishlist?")
+            ) {
+              handleRemoveFromWishlist("all");
+            }
+          }}
+          disabled={clearingWishlist}
+        >
+          <FaTrash className="w-4 h-4" />
+          {clearingWishlist ? "Clearing..." : "Clear Wishlist"}
+        </button>
       </div>
       {wishlist.map((item) => (
         <div
@@ -264,16 +283,6 @@ const Wishlist: React.FC = () => {
           </div>
         </div>
       ))}
-      <LoadingButton
-        onClick={() => handleRemoveFromWishlist("all")}
-        loading={clearingWishlist}
-        loadingText="Clearing..."
-        variant="danger"
-        size="lg"
-        className="w-full mt-4 bg-red-600 hover:bg-red-700"
-      >
-        Clear Wishlist
-      </LoadingButton>
     </div>
   );
 };

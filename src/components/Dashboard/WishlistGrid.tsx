@@ -12,7 +12,7 @@ import { selectIsCustomerExperienceEnabled } from "@/components/store/storeSetti
 import { toggleWishlist } from "@/components/store/UserSlice";
 import { toast } from "react-hot-toast";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useWishlist } from "../hooks/useWishlist";
 
 interface WishlistGridProps {
@@ -42,6 +42,14 @@ const WishlistGrid: React.FC<WishlistGridProps> = ({
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
   const { isInWishlist, toggleWishlistItem } = useWishlist();
+  const { role } = useSelector((state: RootState) => state.user);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  useEffect(() => {
+    if (role === "retailer") {
+      const savedDate = localStorage.getItem("retailerSelectedDate");
+      if (savedDate) setSelectedDate(new Date(savedDate));
+    }
+  }, [role]);
 
   // Load products if not already loaded
   useEffect(() => {
@@ -224,7 +232,12 @@ const WishlistGrid: React.FC<WishlistGridProps> = ({
                   )}
                 </div>
 
-                <AddToCartButton product={product} />
+                <AddToCartButton
+                  product={product}
+                  {...(role === "retailer" && selectedDate
+                    ? { selectedDate }
+                    : {})}
+                />
               </div>
             </div>
           ))}

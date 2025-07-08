@@ -32,6 +32,33 @@ const AllProductsPage = () => {
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
   const { isInWishlist, toggleWishlistItem } = useWishlist();
+  const [filters, setFilters] = useState({
+    category: "",
+    priceRange: "",
+    sortBy: "",
+    offers: "",
+  });
+  const [promoCode, setPromoCode] = useState("");
+  const { role } = useSelector((state: any) => state.user);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
+
+  useEffect(() => {
+    if (role === "retailer") {
+      const savedDate = localStorage.getItem("retailerSelectedDate");
+      if (savedDate) setSelectedDate(new Date(savedDate));
+    }
+  }, [role]);
+
+  // Trigger fade in animation when component mounts
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   // Get unique categories from products (case-insensitive)
   const uniqueCategories = [
@@ -41,25 +68,6 @@ const AllProductsPage = () => {
         .filter(Boolean)
     ),
   ].map((category) => category.charAt(0).toUpperCase() + category.slice(1));
-
-  const [filters, setFilters] = useState({
-    category: "",
-    priceRange: "",
-    sortBy: "",
-    offers: "",
-  });
-  const [promoCode, setPromoCode] = useState("");
-
-  useEffect(() => {
-    if (products.length === 0) {
-      dispatch(fetchProducts());
-    }
-  }, [dispatch, products.length]);
-
-  // Trigger fade in animation when component mounts
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   const handleToggleWishlist = (product: any) => {
     // Check if login is required for wishlist and user is not logged in
@@ -352,7 +360,12 @@ const AllProductsPage = () => {
                   )}
                 </div>
 
-                <AddToCartButton product={product} />
+                <AddToCartButton
+                  product={product}
+                  {...(role === "retailer" && selectedDate
+                    ? { selectedDate }
+                    : {})}
+                />
               </div>
             </div>
           ))}

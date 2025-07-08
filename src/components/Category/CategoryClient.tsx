@@ -130,6 +130,14 @@ export default function CategoryClient({ categoryName }: Props) {
   const requireLoginForWishlist = useSelector(
     selectIsCustomerExperienceEnabled("requireLoginForWishlist")
   );
+  const { role } = useSelector((state: RootState) => state.user);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  useEffect(() => {
+    if (role === "retailer") {
+      const savedDate = localStorage.getItem("retailerSelectedDate");
+      if (savedDate) setSelectedDate(new Date(savedDate));
+    }
+  }, [role]);
 
   // Use generic category if not in config, but only show 'not found' if no products
   const currentCategory =
@@ -276,7 +284,12 @@ export default function CategoryClient({ categoryName }: Props) {
                     <span className="text-2xl font-bold text-green-400">
                       ₹{product.price}
                     </span>
-                    <AddToCartButton product={product} />
+                    <AddToCartButton
+                      product={product}
+                      {...(role === "retailer" && selectedDate
+                        ? { selectedDate }
+                        : {})}
+                    />
                   </div>
                 </div>
               </div>

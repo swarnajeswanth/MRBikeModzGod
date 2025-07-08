@@ -58,7 +58,83 @@ const Header = () => {
   const pages = useSelector(selectPages);
   const pathname = usePathname();
 
+  // Retailer-specific cart count state
+  const [retailerCartCount, setRetailerCartCount] = useState(0);
+
   const isHome = pathname === "/";
+
+  // Function to get retailer cart count for selected date
+  const getRetailerCartCount = () => {
+    if (role !== "retailer") return 0;
+
+    try {
+      const savedCart = localStorage.getItem("retailerCartByDate");
+      const savedDate = localStorage.getItem("retailerSelectedDate");
+
+      if (savedCart && savedDate) {
+        const cartByDate = JSON.parse(savedCart);
+        const selectedDate = new Date(savedDate);
+        const formattedDate = selectedDate.toISOString().slice(0, 10);
+        const cartItems = cartByDate[formattedDate] || [];
+
+        return cartItems.reduce(
+          (total: number, item: any) => total + item.quantity,
+          0
+        );
+      }
+    } catch (error) {
+      console.error("Error getting retailer cart count:", error);
+    }
+
+    return 0;
+  };
+
+  // Update retailer cart count when localStorage changes
+  useEffect(() => {
+    if (role === "retailer") {
+      const updateRetailerCartCount = () => {
+        setRetailerCartCount(getRetailerCartCount());
+      };
+
+      // Initial update
+      updateRetailerCartCount();
+
+      // Listen for localStorage changes
+      const handleStorageChange = (e: StorageEvent) => {
+        if (
+          e.key === "retailerCartByDate" ||
+          e.key === "retailerSelectedDate"
+        ) {
+          updateRetailerCartCount();
+        }
+      };
+
+      // Listen for changes on the same page
+      const checkForChanges = () => {
+        updateRetailerCartCount();
+      };
+
+      window.addEventListener("storage", handleStorageChange);
+
+      // Check periodically for changes (since localStorage events don't fire on same page)
+      const interval = setInterval(checkForChanges, 1000);
+
+      return () => {
+        window.removeEventListener("storage", handleStorageChange);
+        clearInterval(interval);
+      };
+    }
+  }, [role]);
+
+  // Get the appropriate cart count based on user role
+  const getDisplayCartCount = () => {
+    if (role === "retailer") {
+      return retailerCartCount;
+    }
+    return cartItemsCount;
+  };
+
+  const displayCartCount = getDisplayCartCount();
 
   // Dynamic navigation based on authentication status and store settings
   const getNavigation = (): NavigationItem[] => {
@@ -89,6 +165,16 @@ const Header = () => {
           icon: <AnimatedUserIcon className="h-4 w-4 mr-2" />,
         });
       }
+
+      // Add Cart link for retailers
+      if (role === "retailer" && features?.addToCart) {
+        baseNav.push({
+          name: "Cart",
+          href: "/cart",
+          icon: <AnimatedShoppingCartIcon className="h-4 w-4 mr-2" />,
+        });
+      }
+
       baseNav.push({
         name: `Logout (${username})`,
         href: "#logout",
@@ -257,9 +343,9 @@ const Header = () => {
               className="relative text-sm font-medium transition-colors duration-200 text-gray-300 hover:text-red-400"
             >
               <AnimatedShoppingCartIcon className="h-5 w-5" />
-              {cartItemsCount > 0 && (
+              {displayCartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemsCount}
+                  {displayCartCount}
                 </span>
               )}
             </Link>
@@ -386,9 +472,9 @@ const Header = () => {
               >
                 <AnimatedShoppingCartIcon className="h-4 w-4 mr-2" />
                 Cart
-                {cartItemsCount > 0 && (
+                {displayCartCount > 0 && (
                   <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {cartItemsCount}
+                    {displayCartCount}
                   </span>
                 )}
               </Link>

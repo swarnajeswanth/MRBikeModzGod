@@ -118,7 +118,7 @@ const ProductPage = () => {
       </div>
     );
   }
-  const { wishlist, isLoggedIn } = useSelector(
+  const { wishlist, isLoggedIn, role } = useSelector(
     (state: RootState) => state.user
   );
   const requireLoginForWishlist = useSelector(
@@ -127,6 +127,14 @@ const ProductPage = () => {
   const isInWishlist = product
     ? wishlist.some((item) => item.id === product.id)
     : false;
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  useEffect(() => {
+    if (role === "retailer") {
+      const savedDate = localStorage.getItem("retailerSelectedDate");
+      if (savedDate) setSelectedDate(new Date(savedDate));
+    }
+  }, [role]);
 
   // Load products if not already loaded
   useEffect(() => {
@@ -442,7 +450,12 @@ const ProductPage = () => {
             <div className="space-y-4">
               <div className="flex space-x-4">
                 <div className="flex-1">
-                  <AddToCartButton product={product} />
+                  <AddToCartButton
+                    product={product}
+                    {...(role === "retailer" && selectedDate
+                      ? { selectedDate }
+                      : {})}
+                  />
                 </div>
 
                 <button

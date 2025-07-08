@@ -15,9 +15,14 @@ import "./AddToCart.css";
 interface AddToCartButtonProps {
   product?: any;
   className?: string;
+  selectedDate?: Date; // NEW: for retailer date-specific cart
 }
 
-const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
+const AddToCartButton = ({
+  product,
+  className = "",
+  selectedDate,
+}: AddToCartButtonProps) => {
   const { addItem, removeItem, isItemInCart } = useCart();
   const [buttonText, setButtonText] = useState("Add to cart");
   const [hasAdded, setHasAdded] = useState(false);
@@ -37,10 +42,37 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   const allowGuestBrowsing = useSelector(
     selectIsCustomerExperienceEnabled("allowGuestBrowsing")
   );
-  const { isLoggedIn } = useSelector((state: RootState) => state.user);
+  const { isLoggedIn, role } = useSelector((state: RootState) => state.user);
 
   // Check if product is already in cart
-  const isInCart = product ? isItemInCart(product.id) : false;
+  const isInCart = product
+    ? role === "retailer"
+      ? (() => {
+          try {
+            const savedCart = localStorage.getItem("retailerCartByDate");
+            // Use selectedDate prop if provided, else fallback to localStorage
+            let dateToUse: Date | null = null;
+            if (selectedDate) {
+              dateToUse = selectedDate;
+            } else {
+              const savedDate = localStorage.getItem("retailerSelectedDate");
+              if (savedDate) dateToUse = new Date(savedDate);
+            }
+            if (savedCart && dateToUse) {
+              const cartByDate = JSON.parse(savedCart);
+              const formattedDate = dateToUse.toISOString().slice(0, 10);
+              const cartItems = cartByDate[formattedDate] || [];
+              return cartItems.some(
+                (item: any) => item.productId === product.id
+              );
+            }
+          } catch (error) {
+            console.error("Error checking retailer cart:", error);
+          }
+          return false;
+        })()
+      : isItemInCart(product.id)
+    : false;
 
   // Initialize state based on cart state
   useEffect(() => {
@@ -208,22 +240,73 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   };
 
   const handleCartAddition = async () => {
-    // Add product to cart via Redux
     if (product) {
-      const cartItem = {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image:
-          (product.images && product.images.length > 0 && product.images[0]) ||
-          product.image ||
-          "",
-        category: product.category,
-        originalPrice: product.originalPrice,
-        discount: product.discount,
-      };
+      if (role === "retailer") {
+        // Use selectedDate prop if provided, else fallback to localStorage
+        let dateToUse: Date | null = null;
+        if (selectedDate) {
+          dateToUse = selectedDate;
+        } else {
+          const savedDate = localStorage.getItem("retailerSelectedDate");
+          if (savedDate) dateToUse = new Date(savedDate);
+        }
+        if (!dateToUse) {
+          dateToUse = new Date();
+          localStorage.setItem("retailerSelectedDate", dateToUse.toISOString());
+        }
+        const savedCart = localStorage.getItem("retailerCartByDate");
+        const cartByDate = savedCart ? JSON.parse(savedCart) : {};
+        const formattedDate = dateToUse.toISOString().slice(0, 10);
+        const currentCart = cartByDate[formattedDate] || [];
+        const existingItem = currentCart.find(
+          (item: any) => item.productId === product.id
+        );
+        let updatedCart;
+        if (existingItem) {
+          updatedCart = currentCart.map((item: any) =>
+            item.productId === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        } else {
+          updatedCart = [
+            ...currentCart,
+            {
+              productId: product.id,
+              name: product.name,
+              price: product.price,
+              quantity: 1,
+            },
+          ];
+        }
+        cartByDate[formattedDate] = updatedCart;
+        localStorage.setItem("retailerCartByDate", JSON.stringify(cartByDate));
+        window.dispatchEvent(
+          new StorageEvent("storage", {
+            key: "retailerCartByDate",
+            newValue: JSON.stringify(cartByDate),
+          })
+        );
+        window.dispatchEvent(new Event("retailerCartUpdated"));
+      } else {
+        // Add to customer cart via Redux
+        const cartItem = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image:
+            (product.images &&
+              product.images.length > 0 &&
+              product.images[0]) ||
+            product.image ||
+            "",
+          category: product.category,
+          originalPrice: product.originalPrice,
+          discount: product.discount,
+        };
 
-      await addItem(cartItem);
+        await addItem(cartItem);
+      }
     }
 
     toast.success(
@@ -237,8 +320,45 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
     e.stopPropagation(); // Prevent navigation to product page
 
     // Remove item from cart if it exists
-    if (product && isInCart) {
-      await removeItem(product.id);
+    if (product) {
+      if (role === "retailer") {
+        // Use selectedDate prop if provided, else fallback to localStorage
+        let dateToUse: Date | null = null;
+        if (selectedDate) {
+          dateToUse = selectedDate;
+        } else {
+          const savedDate = localStorage.getItem("retailerSelectedDate");
+          if (savedDate) dateToUse = new Date(savedDate);
+        }
+        if (dateToUse) {
+          const savedCart = localStorage.getItem("retailerCartByDate");
+          if (savedCart) {
+            const cartByDate = JSON.parse(savedCart);
+            const formattedDate = dateToUse.toISOString().slice(0, 10);
+            const currentCart = cartByDate[formattedDate] || [];
+            const updatedCart = currentCart.filter(
+              (item: any) => item.productId !== product.id
+            );
+            cartByDate[formattedDate] = updatedCart;
+            localStorage.setItem(
+              "retailerCartByDate",
+              JSON.stringify(cartByDate)
+            );
+            window.dispatchEvent(
+              new StorageEvent("storage", {
+                key: "retailerCartByDate",
+                newValue: JSON.stringify(cartByDate),
+              })
+            );
+            window.dispatchEvent(new Event("retailerCartUpdated"));
+          }
+        }
+      } else {
+        // Remove from customer cart via Redux
+        if (isInCart) {
+          await removeItem(product.id);
+        }
+      }
     }
 
     setButtonText("Add to cart");
