@@ -667,6 +667,8 @@ const RetailerDashboard = () => {
                   "retailerSelectedDate",
                   today.toISOString()
                 );
+                // Only reload if no error notification is shown
+                // (No async error here, so reload is safe)
                 window.location.reload();
               }}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm flex items-center justify-center"
@@ -1144,7 +1146,6 @@ const RetailerDashboard = () => {
                     const result = await response.json();
                     if (result.success) {
                       toast.success("Default slider images added successfully");
-                      // Refresh the slider images
                       window.location.reload();
                     } else {
                       toast.error("Failed to add default images");

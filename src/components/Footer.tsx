@@ -105,9 +105,11 @@ const Footer = () => {
             {/* Company Info */}
             <div className="lg:col-span-1">
               <div className="mb-6">
-                <div className="text-2xl font-bold text-white mb-2">
-                  MR<span className="text-red-600">BIKEMODZ</span>
-                </div>
+                <img
+                  src="/Logo.png"
+                  alt="MR BIKE MODZ Logo"
+                  className="h-10 w-auto mx-auto"
+                />
                 <p className="text-gray-400">
                   Your trusted partner for premium auto spare parts and
                   accessories. Quality, performance, and reliability guaranteed.

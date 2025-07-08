@@ -27,34 +27,6 @@ import { toast } from "react-hot-toast";
 import LoadingButton from "./Loaders/LoadingButton";
 import { useState, useEffect } from "react";
 
-// Sample wishlist data for testing
-const sampleWishlistItems = [
-  {
-    id: "1",
-    name: "Premium Brake Pads",
-    price: 89.99,
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
-    category: "Brakes",
-  },
-  {
-    id: "2",
-    name: "Performance Exhaust System",
-    price: 299.99,
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
-    category: "Exhaust",
-  },
-  {
-    id: "3",
-    name: "LED Headlight Kit",
-    price: 149.99,
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
-    category: "Lighting",
-  },
-];
-
 const Wishlist: React.FC = () => {
   const dispatch = useDispatch();
   const router = useRouter();
