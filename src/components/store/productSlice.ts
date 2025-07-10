@@ -18,7 +18,7 @@ export type Product = {
   discount: string;
   description: string;
   features: string[];
-  specifications: Record<string, string>;
+  specifications: string[];
   images: string[];
   inStock: boolean;
   stockCount: number;

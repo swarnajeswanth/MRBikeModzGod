@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+#root {
+  overflow-x: hidden;
+}
+
 /* Force text selection globally */
 body,
 html,

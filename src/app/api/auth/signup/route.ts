@@ -70,16 +70,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Handle OTP verification for retailers
-    if (role === "retailer" && requireOTP) {
-      console.log("Processing retailer OTP verification...");
-
+    // Handle OTP verification for both customers and retailers if requireOTP is true
+    if (requireOTP) {
       if (!otp) {
-        console.log("OTP missing for retailer registration");
         return NextResponse.json(
           {
             success: false,
-            message: "OTP is required for retailer registration.",
+            message: "OTP is required for registration.",
           },
           { status: 400 }
         );
@@ -88,14 +85,7 @@ export async function POST(req: Request) {
       // Find OTP record for this email/role
       const otpRecord = await OTP.findOne({
         email: username.toLowerCase(),
-        role: "retailer",
-      });
-
-      console.log("OTP record found:", {
-        found: !!otpRecord,
-        isUsed: otpRecord?.isUsed,
-        expiresAt: otpRecord?.expiresAt,
-        isExpired: otpRecord?.expiresAt < new Date(),
+        role,
       });
 
       if (!otpRecord) {

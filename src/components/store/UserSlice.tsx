@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type UserRole = "customer" | "retailer";
 
@@ -43,9 +43,46 @@ type AuthPayload = Omit<
   "isLoggedIn" | "wishlist" | "loginLoading" | "signupLoading" | "logoutLoading"
 >;
 
+export const updateUserProfile = createAsyncThunk(
+  "user/updateUserProfile",
+  async (
+    { userId, updates }: { userId: string; updates: Partial<UserState> },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await fetch("/api/user/update", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, updates }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        return rejectWithValue(data.message || "Failed to update user");
+      }
+      return data.user;
+    } catch (err) {
+      return rejectWithValue("Failed to update user");
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
-  initialState,
+  initialState: {
+    id: undefined,
+    username: "",
+    image: "",
+    role: "customer",
+    wishlist: [],
+    isLoggedIn: false,
+    dateOfBirth: "",
+    phoneNumber: "",
+    loginLoading: false,
+    signupLoading: false,
+    logoutLoading: false,
+    updateLoading: false,
+    updateError: null,
+  } as UserState & { updateLoading: boolean; updateError: string | null },
   reducers: {
     setUser: (state, action: PayloadAction<AuthPayload>) => {
       state.id = action.payload.id;
@@ -108,6 +145,31 @@ const userSlice = createSlice({
     setLogoutLoading: (state, action: PayloadAction<boolean>) => {
       state.logoutLoading = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(updateUserProfile.pending, (state) => {
+        state.updateLoading = true;
+        state.updateError = null;
+      })
+      .addCase(
+        updateUserProfile.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          state.updateLoading = false;
+          state.updateError = null;
+          // Update user fields from response
+          if (action.payload) {
+            state.username = action.payload.username;
+            state.image = action.payload.image || state.image;
+            state.phoneNumber = action.payload.phoneNumber || state.phoneNumber;
+            // Add more fields as needed
+          }
+        }
+      )
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.updateLoading = false;
+        state.updateError = action.payload as string;
+      });
   },
 });
 

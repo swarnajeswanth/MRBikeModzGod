@@ -1,41 +1,66 @@
-import { FaShoppingBag, FaHeart, FaBox, FaCreditCard } from "react-icons/fa";
-import { ReactNode, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  fetchProducts,
-  selectAllProducts,
-} from "@/components/store/productSlice";
-import type { AppDispatch } from "@/components/store";
+import { FaShoppingBag, FaHeart, FaCreditCard } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/components/store";
 
 const DashboardStats: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const products = useSelector(selectAllProducts);
+  const userId = useSelector((state: RootState) => state.user.id);
+  const wishlistCount = useSelector(
+    (state: RootState) => state.user.wishlist.length
+  );
+  const [orderStats, setOrderStats] = useState<{
+    totalOrders: number | null;
+    revenue: number | null;
+  }>({
+    totalOrders: null,
+    revenue: null,
+  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchProducts());
-  }, [dispatch]);
+    const fetchOrderStats = async () => {
+      if (!userId) return;
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/orders?userId=${userId}`);
+        const data = await res.json();
+        if (data.success) {
+          setOrderStats({
+            totalOrders: data.totalOrders ?? 0,
+            revenue: data.revenue ?? 0,
+          });
+        } else {
+          setOrderStats({ totalOrders: 0, revenue: 0 });
+        }
+      } catch {
+        setOrderStats({ totalOrders: 0, revenue: 0 });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrderStats();
+  }, [userId]);
 
   const stats = [
     {
-      label: "Total Products",
-      value: products.length,
-      icon: <FaBox className="text-green-400 text-3xl" />,
-    },
-    {
       label: "Total Orders",
-      value: 12, // Placeholder
+      value: loading ? "..." : orderStats.totalOrders ?? "N/A",
       icon: <FaShoppingBag className="text-blue-400 text-3xl" />,
     },
     {
       label: "Wishlist Items",
-      value: 5, // Placeholder
+      value: typeof wishlistCount === "number" ? wishlistCount : "N/A",
       icon: (
         <FaHeart className="text-red-400 text-3xl outline-2 outline-red-500 outline-offset-1" />
       ),
     },
     {
       label: "Total Spent",
-      value: "₹2,450", // Placeholder
+      value: loading
+        ? "..."
+        : orderStats.revenue !== null
+        ? `₹${orderStats.revenue}`
+        : "N/A",
       icon: <FaCreditCard className="text-purple-400 text-3xl" />,
     },
   ];

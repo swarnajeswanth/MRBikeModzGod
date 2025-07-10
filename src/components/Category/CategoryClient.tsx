@@ -40,8 +40,8 @@ const categoryConfig = {
     textColor: "text-red-400",
   },
   bike: {
-    name: "Bikes",
-    description: "Complete bikes for every need",
+    name: "Bike Shining Polish",
+    description: "Bike shining polish products and accessories",
     icon: Bike,
     color: "from-blue-500 to-blue-600",
     textColor: "text-blue-400",
@@ -85,8 +85,9 @@ export default function CategoryClient({ categoryName }: Props) {
   // Get all products to check if they're loaded
   const allProducts = useSelector(selectAllProducts);
 
-  // Normalize category name for matching
-  const normalizedCategoryName = categoryName.trim().toLowerCase();
+  // Decode URL-encoded category name and normalize for matching
+  const decodedCategoryName = decodeURIComponent(categoryName);
+  const normalizedCategoryName = decodedCategoryName.trim().toLowerCase();
 
   // Get products from Redux store, matching category in a case-insensitive, trimmed way
   const products = allProducts.filter(
@@ -95,7 +96,8 @@ export default function CategoryClient({ categoryName }: Props) {
   );
 
   // Debugging logs
-  console.log("[CategoryClient] categoryName:", categoryName);
+  console.log("[CategoryClient] original categoryName:", categoryName);
+  console.log("[CategoryClient] decoded categoryName:", decodedCategoryName);
   console.log(
     "[CategoryClient] normalizedCategoryName:",
     normalizedCategoryName
@@ -105,6 +107,17 @@ export default function CategoryClient({ categoryName }: Props) {
     allProducts.map((p) => p.category)
   );
   console.log("[CategoryClient] matched products:", products);
+  console.log("[CategoryClient] allProducts length:", allProducts.length);
+
+  // Additional debugging for category matching
+  if (allProducts.length > 0) {
+    const categoryMatches = allProducts.filter(
+      (p) =>
+        p.category &&
+        p.category.trim().toLowerCase().includes(normalizedCategoryName)
+    );
+    console.log("[CategoryClient] partial category matches:", categoryMatches);
+  }
 
   // Load products if not already loaded
   useEffect(() => {
@@ -144,10 +157,19 @@ export default function CategoryClient({ categoryName }: Props) {
     }
   }, [role]);
 
-  // Use generic category if not in config, but only show 'not found' if no products
+  // Use predefined category config if available, otherwise use generic category
+  // Show category if there are products, regardless of whether it's in config
   const currentCategory =
-    categoryConfig[categoryName.toLowerCase() as keyof typeof categoryConfig] ||
-    (products.length > 0 ? genericCategory : null);
+    categoryConfig[normalizedCategoryName as keyof typeof categoryConfig] ||
+    (products.length > 0
+      ? {
+          ...genericCategory,
+          name:
+            decodedCategoryName.charAt(0).toUpperCase() +
+            decodedCategoryName.slice(1),
+          description: `${decodedCategoryName} products and accessories`,
+        }
+      : null);
 
   if (!currentCategory) {
     return (
@@ -155,6 +177,12 @@ export default function CategoryClient({ categoryName }: Props) {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center text-white">
             <h1 className="text-4xl mb-4">Category Not Found</h1>
+            <p className="text-gray-400 mb-4">
+              No products found in category "{decodedCategoryName}"
+            </p>
+            <p className="text-gray-500 text-sm mb-6">
+              Total products loaded: {allProducts.length}
+            </p>
             <button
               onClick={() => router.back()}
               className="bg-red-600 hover:bg-red-700 py-2 px-4 rounded"

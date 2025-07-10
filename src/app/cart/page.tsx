@@ -25,7 +25,7 @@ export default function CartPage() {
 
   return (
     <GuestAccessGuard>
-      <div className="min-h-screen bg-[#0D1117] py-10 px-4 sm:px-8">
+      <div className="min-h-screen bg-[#17191e] py-10 px-4 sm:px-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
           Cart
         </h1>

@@ -83,7 +83,7 @@ const Footer = () => {
               <Code className="h-6 w-6 text-red-400 mr-3" />
               <h3 className="text-xl font-semibold text-white">
                 Developed by{" "}
-                <span className="text-red-400">Jeswanth Swarna</span>
+                <span className="text-red-400">Jeswanth Swarna & Team</span>
               </h3>
             </div>
             <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
@@ -100,7 +100,7 @@ const Footer = () => {
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="py-16">
+        <div className="py-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="lg:col-span-1">
@@ -108,7 +108,7 @@ const Footer = () => {
                 <img
                   src="/Logo.png"
                   alt="MR BIKE MODZ Logo"
-                  className="h-10 w-auto mx-auto"
+                  className="h-40 w-auto mx-auto rounded-xl"
                 />
                 <p className="text-gray-400">
                   Your trusted partner for premium auto spare parts and

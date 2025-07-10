@@ -67,7 +67,7 @@ const RetailerDashboard: React.FC = () => {
     reviews: "",
     description: "",
     features: [], // ✅ initialize as array
-    specifications: {}, // ✅ initialize as object
+    specifications: [], // ✅ initialize as array
     label: "",
     labelType: "",
     images: [], // ✅ initialize as array
@@ -96,7 +96,7 @@ const RetailerDashboard: React.FC = () => {
       reviews: product.reviews?.toString() || "",
       description: product.description || "",
       features: product.features || [],
-      specifications: product.specifications || {},
+      specifications: product.specifications || [],
       label: product.label || "",
       labelType: product.labelType || "",
       images: product.images || [],
@@ -145,7 +145,7 @@ const RetailerDashboard: React.FC = () => {
       reviews: "",
       description: "",
       features: [],
-      specifications: {},
+      specifications: [],
       label: "",
       labelType: "",
       images: [],
@@ -206,7 +206,7 @@ const RetailerDashboard: React.FC = () => {
                   reviews: "",
                   description: "",
                   features: [],
-                  specifications: {},
+                  specifications: [],
                   label: "",
                   labelType: "",
                   images: [],

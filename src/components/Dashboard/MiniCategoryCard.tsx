@@ -44,7 +44,7 @@ const MiniCategoryCard: React.FC<MiniCategoryCardProps> = ({
       {/* Overlay gradient for color (always present) */}
       <div
         className={`absolute inset-0 rounded-xl ${color} ${
-          backgroundImage ? "opacity-70" : "opacity-80"
+          backgroundImage ? "opacity-30" : "opacity-40"
         } z-0`}
       />
       {/* Large Letter */}
